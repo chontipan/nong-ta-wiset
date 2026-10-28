@@ -140,6 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     firebase.initializeApp(firebaseConfig);
                 }
                 db = firebase.firestore();
+                // Keep scans saved on the device while offline; Firestore sends them when the internet is back
+                db.enablePersistence({ synchronizeTabs: true })
+                    .catch(err => console.warn('Offline storage for Firestore not available:', err.code || err));
 
                 if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = 'waste-5b576 (Connected)';
                 if (firebaseStatusEl) firebaseStatusEl.classList.add('online');
@@ -238,6 +241,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const VISUAL_MARGIN = 0.02;        // must beat the next-best different label by this much
     const VISUAL_INTERVAL_MS = 300;    // embed at most ~3 times/sec in the live loop
     const MAX_FEEDBACK_EXAMPLES = 60; 
+    // Your own waste model trained in Teachable Machine (see docs/train-your-model.md)
+    const wasteModel = (typeof WasteModel !== 'undefined') ? new WasteModel() : null;
+    const DEFAULT_MODEL_URL = './model/';
+    const WASTE_MODEL_MIN_PROB = 0.75;  // the model must be this sure before its answer is used
+    let lastModelTime = 0;
+    let lastModelResult = null;
     let lastVisualTime = 0;
     let lastVisualResult = null;
     let feedbackExamples = [];         // { id, label, type, image, t } from "ผิด" corrections
@@ -517,8 +526,9 @@ document.addEventListener('DOMContentLoaded', () => {
             isDetecting = true;
             requestAnimationFrame(detectLoop);
 
-            // Visual memory loads in the background; scanning already works without it
+            // Extra models load in the background; scanning already works without them
             initVisualMemory();
+            initWasteModel();
 
         } catch (modelErr) {
             console.error('Model load error:', modelErr);
@@ -705,6 +715,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    function infoForModelResult(r) {
+        if (r.bin === 'money') return WASTE_MAPPING['banknote'];
+        const base = TAUGHT_BIN_INFO[r.bin] || TAUGHT_BIN_INFO.general;
+        return { ...base, thName: `🎯 ${r.name}` };
+    }
+
     function infoForVisualLabel(label) {
         if (label.startsWith('bin:')) return TAUGHT_BIN_INFO[label.slice(4)] || null;
         const c = customThaiProducts.find(p => p.id === label);
@@ -751,6 +767,32 @@ document.addEventListener('DOMContentLoaded', () => {
             region: top.bbox,
             info: infoForCocoClass(top.class)
         } : null;
+
+        // Your own trained waste model knows Thai packaging far better than COCO, so it wins over COCO
+        if (wasteModel && wasteModel.ready) {
+            const now = performance.now();
+            let result = null;
+            if (!live || now - lastModelTime >= VISUAL_INTERVAL_MS) {
+                lastModelTime = now;
+                result = await wasteModel.predict(source);
+                if (live) lastModelResult = { result, t: now };
+            } else if (lastModelResult && now - lastModelResult.t < VISUAL_INTERVAL_MS * 2) {
+                result = lastModelResult.result;
+            }
+            if (result && result.prob >= WASTE_MODEL_MIN_PROB) {
+                if (result.bin === 'none') {
+                    // The model is sure there is no waste in view: only trust COCO if it is very sure too
+                    if (candidate && candidate.score < 0.75) candidate = null;
+                } else {
+                    candidate = {
+                        key: 'tm:' + result.label,
+                        score: result.prob,
+                        region: top ? top.bbox : centerRegion(w, h),
+                        info: infoForModelResult(result)
+                    };
+                }
+            }
+        }
 
         if (visualMemory && visualMemory.isUsable()) {
             const region = top ? top.bbox : centerRegion(w, h);
@@ -1972,11 +2014,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateAiStatus() {
         if (!model) return;
+        const modelPart = wasteModel && wasteModel.ready ? ' · โมเดลขยะไทย ✓' : '';
         if (!visualMemory || !visualMemory.ready) {
-            aiStatusTextEl.innerText = 'AI พร้อมทำงาน';
+            aiStatusTextEl.innerText = 'AI พร้อมทำงาน' + modelPart;
             return;
         }
-        aiStatusTextEl.innerText = `AI พร้อม · ภาพจำ ${visualMemory.size} ภาพ`;
+        aiStatusTextEl.innerText = `AI พร้อม · ภาพจำ ${visualMemory.size} ภาพ${modelPart}`;
+    }
+
+    // --- Your own waste model (Teachable Machine) ---
+    const modelUrlInput = document.getElementById('modelUrlInput');
+    const loadModelBtn = document.getElementById('loadModelBtn');
+    const clearModelBtn = document.getElementById('clearModelBtn');
+    const modelStatusText = document.getElementById('modelStatusText');
+
+    function setModelStatus(text, ok = null) {
+        if (!modelStatusText) return;
+        modelStatusText.innerText = text;
+        modelStatusText.className = 'model-status' + (ok === true ? ' ok' : ok === false ? ' bad' : '');
+    }
+
+    function savedModelUrl() {
+        const fromLink = new URLSearchParams(location.search).get('model');
+        if (fromLink) return fromLink;
+        try { return localStorage.getItem('ecoscan_model_url') || ''; } catch (e) { return ''; }
+    }
+
+    async function loadWasteModel(url, quietIfMissing) {
+        if (!wasteModel) return false;
+        try {
+            setModelStatus('กำลังโหลดโมเดล...');
+            await wasteModel.load(url);
+            const bins = wasteModel.labels.map((l, i) => `${l} → ${BIN_NAMES[wasteModel.bins[i]] || 'ไม่มีขยะ'}`);
+            setModelStatus(`ใช้งานอยู่: ${wasteModel.labels.length} หมวด (${bins.join(', ')})`, true);
+            updateAiStatus();
+            return true;
+        } catch (e) {
+            console.warn('Waste model not loaded:', e);
+            wasteModel.ready = false;
+            if (quietIfMissing) setModelStatus('ยังไม่ได้ใส่โมเดลของคุณ (ใช้ AI พื้นฐาน + ภาพจำ)');
+            else setModelStatus('โหลดไม่สำเร็จ: ตรวจลิงก์ให้ลงท้ายด้วย /models/xxxx/ หรือโฟลเดอร์ที่มี model.json', false);
+            updateAiStatus();
+            return false;
+        }
+    }
+
+    async function initWasteModel() {
+        const url = savedModelUrl();
+        if (modelUrlInput) modelUrlInput.value = url;
+        await loadWasteModel(url || DEFAULT_MODEL_URL, !url);
+    }
+
+    if (loadModelBtn) {
+        loadModelBtn.addEventListener('click', async () => {
+            const url = (modelUrlInput.value || '').trim();
+            if (!url) return;
+            if (await loadWasteModel(url, false)) {
+                try { localStorage.setItem('ecoscan_model_url', url); } catch (e) { /* ignore */ }
+            }
+        });
+    }
+
+    if (clearModelBtn) {
+        clearModelBtn.addEventListener('click', async () => {
+            try { localStorage.removeItem('ecoscan_model_url'); } catch (e) { /* ignore */ }
+            if (modelUrlInput) modelUrlInput.value = '';
+            if (wasteModel) wasteModel.ready = false;
+            await loadWasteModel(DEFAULT_MODEL_URL, true);
+        });
     }
 
     async function addProductToMemory(prod) {
@@ -2140,6 +2245,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (skipCountdownBtn) skipCountdownBtn.addEventListener('click', finishCountdown);
+
+    // ==========================================================================
+    // Installable app & offline (PWA)
+    // ==========================================================================
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker not registered:', err));
+    }
+
+    const offlineBadge = document.getElementById('offlineBadge');
+    function updateOnlineBadge() {
+        if (offlineBadge) offlineBadge.classList.toggle('hidden', navigator.onLine);
+    }
+    window.addEventListener('online', updateOnlineBadge);
+    window.addEventListener('offline', updateOnlineBadge);
+    updateOnlineBadge();
+
+    const installAppBtn = document.getElementById('installAppBtn');
+    let installPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        installPrompt = e;
+        if (installAppBtn) installAppBtn.classList.remove('hidden');
+    });
+    if (installAppBtn) {
+        installAppBtn.addEventListener('click', async () => {
+            if (!installPrompt) return;
+            installPrompt.prompt();
+            await installPrompt.userChoice.catch(() => null);
+            installPrompt = null;
+            installAppBtn.classList.add('hidden');
+        });
+    }
+    window.addEventListener('appinstalled', () => {
+        if (installAppBtn) installAppBtn.classList.add('hidden');
+    });
 
     // --- Start Application ---
     initApp();

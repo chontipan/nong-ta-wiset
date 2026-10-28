@@ -2687,3 +2687,24 @@ body {
     .eco-metrics-grid { grid-template-columns: 1fr; }
     .price-categories-grid { grid-template-columns: 1fr; }
 }
+
+/* Your own Teachable Machine model */
+.model-settings {
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-md);
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+}
+.model-settings summary { cursor: pointer; font-weight: 700; color: #5b21b6; }
+.model-help { font-size: 0.85rem; color: var(--text-secondary); margin: 0.6rem 0; line-height: 1.6; }
+.model-help code { background: #ede9fe; padding: 0 0.3rem; border-radius: 4px; }
+.model-url-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.model-url-row .form-input { flex: 1; min-width: 200px; }
+.model-status { font-size: 0.8rem; color: var(--text-muted); margin: 0.5rem 0 0; word-break: break-word; }
+.model-status.ok { color: #047857; }
+.model-status.bad { color: #be123c; }
+
+/* Offline / install (PWA) */
+.offline-badge { white-space: nowrap; background: #fef3c7; color: #b45309; border-color: #fde68a; }
+.offline-badge.hidden, .install-btn.hidden { display: none; }

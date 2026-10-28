@@ -14,6 +14,14 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
+    <!-- Installable app (PWA): works offline on a kiosk -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#059669">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="ตาวิเศษ">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
 
@@ -61,6 +69,14 @@
 
                 <button class="btn btn-primary btn-sm" id="toggleKioskBtn" title="สลับเป็นโหมดตู้ Kiosk เต็มจอ">
                     <i class="fa-solid fa-expand"></i> Kiosk Mode
+                </button>
+
+                <span class="status-indicator offline-badge hidden" id="offlineBadge" title="ไม่มีอินเทอร์เน็ต แต่ยังสแกนได้ตามปกติ">
+                    <i class="fa-solid fa-wifi"></i> ออฟไลน์ · ยังใช้งานได้
+                </span>
+
+                <button class="btn btn-sm btn-outline install-btn hidden" id="installAppBtn" title="ติดตั้งเป็นแอปบนเครื่องนี้ ใช้งานได้แม้ไม่มีเน็ต">
+                    <i class="fa-solid fa-download"></i> ติดตั้งแอป
                 </button>
 
                 <button class="btn btn-icon" id="toggleSoundBtn" title="เปิด/ปิด เสียงสังเคราะห์">
@@ -591,6 +607,24 @@
             </div>
 
             <div class="trainer-modal-body">
+                <!-- Your own waste model trained in Teachable Machine -->
+                <details class="model-settings">
+                    <summary><i class="fa-solid fa-brain"></i> โมเดลแยกขยะของคุณเอง (Teachable Machine) · แม่นที่สุด</summary>
+                    <p class="model-help">
+                        เทรนโมเดลจากรูปขยะจริงที่หน้าถังของคุณใน
+                        <a href="https://teachablemachine.withgoogle.com/train/image" target="_blank" rel="noopener">Teachable Machine</a>
+                        ตั้งชื่อหมวดขึ้นต้นด้วยถัง เช่น <code>recyclable: กระป๋อง</code>, <code>ขยะอันตราย: ถ่านไฟฉาย</code>, <code>background</code>
+                        แล้วกด Export → Upload → คัดลอกลิงก์มาวางที่นี่
+                        (<a href="https://github.com/chontipan/nong-ta-wiset/blob/main/docs/train-your-model.md" target="_blank" rel="noopener">อ่านคู่มือ</a>)
+                    </p>
+                    <div class="model-url-row">
+                        <input type="url" id="modelUrlInput" class="form-input" placeholder="https://teachablemachine.withgoogle.com/models/xxxxxxx/">
+                        <button type="button" class="btn btn-sm btn-primary" id="loadModelBtn">ใช้โมเดลนี้</button>
+                        <button type="button" class="btn btn-sm btn-secondary" id="clearModelBtn">เลิกใช้</button>
+                    </div>
+                    <p class="model-status" id="modelStatusText">ยังไม่ได้ใส่โมเดลของคุณ (ใช้ AI พื้นฐาน + ภาพจำ)</p>
+                </details>
+
                 <!-- Training Form -->
                 <form id="trainerForm" class="trainer-form">
                     <div class="form-grid">

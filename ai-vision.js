@@ -98,6 +98,89 @@
         }
     }
 
+    // ----------------------------------------------------------------------
+    // Your own waste model (Teachable Machine "Image Project" export)
+    // Folder or link that holds model.json + metadata.json + weights.bin.
+    // Class names say which bin they are, e.g. "recyclable: กระป๋อง",
+    // "ขยะอันตราย - ถ่านไฟฉาย", "background" (no waste in view).
+    // ----------------------------------------------------------------------
+    // Checked in order; the first match wins. Start each class name with its bin to be safe.
+    const BIN_KEYWORDS = [
+        ['none', ['background', 'nothing', 'empty', 'none', 'ไม่มีขยะ', 'พื้นหลัง']],
+        ['plastic_bottle', ['plastic_bottle', 'plastic bottle', 'ขวดพลาสติก']],
+        ['recyclable', ['recyclable', 'recycle', 'รีไซเคิล']],
+        ['hazardous', ['hazardous', 'hazard', 'อันตราย']],
+        ['money', ['money', 'banknote', 'ธนบัตร', 'เงิน']],
+        ['general', ['general', 'ทั่วไป']]
+    ];
+
+    function binForLabel(label) {
+        const l = String(label).toLowerCase();
+        for (const [bin, words] of BIN_KEYWORDS) {
+            if (words.some(w => l.includes(w))) return bin;
+        }
+        return 'general';
+    }
+
+    // "recyclable: กระป๋อง" -> "กระป๋อง"; plain "recyclable" stays as is
+    function displayNameForLabel(label) {
+        const m = String(label).match(/^[^:\-–|]+?\s*[:\-–|]\s*(.+)$/);
+        return (m ? m[1] : String(label)).trim();
+    }
+
+    class WasteModel {
+        constructor() {
+            this.model = null;
+            this.labels = [];
+            this.bins = [];
+            this.ready = false;
+            this.url = '';
+        }
+
+        async load(baseUrl) {
+            const base = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+            const res = await fetch(base + 'metadata.json', { cache: 'no-cache' });
+            if (!res.ok) throw new Error('ไม่พบ metadata.json ที่ ' + base);
+            const meta = await res.json();
+            this.model = await tf.loadLayersModel(base + 'model.json');
+            this.labels = meta.labels || [];
+            this.bins = this.labels.map(binForLabel);
+            this.size = (meta.imageSize || 224);
+            tf.tidy(() => this.model.predict(tf.zeros([1, this.size, this.size, 3])));
+            this.url = base;
+            this.ready = true;
+        }
+
+        // Teachable Machine trains on the centre square of the webcam frame, so predict on the same
+        async predict(source) {
+            if (!this.ready) return null;
+            const out = tf.tidy(() => {
+                const pixels = tf.browser.fromPixels(source);
+                const [h, w] = pixels.shape;
+                const side = Math.min(w, h);
+                const y1 = (h - side) / 2;
+                const x1 = (w - side) / 2;
+                const crop = tf.image.cropAndResize(
+                    pixels.expandDims(0).toFloat(),
+                    [[y1 / h, x1 / w, (y1 + side) / h, (x1 + side) / w]],
+                    [0],
+                    [this.size, this.size]
+                );
+                return this.model.predict(crop.div(127.5).sub(1)).squeeze();
+            });
+            const probs = await out.data();
+            out.dispose();
+            let best = 0;
+            for (let i = 1; i < probs.length; i++) if (probs[i] > probs[best]) best = i;
+            return {
+                label: this.labels[best],
+                name: displayNameForLabel(this.labels[best]),
+                bin: this.bins[best],
+                prob: probs[best]
+            };
+        }
+    }
+
     function dot(a, b) {
         let s = 0;
         for (let i = 0; i < a.length; i++) s += a[i] * b[i];
@@ -148,5 +231,6 @@
     }
 
     window.VisualMemory = VisualMemory;
+    window.WasteModel = WasteModel;
     window.cropToDataUrl = cropToDataUrl;
 })();
