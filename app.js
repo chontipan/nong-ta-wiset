@@ -203,6 +203,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const STABILITY_THRESHOLD_MS = 1000; // Hold steady for 1.0s
 
     const AUTO_COMMIT_COOLDOWN_MS = 3000; // 3s cooldown between auto-commits
+    const DETECT_INTERVAL_MS = 120; // Run the AI at most ~8 times/sec so the video stays smooth
+    const BOX_HOLD_MS = 600; // Keep the last boxes on screen briefly when a frame misses, to stop blinking
+    let lastDetectTime = 0;
+    let lastValidDetectionTime = 0;
+    let lastDrawnPredictions = [];
+    let lastPredictionUIKey = '';
 
     // Statistics & History State
     let stats = {
@@ -549,7 +555,11 @@ document.addEventListener('DOMContentLoaded', () => {
         await populateCameraDevices();
 
         return new Promise((resolve) => {
+            let metaDone = false;
             const onMeta = () => {
+                if (metaDone) return;
+                metaDone = true;
+                webcamEl.onloadedmetadata = null;
                 canvasEl.width = webcamEl.videoWidth || 640;
                 canvasEl.height = webcamEl.videoHeight || 480;
                 if (kioskCanvas) {
@@ -577,10 +587,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (isCameraActive && webcamEl.readyState === 4) {
+        const now = performance.now();
+        if (isCameraActive && webcamEl.readyState === 4 && now - lastDetectTime >= DETECT_INTERVAL_MS) {
+            lastDetectTime = now;
             try {
+                syncCanvasSize();
                 const predictions = await model.detect(webcamEl);
-                drawBoundingBoxes(predictions);
+                renderStableBoxes(predictions);
                 processPredictions(predictions);
             } catch (e) {
                 console.error('Detection loop error:', e);
@@ -588,6 +601,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         requestAnimationFrame(detectLoop);
+    }
+
+    // Resize canvases only when the video size really changes (setting width always clears the canvas)
+    function syncCanvasSize() {
+        const w = webcamEl.videoWidth;
+        const h = webcamEl.videoHeight;
+        if (!w || !h) return;
+        if (canvasEl.width !== w || canvasEl.height !== h) {
+            canvasEl.width = w;
+            canvasEl.height = h;
+        }
+        if (kioskCanvas && (kioskCanvas.width !== w || kioskCanvas.height !== h)) {
+            kioskCanvas.width = w;
+            kioskCanvas.height = h;
+        }
+    }
+
+    function isValidBox(p) {
+        return p.score >= currentConfidenceThreshold && !IGNORED_CLASSES.includes(p.class.toLowerCase());
+    }
+
+    // Keep the previous boxes for a short moment when the AI misses a frame, so boxes don't blink on and off
+    function renderStableBoxes(predictions) {
+        const now = performance.now();
+        if (predictions.some(isValidBox)) {
+            lastDrawnPredictions = predictions;
+            lastValidDetectionTime = now;
+            drawBoundingBoxes(predictions);
+        } else if (now - lastValidDetectionTime > BOX_HOLD_MS) {
+            lastDrawnPredictions = [];
+            drawBoundingBoxes([]);
+        }
+        // Otherwise leave the last boxes on screen
     }
 
     // --- Bounding Box Canvas Renderer ---
@@ -710,8 +756,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = Date.now();
 
         if (validPredictions.length === 0) {
-            currentStableClass = null;
-            holdProgressBar.style.width = '0%';
+            // Ignore a short miss so the progress bar doesn't jump back to zero on every blink
+            if (performance.now() - lastValidDetectionTime > BOX_HOLD_MS) {
+                currentStableClass = null;
+                holdProgressBar.style.width = '0%';
+            }
             return;
         }
 
@@ -762,6 +811,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Update UI Badge & Cards ---
     function updatePredictionUI(info, score) {
         confidencePill.innerText = `${Math.round(score * 100)}% Confidence`;
+
+        // Only rebuild the result card when the detected item changes (rebuilding every frame makes it flash)
+        const uiKey = `${info.type}|${info.thName}|${info.bin}|${info.desc}`;
+        if (uiKey === lastPredictionUIKey) return;
+        lastPredictionUIKey = uiKey;
 
         binResultBadge.className = `bin-result-badge ${info.type}`;
         detectedObjectText.innerText = info.thName;
