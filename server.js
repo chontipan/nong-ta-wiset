@@ -16,7 +16,19 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-    let filePath = path.join(PUBLIC_DIR, req.url === '/' ? 'index.html' : req.url);
+    // Drop the query string and block "../" so only files inside the project folder can be served
+    let urlPath;
+    try {
+        urlPath = decodeURIComponent(req.url.split('?')[0]);
+    } catch (e) {
+        res.writeHead(400);
+        return res.end('Bad Request');
+    }
+    const filePath = path.resolve(PUBLIC_DIR, '.' + (urlPath === '/' ? '/index.html' : urlPath));
+    if (!filePath.startsWith(PUBLIC_DIR + path.sep)) {
+        res.writeHead(403);
+        return res.end('Forbidden');
+    }
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 

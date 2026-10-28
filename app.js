@@ -105,6 +105,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let isKioskMode = false;
     let selectedDeviceId = null;
     let currentConfidenceThreshold = 0.58; // 58% optimal confidence threshold for high accuracy
+    // Escape text before putting it into innerHTML (names and history can come from the shared cloud database)
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[ch]);
+    }
+
     const IGNORED_CLASSES = ['person', 'dog', 'cat', 'bird', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe'];
 
 
@@ -156,10 +163,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const statsRef = db.collection('stats').doc('today');
             statsRef.set({
                 total: firebase.firestore.FieldValue.increment(1),
+                plastic_bottle: firebase.firestore.FieldValue.increment(info.type === 'plastic_bottle' ? 1 : 0),
                 recyclable: firebase.firestore.FieldValue.increment(info.type === 'recyclable' ? 1 : 0),
                 general: firebase.firestore.FieldValue.increment(info.type === 'general' ? 1 : 0),
                 hazardous: firebase.firestore.FieldValue.increment(info.type === 'hazardous' ? 1 : 0),
-                co2: firebase.firestore.FieldValue.increment(info.type === 'recyclable' ? 0.15 : 0),
+                co2: firebase.firestore.FieldValue.increment(
+                    info.type === 'plastic_bottle' ? 0.18 : (info.type === 'recyclable' ? 0.15 : 0)
+                ),
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
         } catch (e) {
@@ -207,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const BOX_HOLD_MS = 600; // Keep the last boxes on screen briefly when a frame misses, to stop blinking
     let lastDetectTime = 0;
     let lastValidDetectionTime = 0;
-    let lastDrawnPredictions = [];
     let lastPredictionUIKey = '';
 
     // Statistics & History State
@@ -626,11 +635,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStableBoxes(predictions) {
         const now = performance.now();
         if (predictions.some(isValidBox)) {
-            lastDrawnPredictions = predictions;
             lastValidDetectionTime = now;
             drawBoundingBoxes(predictions);
         } else if (now - lastValidDetectionTime > BOX_HOLD_MS) {
-            lastDrawnPredictions = [];
             drawBoundingBoxes([]);
         }
         // Otherwise leave the last boxes on screen
@@ -892,8 +899,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         updateStatsUI();
-        saveStats();
-
 
         // Add history log entry
         const timeString = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -911,6 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scanHistory.unshift(historyItem);
         if (scanHistory.length > 50) scanHistory.pop();
         renderHistoryTable();
+        saveStats(); // Save after the new entry is added so it survives a page reload
 
         // Save to Firebase Cloud Firestore (waste-5b576)
         saveScanToCloud(historyItem, info);
@@ -1057,18 +1063,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         historyTableBody.innerHTML = scanHistory.map(row => `
             <tr>
-                <td>${row.time}</td>
-                <td><strong>${row.item}</strong></td>
-                <td><span class="table-badge ${row.type}">${row.bin}</span></td>
-                <td>${row.confidence}</td>
+                <td>${escapeHtml(row.time)}</td>
+                <td><strong>${escapeHtml(row.item)}</strong></td>
+                <td><span class="table-badge ${escapeHtml(row.type)}">${escapeHtml(row.bin)}</span></td>
+                <td>${escapeHtml(row.confidence)}</td>
             </tr>
         `).join('');
     }
 
     // --- LocalStorage Logic ---
     function saveStats() {
-        localStorage.setItem('ecoscan_stats', JSON.stringify(stats));
-        localStorage.setItem('ecoscan_history', JSON.stringify(scanHistory));
+        try {
+            localStorage.setItem('ecoscan_stats', JSON.stringify(stats));
+            localStorage.setItem('ecoscan_history', JSON.stringify(scanHistory));
+        } catch (e) {
+            console.warn('Could not save stats to localStorage:', e);
+        }
     }
 
     function loadSavedStats() {
@@ -1099,7 +1109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Manual Snapshot Scan Handler ---
     async function triggerManualSnapshot() {
-        if (!model) return;
+        if (!model || isCountdownActive) return; // Don't double-count while the result card is showing
 
         if (isCameraActive && webcamEl.readyState === 4) {
             try {
@@ -1227,17 +1237,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Quote every cell and double any quotes inside it so commas/quotes in names don't break columns
+        const cell = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
         const headers = ['Time,Item,Target Bin,Type,Confidence'];
-        const csvRows = scanHistory.map(h => `"${h.time}","${h.item}","${h.bin}","${h.type}","${h.confidence}"`);
-        const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers, ...csvRows].join('\n');
-
-        const encodedUri = encodeURI(csvContent);
+        const csvRows = scanHistory.map(h => [h.time, h.item, h.bin, h.type, h.confidence].map(cell).join(','));
+        const blob = new Blob(['\uFEFF' + [headers, ...csvRows].join('\n')], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.setAttribute('href', encodedUri);
+        link.setAttribute('href', url);
         link.setAttribute('download', `nong_ta_wiset_waste_history_${new Date().toISOString().slice(0, 10)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     // --- Event Listeners ---
@@ -1245,6 +1257,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
+            // Let people type spaces in form fields (e.g. product names in the trainer)
+            const t = e.target;
+            if (t && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(t.tagName))) return;
             e.preventDefault();
             triggerManualSnapshot();
         }
@@ -1458,7 +1473,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
 
                         if (changed) {
-                            localStorage.setItem('ecoscan_custom_thai_products', JSON.stringify(customThaiProducts));
+                            persistCustomProducts();
                             customThaiProducts.forEach(prod => {
                                 WASTE_MAPPING[prod.id] = {
                                     type: prod.bin,
@@ -1510,9 +1525,9 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (prod.bin === 'hazardous') binBtnClass = 'hazardous-btn';
 
             return `
-                <button class="btn btn-sm btn-outline sample-btn custom-btn ${binBtnClass}" data-item="${prod.id}" title="ทดสอบจำแนก ${prod.name}">
-                    ⭐ ${prod.name}
-                    <span class="custom-btn-del" data-del="${prod.id}" title="ลบสินค้าชิ้นนี้">&times;</span>
+                <button class="btn btn-sm btn-outline sample-btn custom-btn ${binBtnClass}" data-item="${escapeHtml(prod.id)}" title="ทดสอบจำแนก ${escapeHtml(prod.name)}">
+                    ⭐ ${escapeHtml(prod.name)}
+                    <span class="custom-btn-del" data-del="${escapeHtml(prod.id)}" title="ลบสินค้าชิ้นนี้">&times;</span>
                 </button>
             `;
         }).join('');
@@ -1532,21 +1547,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return `
                 <div class="trainer-product-card">
                     <div class="trainer-prod-name">
-                        <span>⭐</span> <strong>${prod.name}</strong>
+                        <span>⭐</span> <strong>${escapeHtml(prod.name)}</strong>
                     </div>
                     <div class="trainer-prod-meta">
-                        <span class="trainer-bin-pill ${prod.bin}">${prod.binName || BIN_NAMES[prod.bin]}</span>
-                        <span style="color: #64748b;">${shapeNames[prod.shape] || prod.shape}</span>
+                        <span class="trainer-bin-pill ${escapeHtml(prod.bin)}">${escapeHtml(prod.binName || BIN_NAMES[prod.bin])}</span>
+                        <span style="color: #64748b;">${escapeHtml(shapeNames[prod.shape] || prod.shape)}</span>
                     </div>
                     <div style="font-size: 0.76rem; color: #475569;">
-                        <div>💰 ${prod.price || 'กก.ละ 3.00-6.00 บาท'} (~${(prod.estValue || 0.25).toFixed(2)} บ./ชิ้น)</div>
-                        <div style="margin-top: 2px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${prod.advice || ''}">💡 ${prod.advice || ''}</div>
+                        <div>💰 ${escapeHtml(prod.price || 'กก.ละ 3.00-6.00 บาท')} (~${(parseFloat(prod.estValue) || 0.25).toFixed(2)} บ./ชิ้น)</div>
+                        <div style="margin-top: 2px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(prod.advice)}">💡 ${escapeHtml(prod.advice)}</div>
                     </div>
                     <div class="trainer-prod-actions">
-                        <button type="button" class="btn btn-sm btn-primary test-prod-btn" data-id="${prod.id}">
+                        <button type="button" class="btn btn-sm btn-primary test-prod-btn" data-id="${escapeHtml(prod.id)}">
                             <i class="fa-solid fa-play"></i> ทดสอบ
                         </button>
-                        <button type="button" class="btn btn-sm btn-secondary del-prod-btn" data-id="${prod.id}" style="color: #e11d48;">
+                        <button type="button" class="btn btn-sm btn-secondary del-prod-btn" data-id="${escapeHtml(prod.id)}" style="color: #e11d48;">
                             <i class="fa-solid fa-trash"></i> ลบ
                         </button>
                     </div>
@@ -1573,9 +1588,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function persistCustomProducts() {
+        try {
+            localStorage.setItem('ecoscan_custom_thai_products', JSON.stringify(customThaiProducts));
+        } catch (e) {
+            console.warn('Could not save custom products to localStorage:', e);
+        }
+    }
+
     function saveCustomProduct(prod) {
         customThaiProducts.unshift(prod);
-        localStorage.setItem('ecoscan_custom_thai_products', JSON.stringify(customThaiProducts));
+        persistCustomProducts();
 
         // Register into active dictionary
         WASTE_MAPPING[prod.id] = {
@@ -1613,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         customThaiProducts = customThaiProducts.filter(p => p.id !== id);
         delete WASTE_MAPPING[id];
-        localStorage.setItem('ecoscan_custom_thai_products', JSON.stringify(customThaiProducts));
+        persistCustomProducts();
 
         if (db) {
             db.collection('custom_thai_products').doc(id).delete()
@@ -1641,6 +1664,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Reference photos are kept small: phone photos are several MB, which overflows
+    // localStorage (~5MB) and Firestore's 1MB document limit, so saving silently failed
+    function shrinkImageToDataUrl(source, srcW, srcH, maxSide = 320) {
+        const w = srcW || 320;
+        const h = srcH || 240;
+        const scale = Math.min(1, maxSide / Math.max(w, h));
+        const c = document.createElement('canvas');
+        c.width = Math.round(w * scale);
+        c.height = Math.round(h * scale);
+        c.getContext('2d').drawImage(source, 0, 0, c.width, c.height);
+        return c.toDataURL('image/jpeg', 0.75);
+    }
+
     // Snapshot from Live Webcam for Training Reference
     if (trainerSnapBtn) {
         trainerSnapBtn.addEventListener('click', () => {
@@ -1648,20 +1684,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('กรุณาเปิดกล้องเว็บแคมก่อนถ่ายรูปภาพอ้างอิง');
                 return;
             }
-            const snapCanvas = document.createElement('canvas');
-            snapCanvas.width = webcamEl.videoWidth || 320;
-            snapCanvas.height = webcamEl.videoHeight || 240;
-            const sCtx = snapCanvas.getContext('2d');
-            sCtx.drawImage(webcamEl, 0, 0, snapCanvas.width, snapCanvas.height);
-            currentTrainerImage = snapCanvas.toDataURL('image/jpeg', 0.8);
-
-            if (trainerPreviewImg) {
-                trainerPreviewImg.src = currentTrainerImage;
-                trainerPreviewImg.classList.remove('hidden');
-            }
-            if (trainerPreviewPlaceholder) {
-                trainerPreviewPlaceholder.classList.add('hidden');
-            }
+            currentTrainerImage = shrinkImageToDataUrl(webcamEl, webcamEl.videoWidth, webcamEl.videoHeight);
+            showTrainerPreview();
         });
     }
 
@@ -1673,17 +1697,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!file) return;
             const reader = new FileReader();
             reader.onload = (evt) => {
-                currentTrainerImage = evt.target.result;
-                if (trainerPreviewImg) {
-                    trainerPreviewImg.src = currentTrainerImage;
-                    trainerPreviewImg.classList.remove('hidden');
-                }
-                if (trainerPreviewPlaceholder) {
-                    trainerPreviewPlaceholder.classList.add('hidden');
-                }
+                const img = new Image();
+                img.onload = () => {
+                    currentTrainerImage = shrinkImageToDataUrl(img, img.naturalWidth, img.naturalHeight);
+                    showTrainerPreview();
+                };
+                img.src = evt.target.result;
             };
             reader.readAsDataURL(file);
         });
+    }
+
+    function showTrainerPreview() {
+        if (trainerPreviewImg) {
+            trainerPreviewImg.src = currentTrainerImage;
+            trainerPreviewImg.classList.remove('hidden');
+        }
+        if (trainerPreviewPlaceholder) {
+            trainerPreviewPlaceholder.classList.add('hidden');
+        }
     }
 
     // Trainer Form Submit Handler
@@ -1753,7 +1785,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             if (confirm('คุณต้องการลบข้อมูลสินค้าไทยที่คุณฝึกสอนไว้ทั้งหมดใช่หรือไม่?')) {
-                customThaiProducts.forEach(p => delete WASTE_MAPPING[p.id]);
+                customThaiProducts.forEach(p => {
+                    delete WASTE_MAPPING[p.id];
+                    // Also remove from the cloud, otherwise they come back on the next page load
+                    if (db) {
+                        db.collection('custom_thai_products').doc(p.id).delete()
+                            .catch(err => console.log('Firestore delete failed:', err));
+                    }
+                });
                 customThaiProducts = [];
                 localStorage.removeItem('ecoscan_custom_thai_products');
                 renderCustomProductsUI();
