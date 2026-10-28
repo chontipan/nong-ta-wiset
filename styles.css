@@ -2708,3 +2708,26 @@ body {
 /* Offline / install (PWA) */
 .offline-badge { white-space: nowrap; background: #fef3c7; color: #b45309; border-color: #fde68a; }
 .offline-badge.hidden, .install-btn.hidden { display: none; }
+
+/* Price board (เทศบาลตำบลแม่จัน) */
+.price-cat-box.other { border-top: 4px solid #6d28d9; }
+.price-cat-box.other .price-cat-title { color: #6d28d9; }
+.price-cat-box.glass { border-top-color: #0891b2; }
+.price-cat-box.glass .price-cat-title { color: #0891b2; }
+.price-date-pill {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #b45309;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    white-space: nowrap;
+}
+.price-source { font-size: 0.82rem; color: var(--text-muted); margin: -0.4rem 0 0.9rem; }
+.price-source a { color: #0284c7; }
+.price-note { font-size: 0.78rem; color: var(--text-muted); margin: 0.8rem 0 0; }
+.price-categories-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.stats-grid .stat-box.value { grid-column: 1 / -1; }
+.price-list li strong { white-space: nowrap; }
+.price-source a[href^="tel:"] { white-space: nowrap; }

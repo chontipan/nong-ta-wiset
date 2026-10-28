@@ -8,50 +8,50 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Dictionary & Waste Classification Rules (4 Bins) ---
     const WASTE_MAPPING = {
         // Dedicated Plastic Bottle Bin (ถังขวดพลาสติก - PET / HDPE)
-        'bottle': { type: 'plastic_bottle', thName: '🍾 ขวดน้ำพลาสติก (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.30, desc: 'พลาสติก PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        'singha_bottle': { type: 'plastic_bottle', thName: '🍾 น้ำดื่มสิงห์ / คริสตัล (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.30, desc: 'ขวดน้ำดื่ม PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากพลาสติกออก และบีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        'oishi_bottle': { type: 'plastic_bottle', thName: '🧃 ชาเขียวโออิชิ / อิชิตัน (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.25, desc: 'ขวดชาเขียว PET ใส เทน้ำออกให้หมด ล้างน้ำเปล่า บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        'coke_pepsi_bottle': { type: 'plastic_bottle', thName: '🥤 โค้ก / เป๊ปซี่ / เอส (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.35, desc: 'ขวดน้ำอัดลมพลาสติก PET ใส ล้างคราบหวานออก บีบให้แบนทิ้งลงถังขวดพลาสติก' },
-        'cvitt_yanhee_bottle': { type: 'plastic_bottle', thName: '🍋 ซี-วิตต์ / น้ำยันฮี (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.25, desc: 'ขวดวิตามินพลาสติก PET ล้างสะอาด ดึงฉลากออก บีบแบนส่งรีไซเคิล' },
-        'hdpe_bottle': { type: 'plastic_bottle', thName: '🥛 ขวดน้ำพลาสติกขุ่น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7.00 บาท', estValue: 0.35, desc: 'พลาสติก HDPE ขุ่น (เบอร์ 2) เช่น ขวดนม/ขวดน้ำยาล้างจาน ล้างทำความสะอาดทิ้งลงถังขวดพลาสติก' },
-        'meiji_milk_bottle': { type: 'plastic_bottle', thName: '🥛 นมพาสเจอร์ไรส์เมจิ / โฟร์โมสต์ (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7.00 บาท', estValue: 0.40, desc: 'ขวดนมพลาสติก HDPE สีขาวขุ่น ล้างคราบนมให้สะอาดหมดจดเพื่อป้องกันกลิ่นบูด แล้วทิ้งลงถังขวดพลาสติก' },
-        'sunlight_bottle': { type: 'plastic_bottle', thName: '🧴 ซันไลต์ / บรีสเอกเซล (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7.00 บาท', estValue: 0.50, desc: 'ขวดน้ำยาล้างจาน/น้ำยาซักผ้า HDPE ล้างคราบฟองน้ำยาออกให้หมดก่อนทิ้งถังขวดพลาสติก' },
-        'betagen_bottle': { type: 'plastic_bottle', thName: '🍼 นมเปรี้ยวบีทาเก้น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7.00 บาท', estValue: 0.15, desc: 'ขวดนมเปรี้ยวพลาสติก HDPE ล้างคราบนมเปรี้ยวออกให้เกลี้ยงก่อนทิ้งลงถังขวดพลาสติก' },
+        'bottle': { type: 'plastic_bottle', thName: '🍾 ขวดน้ำพลาสติก (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.12, desc: 'พลาสติก PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
+        'singha_bottle': { type: 'plastic_bottle', thName: '🍾 น้ำดื่มสิงห์ / คริสตัล (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.12, desc: 'ขวดน้ำดื่ม PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากพลาสติกออก และบีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
+        'oishi_bottle': { type: 'plastic_bottle', thName: '🧃 ชาเขียวโออิชิ / อิชิตัน (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.15, desc: 'ขวดชาเขียว PET ใส เทน้ำออกให้หมด ล้างน้ำเปล่า บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
+        'coke_pepsi_bottle': { type: 'plastic_bottle', thName: '🥤 โค้ก / เป๊ปซี่ / เอส (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.20, desc: 'ขวดน้ำอัดลมพลาสติก PET ใส ล้างคราบหวานออก บีบให้แบนทิ้งลงถังขวดพลาสติก' },
+        'cvitt_yanhee_bottle': { type: 'plastic_bottle', thName: '🍋 ซี-วิตต์ / น้ำยันฮี (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.09, desc: 'ขวดวิตามินพลาสติก PET ล้างสะอาด ดึงฉลากออก บีบแบนส่งรีไซเคิล' },
+        'hdpe_bottle': { type: 'plastic_bottle', thName: '🥛 ขวดน้ำพลาสติกขุ่น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.21, desc: 'พลาสติก HDPE ขุ่น (เบอร์ 2) เช่น ขวดนม/ขวดน้ำยาล้างจาน ล้างทำความสะอาดทิ้งลงถังขวดพลาสติก' },
+        'meiji_milk_bottle': { type: 'plastic_bottle', thName: '🥛 นมพาสเจอร์ไรส์เมจิ / โฟร์โมสต์ (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.21, desc: 'ขวดนมพลาสติก HDPE สีขาวขุ่น ล้างคราบนมให้สะอาดหมดจดเพื่อป้องกันกลิ่นบูด แล้วทิ้งลงถังขวดพลาสติก' },
+        'sunlight_bottle': { type: 'plastic_bottle', thName: '🧴 ซันไลต์ / บรีสเอกเซล (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.35, desc: 'ขวดน้ำยาล้างจาน/น้ำยาซักผ้า HDPE ล้างคราบฟองน้ำยาออกให้หมดก่อนทิ้งถังขวดพลาสติก' },
+        'betagen_bottle': { type: 'plastic_bottle', thName: '🍼 นมเปรี้ยวบีทาเก้น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.07, desc: 'ขวดนมเปรี้ยวพลาสติก HDPE ล้างคราบนมเปรี้ยวออกให้เกลี้ยงก่อนทิ้งลงถังขวดพลาสติก' },
 
         // Recyclable Items & Thai Products (ขยะรีไซเคิล - แก้ว, โลหะ, UHT, กระดาษ, พลาสติกสะอาด)
-        'pp_pe_ps': { type: 'recyclable', thName: '🥣 พลาสติก PP, PE, PS', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.15, desc: 'พลาสติก PP/PE/PS (เบอร์ 5 และ 6) กล่องอาหารพลาสติก ล้างคราบอาหารก่อนส่งรีไซเคิล' },
-        'ldpe_bag': { type: 'recyclable', thName: '🛍️ ถุงพลาสติก 7-11 สะอาด (LDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 บาท', estValue: 0.05, desc: 'พลาสติก LDPE นิ่มยืดได้ (เบอร์ 4) เช่น ถุงหิ้วร้านสะดวกซื้อที่สะอาด รวบรวมส่งรีไซเคิล' },
-        'clean_7eleven_bag': { type: 'recyclable', thName: '🛍️ ถุงพลาสติก 7-Eleven สะอาด (LDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 บาท', estValue: 0.05, desc: 'ถุงพลาสติกหูหิ้วสะอาด ปราศจากคราบอาหาร รวบรวมมัดส่งโรงงานรีไซเคิลเม็ดพลาสติก' },
-        'seven_eleven_bento': { type: 'recyclable', thName: '🍱 กล่องข้าว 7-11 / Ezygo (PP)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.20, desc: 'กล่องอาหารพลาสติก PP ขาวใส ล้างคราบมันและเศษข้าวออกให้สะอาด สามารถรีไซเคิลได้' },
-        'm150_bottle': { type: 'recyclable', thName: '⚡ เอ็ม-150 / คาราบาวแดง (ขวดแก้ว)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.80 บาท', estValue: 0.50, desc: 'ขวดแก้วเครื่องดื่มชูกำลังสีชา ล้างน้ำเปล่า คัดแยกส่งโรงงานหลอมแก้วรีไซเคิล' },
-        'chang_singha_beer_bottle': { type: 'recyclable', thName: '🍺 เบียร์ช้าง / สิงห์ / ลีโอ (ขวดแก้ว)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.80 บาท', estValue: 0.70, desc: 'ขวดแก้วเบียร์ เทน้ำออกให้หมด ล้างน้ำ คัดแยกส่งโรงงานหลอมแก้วใหม่' },
-        'wine glass': { type: 'recyclable', thName: '🍷 ขวดแก้ว / แก้วน้ำ', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.80 บาท', estValue: 0.40, desc: 'ขวดแก้วเครื่องดื่ม คัดแยกออกจากขยะอื่นๆ เพื่อนำไปหลอมใหม่' },
-        'lactasoy_carton': { type: 'recyclable', thName: '🥛 นมแลคตาซอย / ไวตามิลค์ (UHT)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 บาท', estValue: 0.10, desc: 'กล่องเครื่องดื่ม UHT พับให้แบน แกะหลอดออก ตัด-ล้าง-ตากแห้ง ส่งโครงการรีไซเคิลกล่องเครื่องดื่ม' },
-        'thai_denmark_milk': { type: 'recyclable', thName: '🐄 นมวัวแดง ไทย-เดนมาร์ค (UHT)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 บาท', estValue: 0.10, desc: 'กล่องนม UHT ไทย-เดนมาร์ค แกะหลอด พับแบน ล้างสะอาดส่งรีไซเคิลทำแผ่นบอร์ดรักษ์โลก' },
-        'birdy_can': { type: 'recyclable', thName: '☕ กาแฟเบอร์ดี้ / เนสกาแฟ (กระป๋อง)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 60.00 บาท (อลูมิเนียม)', estValue: 0.80, desc: 'กระป๋องกาแฟอลูมิเนียม/เหล็ก เทน้ำออกให้หมด เหยียบแบนส่งรีไซเคิลหลอมได้ 100%' },
-        'sammaekrua_canned_fish': { type: 'recyclable', thName: '🐟 ปลากระป๋องสามแม่ครัว / โรซ่า (กระป๋องเหล็ก)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7.00 บาท', estValue: 0.50, desc: 'กระป๋องเหล็ก/ดีบุก ล้างคราบซอสมะเขือเทศและน้ำมันออกให้สะอาด ป้องกันกลิ่นบูด' },
-        'thai_post_box': { type: 'recyclable', thName: '📦 กล่องพัสดุไปรษณีย์ไทย / Flash', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.45, desc: 'กล่องกระดาษลูกฟูก แกะเทปกาวและสติกเกอร์ใบปะหน้าออก พับให้แบนเพื่อรีไซเคิล' },
-        'box': { type: 'recyclable', thName: '📦 กล่องพัสดุกระดาษ / กล่องลังลูกฟูก', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.45, desc: 'กระดาษกล่องลังสีน้ำตาล พับกล่องให้แบนเพื่อประหยัดพื้นที่' },
-        'cup': { type: 'recyclable', thName: '🥤 แก้วพลาสติก (PET/PP)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 - 6.00 บาท', estValue: 0.20, desc: 'แก้วพลาสติก PET หรือ PP เทน้ำออกให้หมด ล้างคราบเครื่องดื่มก่อนทิ้ง' },
-        'bowl': { type: 'recyclable', thName: '🥣 ชามพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.15, desc: 'ชามพลาสติก PP/PS ล้างคราบอาหารให้สะอาดก่อนนำไปส่งรีไซเคิล' },
-        'book': { type: 'recyclable', thName: '📚 หนังสือ / กระดาษขาวดำ A4', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 - 5.00 บาท', estValue: 0.50, desc: 'กระดาษขาวดำ/สมุด/หนังสือ มัดรวมกันให้เรียบร้อยส่งรีไซเคิล' },
-        'fork': { type: 'recyclable', thName: '🍴 ช้อนส้อมพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.05, desc: 'พลาสติก PP/PS ล้างคราบอาหารออกก่อนทิ้งถังรีไซเคิล' },
-        'spoon': { type: 'recyclable', thName: '🥄 ช้อนพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.05, desc: 'พลาสติก PP/PS ล้างคราบอาหารก่อนนำไปคัดแยก' },
-        'backpack': { type: 'recyclable', thName: '🎒 กระเป๋า / ผ้า', bin: 'ขยะรีไซเคิล', price: 'ตามสภาพชิ้นงาน', estValue: 1.00, desc: 'ส่งต่อบริจาคหรือนำเข้ากระบวนการรีไซเคิลสิ่งทอ' },
-        'umbrella': { type: 'recyclable', thName: '☂️ ร่ม (โลหะ/พลาสติก)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7.00 บาท (โลหะ)', estValue: 0.70, desc: 'แยกชิ้นส่วนโลหะและพลาสติกก่อนส่งรีไซเคิล' },
+        'pp_pe_ps': { type: 'recyclable', thName: '🥣 พลาสติก PP, PE, PS', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.06, desc: 'พลาสติก PP/PE/PS (เบอร์ 5 และ 6) กล่องอาหารพลาสติก ล้างคราบอาหารก่อนส่งรีไซเคิล' },
+        'ldpe_bag': { type: 'recyclable', thName: '🛍️ ถุงพลาสติก 7-11 สะอาด (LDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.02, desc: 'พลาสติก LDPE นิ่มยืดได้ (เบอร์ 4) เช่น ถุงหิ้วร้านสะดวกซื้อที่สะอาด รวบรวมส่งรีไซเคิล' },
+        'clean_7eleven_bag': { type: 'recyclable', thName: '🛍️ ถุงพลาสติก 7-Eleven สะอาด (LDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.02, desc: 'ถุงพลาสติกหูหิ้วสะอาด ปราศจากคราบอาหาร รวบรวมมัดส่งโรงงานรีไซเคิลเม็ดพลาสติก' },
+        'seven_eleven_bento': { type: 'recyclable', thName: '🍱 กล่องข้าว 7-11 / Ezygo (PP)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.05, desc: 'กล่องอาหารพลาสติก PP ขาวใส ล้างคราบมันและเศษข้าวออกให้สะอาด สามารถรีไซเคิลได้' },
+        'm150_bottle': { type: 'recyclable', thName: '⚡ เอ็ม-150 / คาราบาวแดง (ขวดแก้ว)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.8 บาท (ขวดแก้วรวม)', estValue: 0.12, desc: 'ขวดแก้วเครื่องดื่มชูกำลังสีชา ล้างน้ำเปล่า คัดแยกส่งโรงงานหลอมแก้วรีไซเคิล' },
+        'chang_singha_beer_bottle': { type: 'recyclable', thName: '🍺 เบียร์ช้าง / สิงห์ / ลีโอ (ขวดแก้ว)', bin: 'ขยะรีไซเคิล', price: 'ลังละ 5–13 บาท (ช้าง 13 / ลีโอ 7 / สิงห์ 5)', estValue: 0.50, desc: 'ขวดแก้วเบียร์ เทน้ำออกให้หมด ล้างน้ำ คัดแยกส่งโรงงานหลอมแก้วใหม่' },
+        'wine glass': { type: 'recyclable', thName: '🍷 ขวดแก้ว / แก้วน้ำ', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.8 บาท (ขวดแก้วรวม)', estValue: 0.24, desc: 'ขวดแก้วเครื่องดื่ม คัดแยกออกจากขยะอื่นๆ เพื่อนำไปหลอมใหม่' },
+        'lactasoy_carton': { type: 'recyclable', thName: '🥛 นมแลคตาซอย / ไวตามิลค์ (UHT)', bin: 'ขยะรีไซเคิล', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0.00, desc: 'กล่องเครื่องดื่ม UHT พับให้แบน แกะหลอดออก ตัด-ล้าง-ตากแห้ง ส่งโครงการรีไซเคิลกล่องเครื่องดื่ม' },
+        'thai_denmark_milk': { type: 'recyclable', thName: '🐄 นมวัวแดง ไทย-เดนมาร์ค (UHT)', bin: 'ขยะรีไซเคิล', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0.00, desc: 'กล่องนม UHT ไทย-เดนมาร์ค แกะหลอด พับแบน ล้างสะอาดส่งรีไซเคิลทำแผ่นบอร์ดรักษ์โลก' },
+        'birdy_can': { type: 'recyclable', thName: '☕ กาแฟเบอร์ดี้ / เนสกาแฟ (กระป๋อง)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 60 บาท (กระป๋องอลูมิเนียม)', estValue: 0.90, desc: 'กระป๋องกาแฟอลูมิเนียม/เหล็ก เทน้ำออกให้หมด เหยียบแบนส่งรีไซเคิลหลอมได้ 100%' },
+        'sammaekrua_canned_fish': { type: 'recyclable', thName: '🐟 ปลากระป๋องสามแม่ครัว / โรซ่า (กระป๋องเหล็ก)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (กระป๋องสังกะสี)', estValue: 0.15, desc: 'กระป๋องเหล็ก/ดีบุก ล้างคราบซอสมะเขือเทศและน้ำมันออกให้สะอาด ป้องกันกลิ่นบูด' },
+        'thai_post_box': { type: 'recyclable', thName: '📦 กล่องพัสดุไปรษณีย์ไทย / Flash', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (กระดาษลัง)', estValue: 0.60, desc: 'กล่องกระดาษลูกฟูก แกะเทปกาวและสติกเกอร์ใบปะหน้าออก พับให้แบนเพื่อรีไซเคิล' },
+        'box': { type: 'recyclable', thName: '📦 กล่องพัสดุกระดาษ / กล่องลังลูกฟูก', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (กระดาษลัง)', estValue: 0.60, desc: 'กระดาษกล่องลังสีน้ำตาล พับกล่องให้แบนเพื่อประหยัดพื้นที่' },
+        'cup': { type: 'recyclable', thName: '🥤 แก้วพลาสติก (PET/PP)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.03, desc: 'แก้วพลาสติก PET หรือ PP เทน้ำออกให้หมด ล้างคราบเครื่องดื่มก่อนทิ้ง' },
+        'bowl': { type: 'recyclable', thName: '🥣 ชามพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.06, desc: 'ชามพลาสติก PP/PS ล้างคราบอาหารให้สะอาดก่อนนำไปส่งรีไซเคิล' },
+        'book': { type: 'recyclable', thName: '📚 หนังสือ / กระดาษขาวดำ A4', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2–5 บาท (กระดาษรวม / A4)', estValue: 0.60, desc: 'กระดาษขาวดำ/สมุด/หนังสือ มัดรวมกันให้เรียบร้อยส่งรีไซเคิล' },
+        'fork': { type: 'recyclable', thName: '🍴 ช้อนส้อมพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.01, desc: 'พลาสติก PP/PS ล้างคราบอาหารออกก่อนทิ้งถังรีไซเคิล' },
+        'spoon': { type: 'recyclable', thName: '🥄 ช้อนพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.01, desc: 'พลาสติก PP/PS ล้างคราบอาหารก่อนนำไปคัดแยก' },
+        'backpack': { type: 'recyclable', thName: '🎒 กระเป๋า / ผ้า', bin: 'ขยะรีไซเคิล', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0.00, desc: 'ส่งต่อบริจาคหรือนำเข้ากระบวนการรีไซเคิลสิ่งทอ' },
+        'umbrella': { type: 'recyclable', thName: '☂️ ร่ม (โลหะ/พลาสติก)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7 บาท (เหล็ก)', estValue: 2.00, desc: 'แยกชิ้นส่วนโลหะและพลาสติกก่อนส่งรีไซเคิล' },
 
         // Hazardous Waste Items (ขยะอันตราย - สีแดง)
-        'panasonic_battery': { type: 'hazardous', thName: '🔋 ถ่านไฟฉาย Panasonic / อัลคาไลน์', bin: 'ขยะอันตราย', price: 'ชิ้นละ 0.50 บาท', estValue: 0.00, desc: 'มีสารแคดเมียม ปรอท และสารเคมีพิษ ห้ามทิ้งปนกับขยะทั่วไป ต้องทิ้งลงถังขยะอันตรายสีแดงเท่านั้น' },
-        'baygon_spray_can': { type: 'hazardous', thName: '💨 สเปรย์ไบกอน / ยาฆ่าแมลง', bin: 'ขยะอันตราย', price: 'กก.ละ 1.00 บาท', estValue: 0.00, desc: 'กระป๋องสเปรย์แรงดันสูงและมีสารเคมีอันตราย ห้ามเจาะรูหรือเผาไฟ ทิ้งลงถังขยะอันตราย' },
-        'cell phone': { type: 'hazardous', thName: '📱 มือถือเก่า / พาวเวอร์แบงก์ E-Waste', bin: 'ขยะอันตราย', price: 'เครื่องละ 20.00 - 50.00 บาท', estValue: 30.00, desc: 'ขยะอิเล็กทรอนิกส์ มีแบตเตอรี่ลิเธียมไอออนและโลหะหนัก ต้องทิ้งในถังขยะอันตรายหรือจุดรับ E-Waste' },
-        'razor_sharp_blade': { type: 'hazardous', thName: '🪒 ใบมีดโกน / คัตเตอร์ / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7.00 บาท (เหล็ก)', estValue: 0.00, desc: 'ของมีคมเสี่ยงอันตรายต่อเจ้าหน้าที่เก็บขยะ ควรห่อกระดาษหนาหรือใส่ขวดพลาสติกก่อนทิ้งถังขยะอันตราย' },
-        'laptop': { type: 'hazardous', thName: '💻 คอมพิวเตอร์ / จอภาพ E-Waste', bin: 'ขยะอันตราย', price: 'เครื่องละ 20.00 บาท', estValue: 20.00, desc: 'ขยะอิเล็กทรอนิกส์มีส่วนประกอบสารเคมีอันตราย ควรทิ้งถังขยะอันตราย' },
-        'remote': { type: 'hazardous', thName: '🔋 รีโมท / อุปกรณ์มีถ่าน', bin: 'ขยะอันตราย', price: 'ตามประเภท E-Waste', estValue: 2.00, desc: 'ถอดถ่านออก และแยกทิ้งตัวอุปกรณ์ในถังขยะอันตราย' },
-        'scissors': { type: 'hazardous', thName: '✂️ กรรไกร / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7.00 บาท (เหล็ก)', estValue: 0.70, desc: 'ของมีคมอันตราย ควรห่อหุ้มปลายแหลมให้ปลอดภัยก่อนทิ้งถังขยะอันตราย' },
-        'knife': { type: 'hazardous', thName: '🔪 มีด / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7.00 บาท (เหล็ก)', estValue: 0.70, desc: 'ห่อกระดาษหนาและแยกทิ้งในถังขยะอันตรายเพื่อป้องกันอันตราย' },
-        'keyboard': { type: 'hazardous', thName: '⌨️ คีย์บอร์ด / E-Waste', bin: 'ขยะอันตราย', price: 'ชิ้นละ 5.00 บาท', estValue: 5.00, desc: 'อุปกรณ์วงจรอิเล็กทรอนิกส์ชำรุด ทิ้งถังขยะอันตราย' },
-        'mouse': { type: 'hazardous', thName: '🖱️ เมาส์ / E-Waste', bin: 'ขยะอันตราย', price: 'ชิ้นละ 3.00 บาท', estValue: 3.00, desc: 'ขยะอิเล็กทรอนิกส์ คัดแยกทิ้งถังขยะอันตราย' },
-        'hair drier': { type: 'hazardous', thName: '🔌 ไดร์เป่าผม / เครื่องใช้ไฟฟ้า', bin: 'ขยะอันตราย', price: 'กก.ละ 1.00 บาท (ไฟเบอร์)', estValue: 2.00, desc: 'เครื่องใช้ไฟฟ้าชำรุดจัดเป็นขยะอันตราย' },
+        'panasonic_battery': { type: 'hazardous', thName: '🔋 ถ่านไฟฉาย Panasonic / อัลคาไลน์', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ (ส่งจุดรับขยะอันตราย)', estValue: 0.00, desc: 'มีสารแคดเมียม ปรอท และสารเคมีพิษ ห้ามทิ้งปนกับขยะทั่วไป ต้องทิ้งลงถังขยะอันตรายสีแดงเท่านั้น' },
+        'baygon_spray_can': { type: 'hazardous', thName: '💨 สเปรย์ไบกอน / ยาฆ่าแมลง', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ (ส่งจุดรับขยะอันตราย)', estValue: 0.00, desc: 'กระป๋องสเปรย์แรงดันสูงและมีสารเคมีอันตราย ห้ามเจาะรูหรือเผาไฟ ทิ้งลงถังขยะอันตราย' },
+        'cell phone': { type: 'hazardous', thName: '📱 มือถือเก่า / พาวเวอร์แบงก์ E-Waste', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ (ส่งจุดรับ E-Waste)', estValue: 0.00, desc: 'ขยะอิเล็กทรอนิกส์ มีแบตเตอรี่ลิเธียมไอออนและโลหะหนัก ต้องทิ้งในถังขยะอันตรายหรือจุดรับ E-Waste' },
+        'razor_sharp_blade': { type: 'hazardous', thName: '🪒 ใบมีดโกน / คัตเตอร์ / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7 บาท (เหล็ก)', estValue: 0.00, desc: 'ของมีคมเสี่ยงอันตรายต่อเจ้าหน้าที่เก็บขยะ ควรห่อกระดาษหนาหรือใส่ขวดพลาสติกก่อนทิ้งถังขยะอันตราย' },
+        'laptop': { type: 'hazardous', thName: '💻 คอมพิวเตอร์ / จอภาพ E-Waste', bin: 'ขยะอันตราย', price: 'เครื่องละ 20 บาท (จอคอม / ทีวี)', estValue: 20.00, desc: 'ขยะอิเล็กทรอนิกส์มีส่วนประกอบสารเคมีอันตราย ควรทิ้งถังขยะอันตราย' },
+        'remote': { type: 'hazardous', thName: '🔋 รีโมท / อุปกรณ์มีถ่าน', bin: 'ขยะอันตราย', price: 'กก.ละ 1 บาท (ไฟเบอร์ เครื่องใช้ไฟฟ้า)', estValue: 0.15, desc: 'ถอดถ่านออก และแยกทิ้งตัวอุปกรณ์ในถังขยะอันตราย' },
+        'scissors': { type: 'hazardous', thName: '✂️ กรรไกร / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7 บาท (เหล็ก)', estValue: 0.70, desc: 'ของมีคมอันตราย ควรห่อหุ้มปลายแหลมให้ปลอดภัยก่อนทิ้งถังขยะอันตราย' },
+        'knife': { type: 'hazardous', thName: '🔪 มีด / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7 บาท (เหล็ก)', estValue: 0.70, desc: 'ห่อกระดาษหนาและแยกทิ้งในถังขยะอันตรายเพื่อป้องกันอันตราย' },
+        'keyboard': { type: 'hazardous', thName: '⌨️ คีย์บอร์ด / E-Waste', bin: 'ขยะอันตราย', price: 'กก.ละ 1 บาท (ไฟเบอร์ เครื่องใช้ไฟฟ้า)', estValue: 0.50, desc: 'อุปกรณ์วงจรอิเล็กทรอนิกส์ชำรุด ทิ้งถังขยะอันตราย' },
+        'mouse': { type: 'hazardous', thName: '🖱️ เมาส์ / E-Waste', bin: 'ขยะอันตราย', price: 'กก.ละ 1 บาท (ไฟเบอร์ เครื่องใช้ไฟฟ้า)', estValue: 0.10, desc: 'ขยะอิเล็กทรอนิกส์ คัดแยกทิ้งถังขยะอันตราย' },
+        'hair drier': { type: 'hazardous', thName: '🔌 ไดร์เป่าผม / เครื่องใช้ไฟฟ้า', bin: 'ขยะอันตราย', price: 'กก.ละ 1 บาท (ไฟเบอร์ เครื่องใช้ไฟฟ้า)', estValue: 0.50, desc: 'เครื่องใช้ไฟฟ้าชำรุดจัดเป็นขยะอันตราย' },
 
         // Money & Banknotes (เงิน / ธนบัตร - เตือนพิเศษไม่ควรทิ้ง)
         'banknote': { type: 'money', thName: '💵 ธนบัตร (เงินบาทไทย)', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด ไม่ควรทิ้ง!', desc: 'นี่คือ เงิน ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
@@ -482,6 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'th-TH';
+            // Some browsers ignore lang and read Thai with an English voice; pick a Thai voice when there is one
+            const thaiVoice = window.speechSynthesis.getVoices().find(v => /^th(-|_|$)/i.test(v.lang));
+            if (thaiVoice) utterance.voice = thaiVoice;
             utterance.rate = 1.0;
             utterance.pitch = 1.0;
             window.speechSynthesis.speak(utterance);
@@ -633,9 +636,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && isKioskMode) keepScreenOn(true);
+    });
+
     // --- Real-time Detection Loop ---
     async function detectLoop() {
-        if (!isDetecting || !model) {
+        if (!isDetecting || !model || document.hidden) {
             requestAnimationFrame(detectLoop);
             return;
         }
@@ -695,9 +702,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Generic answers for things people corrected with the ถูก/ผิด buttons
     const TAUGHT_BIN_INFO = {
-        plastic_bottle: { type: 'plastic_bottle', thName: '🍾 ขวดพลาสติก (AI จำจากที่สอน)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.30, desc: 'ล้างให้สะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        recyclable: { type: 'recyclable', thName: '♻️ ขยะรีไซเคิล (AI จำจากที่สอน)', bin: 'ขยะรีไซเคิล', price: 'ตามประเภทวัสดุ', estValue: 0.40, desc: 'ล้างให้สะอาด แยกตามวัสดุ แล้วทิ้งลงถังรีไซเคิล' },
-        hazardous: { type: 'hazardous', thName: '☣️ ขยะอันตราย (AI จำจากที่สอน)', bin: 'ขยะอันตราย', price: 'ไม่รับซื้อ', estValue: 0, desc: 'แยกใส่ถังขยะอันตราย ห้ามทิ้งปนกับขยะอื่น' },
+        plastic_bottle: { type: 'plastic_bottle', thName: '🍾 ขวดพลาสติก (AI จำจากที่สอน)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6–7 บาท', estValue: 0.15, desc: 'ล้างให้สะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
+        recyclable: { type: 'recyclable', thName: '♻️ ขยะรีไซเคิล (AI จำจากที่สอน)', bin: 'ขยะรีไซเคิล', price: 'ดูตารางราคาตามวัสดุ', estValue: 0.30, desc: 'ล้างให้สะอาด แยกตามวัสดุ แล้วทิ้งลงถังรีไซเคิล' },
+        hazardous: { type: 'hazardous', thName: '☣️ ขยะอันตราย (AI จำจากที่สอน)', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0, desc: 'แยกใส่ถังขยะอันตราย ห้ามทิ้งปนกับขยะอื่น' },
         general: { type: 'general', thName: '🗑️ ขยะทั่วไป (AI จำจากที่สอน)', bin: 'ขยะทั่วไป', desc: DEFAULT_GENERAL_WASTE.desc }
     };
 
@@ -998,6 +1005,20 @@ document.addEventListener('DOMContentLoaded', () => {
             : `${info.thName} → ${info.bin}`;
     }
 
+    // Buy-back price from the เทศบาลตำบลแม่จัน price board, plus the rough value of this one item
+    function setPricePill(pill, textEl, info) {
+        if (!pill || !textEl) return;
+        if (!info.price || info.type === 'money') {
+            pill.classList.add('hidden');
+            return;
+        }
+        const est = Number(info.estValue) || 0;
+        textEl.innerText = est > 0
+            ? `ราคารับซื้อ ${info.price} · ชิ้นนี้ประมาณ ${est.toFixed(2)} บาท`
+            : `ราคารับซื้อ: ${info.price}`;
+        pill.classList.remove('hidden');
+    }
+
     // --- Update UI Badge & Cards ---
     function updatePredictionUI(info, score) {
         confidencePill.innerText = `ความมั่นใจ ${Math.round(score * 100)}%`;
@@ -1011,6 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
         binResultBadge.className = `bin-result-badge ${info.type}`;
         detectedObjectText.innerText = info.thName;
         binDescriptionText.innerText = info.desc;
+        setPricePill(itemPricePill, itemPriceText, info);
 
         if (info.type === 'plastic_bottle') {
             binIcon.innerHTML = `<i class="fa-solid fa-bottle-water"></i>`;
@@ -1064,12 +1086,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (info.type === 'plastic_bottle') {
             stats.plastic_bottle = pos((stats.plastic_bottle || 0) + sign);
             stats.co2 = pos(stats.co2 + 0.18 * sign);
-            stats.estimatedValue = pos(stats.estimatedValue + (info.estValue || 0.30) * sign);
+            stats.estimatedValue = pos(stats.estimatedValue + (info.estValue ?? 0.15) * sign);
             stats.meritPoints = pos((stats.meritPoints || 0) + 10 * sign);
         } else if (info.type === 'recyclable') {
             stats.recyclable = pos((stats.recyclable || 0) + sign);
             stats.co2 = pos(stats.co2 + 0.15 * sign);
-            stats.estimatedValue = pos(stats.estimatedValue + (info.estValue || 0.40) * sign);
+            stats.estimatedValue = pos(stats.estimatedValue + (info.estValue ?? 0.30) * sign);
             stats.meritPoints = pos((stats.meritPoints || 0) + 10 * sign);
         } else if (info.type === 'hazardous') {
             stats.hazardous = pos((stats.hazardous || 0) + sign);
@@ -1085,7 +1107,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // capture = { source, region } of the camera frame/photo, kept so a wrong answer can be taught
+    // "สถิติวันนี้" really means today: start fresh counts each new day (merit points carry over)
+    function todayKey() {
+        const d = new Date();
+        return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    }
+
+    function ensureStatsAreToday() {
+        if (stats.day === todayKey()) return;
+        const merit = stats.meritPoints || 0;
+        stats = { total: 0, plastic_bottle: 0, recyclable: 0, general: 0, hazardous: 0, co2: 0.0, estimatedValue: 0.0, meritPoints: merit, day: todayKey() };
+    }
+
     function commitWasteScan(info, score, capture = null) {
+        ensureStatsAreToday();
         applyStats(info, 1);
 
         updateStatsUI();
@@ -1124,6 +1159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modalCategoryPill.className = `modal-category-pill ${info.type}`;
             modalCategoryPill.innerText = `${info.bin} · ความมั่นใจ ${Math.round(score * 100)}%`;
             modalDesc.innerText = info.desc;
+            setPricePill(document.getElementById('modalPricePill'), document.getElementById('modalPriceText'), info);
             modalObjectIcon.className = `modal-object-icon ${info.type}`;
             
             if (info.type === 'plastic_bottle') {
@@ -1298,6 +1334,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedStats = localStorage.getItem('ecoscan_stats');
             const savedHistory = localStorage.getItem('ecoscan_history');
             if (savedStats) stats = JSON.parse(savedStats);
+            if (stats.day === undefined) stats.day = todayKey(); // older saves: keep their numbers today
+            ensureStatsAreToday();
             if (!stats.plastic_bottle) stats.plastic_bottle = 0;
             if (!stats.hazardous) stats.hazardous = 0;
             if (savedHistory) scanHistory = JSON.parse(savedHistory);
@@ -1471,7 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resetStatsBtn.addEventListener('click', () => {
         if (confirm('คุณต้องการรีเซ็ตสถิติและประวัติการสแกนทั้งหมดใช่หรือไม่?')) {
-            stats = { total: 0, plastic_bottle: 0, recyclable: 0, general: 0, hazardous: 0, co2: 0.0, estimatedValue: 0.0 };
+            stats = { total: 0, plastic_bottle: 0, recyclable: 0, general: 0, hazardous: 0, co2: 0.0, estimatedValue: 0.0, day: todayKey() };
             scanHistory = [];
 
             saveStats();
@@ -1481,9 +1519,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Kiosk Mode Handlers ---
+    // Keep a kiosk screen from sleeping while it's in use
+    let wakeLock = null;
+    async function keepScreenOn(on) {
+        try {
+            if (on && 'wakeLock' in navigator && !wakeLock) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                wakeLock.addEventListener('release', () => { wakeLock = null; });
+            } else if (!on && wakeLock) {
+                await wakeLock.release();
+                wakeLock = null;
+            }
+        } catch (e) { /* not supported or not allowed: fine */ }
+    }
+
     function enterKioskMode() {
         isKioskMode = true;
         kioskOverlay.classList.remove('hidden');
+        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+        keepScreenOn(true);
         if (webcamStream) {
             kioskWebcam.srcObject = webcamStream;
             kioskCanvas.width = canvasEl.width || 640;
@@ -1494,6 +1550,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function exitKioskMode() {
         isKioskMode = false;
+        keepScreenOn(false);
+        if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
         kioskOverlay.classList.add('hidden');
     }
 
