@@ -12,7 +12,9 @@ const MIME_TYPES = {
     '.json': 'application/json',
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
-    '.ico': 'image/x-icon'
+    '.ico': 'image/x-icon',
+    '.webmanifest': 'application/manifest+json',
+    '.bin': 'application/octet-stream'
 };
 
 const server = http.createServer((req, res) => {

@@ -56,11 +56,11 @@ service cloud.firestore {
     }
 
     // Trained Thai products: anyone can read, add and delete (the app has a delete button),
-    // but not rewrite an existing product. Reference photos are capped at ~200KB.
+    // but not rewrite an existing product. Reference photos are capped at ~200KB, up to 5 photos.
     match /custom_thai_products/{productId} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(
-                         ['id', 'name', 'bin', 'binName', 'shape', 'price', 'estValue', 'advice', 'image', 'timestamp'])
+                         ['id', 'name', 'bin', 'binName', 'shape', 'price', 'estValue', 'advice', 'image', 'images', 'timestamp'])
                     && request.resource.data.id == productId
                     && isShortString(request.resource.data.name, 100)
                     && validBin(request.resource.data.bin)
@@ -71,6 +71,9 @@ service cloud.firestore {
                     && (!('advice' in request.resource.data) || isShortString(request.resource.data.advice, 500))
                     && (!('image' in request.resource.data) || request.resource.data.image == null
                         || isShortString(request.resource.data.image, 200000))
+                    // Extra photos from different angles (the 1MB document limit caps their total size)
+                    && (!('images' in request.resource.data)
+                        || (request.resource.data.images is list && request.resource.data.images.size() <= 5))
                     && (!('timestamp' in request.resource.data) || isShortString(request.resource.data.timestamp, 40));
       allow update: if false;
       allow delete: if true;

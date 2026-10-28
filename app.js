@@ -8,50 +8,50 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Dictionary & Waste Classification Rules (4 Bins) ---
     const WASTE_MAPPING = {
         // Dedicated Plastic Bottle Bin (ถังขวดพลาสติก - PET / HDPE)
-        'bottle': { type: 'plastic_bottle', thName: '🍾 ขวดน้ำพลาสติก (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.30, desc: 'พลาสติก PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        'singha_bottle': { type: 'plastic_bottle', thName: '🍾 น้ำดื่มสิงห์ / คริสตัล (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.30, desc: 'ขวดน้ำดื่ม PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากพลาสติกออก และบีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        'oishi_bottle': { type: 'plastic_bottle', thName: '🧃 ชาเขียวโออิชิ / อิชิตัน (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.25, desc: 'ขวดชาเขียว PET ใส เทน้ำออกให้หมด ล้างน้ำเปล่า บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        'coke_pepsi_bottle': { type: 'plastic_bottle', thName: '🥤 โค้ก / เป๊ปซี่ / เอส (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.35, desc: 'ขวดน้ำอัดลมพลาสติก PET ใส ล้างคราบหวานออก บีบให้แบนทิ้งลงถังขวดพลาสติก' },
-        'cvitt_yanhee_bottle': { type: 'plastic_bottle', thName: '🍋 ซี-วิตต์ / น้ำยันฮี (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6.00 บาท', estValue: 0.25, desc: 'ขวดวิตามินพลาสติก PET ล้างสะอาด ดึงฉลากออก บีบแบนส่งรีไซเคิล' },
-        'hdpe_bottle': { type: 'plastic_bottle', thName: '🥛 ขวดน้ำพลาสติกขุ่น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7.00 บาท', estValue: 0.35, desc: 'พลาสติก HDPE ขุ่น (เบอร์ 2) เช่น ขวดนม/ขวดน้ำยาล้างจาน ล้างทำความสะอาดทิ้งลงถังขวดพลาสติก' },
-        'meiji_milk_bottle': { type: 'plastic_bottle', thName: '🥛 นมพาสเจอร์ไรส์เมจิ / โฟร์โมสต์ (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7.00 บาท', estValue: 0.40, desc: 'ขวดนมพลาสติก HDPE สีขาวขุ่น ล้างคราบนมให้สะอาดหมดจดเพื่อป้องกันกลิ่นบูด แล้วทิ้งลงถังขวดพลาสติก' },
-        'sunlight_bottle': { type: 'plastic_bottle', thName: '🧴 ซันไลต์ / บรีสเอกเซล (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7.00 บาท', estValue: 0.50, desc: 'ขวดน้ำยาล้างจาน/น้ำยาซักผ้า HDPE ล้างคราบฟองน้ำยาออกให้หมดก่อนทิ้งถังขวดพลาสติก' },
-        'betagen_bottle': { type: 'plastic_bottle', thName: '🍼 นมเปรี้ยวบีทาเก้น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7.00 บาท', estValue: 0.15, desc: 'ขวดนมเปรี้ยวพลาสติก HDPE ล้างคราบนมเปรี้ยวออกให้เกลี้ยงก่อนทิ้งลงถังขวดพลาสติก' },
+        'bottle': { type: 'plastic_bottle', thName: '🍾 ขวดน้ำพลาสติก (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.12, desc: 'พลาสติก PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
+        'singha_bottle': { type: 'plastic_bottle', thName: '🍾 น้ำดื่มสิงห์ / คริสตัล (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.12, desc: 'ขวดน้ำดื่ม PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากพลาสติกออก และบีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
+        'oishi_bottle': { type: 'plastic_bottle', thName: '🧃 ชาเขียวโออิชิ / อิชิตัน (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.15, desc: 'ขวดชาเขียว PET ใส เทน้ำออกให้หมด ล้างน้ำเปล่า บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
+        'coke_pepsi_bottle': { type: 'plastic_bottle', thName: '🥤 โค้ก / เป๊ปซี่ / เอส (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.20, desc: 'ขวดน้ำอัดลมพลาสติก PET ใส ล้างคราบหวานออก บีบให้แบนทิ้งลงถังขวดพลาสติก' },
+        'cvitt_yanhee_bottle': { type: 'plastic_bottle', thName: '🍋 ซี-วิตต์ / น้ำยันฮี (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.09, desc: 'ขวดวิตามินพลาสติก PET ล้างสะอาด ดึงฉลากออก บีบแบนส่งรีไซเคิล' },
+        'hdpe_bottle': { type: 'plastic_bottle', thName: '🥛 ขวดน้ำพลาสติกขุ่น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.21, desc: 'พลาสติก HDPE ขุ่น (เบอร์ 2) เช่น ขวดนม/ขวดน้ำยาล้างจาน ล้างทำความสะอาดทิ้งลงถังขวดพลาสติก' },
+        'meiji_milk_bottle': { type: 'plastic_bottle', thName: '🥛 นมพาสเจอร์ไรส์เมจิ / โฟร์โมสต์ (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.21, desc: 'ขวดนมพลาสติก HDPE สีขาวขุ่น ล้างคราบนมให้สะอาดหมดจดเพื่อป้องกันกลิ่นบูด แล้วทิ้งลงถังขวดพลาสติก' },
+        'sunlight_bottle': { type: 'plastic_bottle', thName: '🧴 ซันไลต์ / บรีสเอกเซล (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.35, desc: 'ขวดน้ำยาล้างจาน/น้ำยาซักผ้า HDPE ล้างคราบฟองน้ำยาออกให้หมดก่อนทิ้งถังขวดพลาสติก' },
+        'betagen_bottle': { type: 'plastic_bottle', thName: '🍼 นมเปรี้ยวบีทาเก้น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.07, desc: 'ขวดนมเปรี้ยวพลาสติก HDPE ล้างคราบนมเปรี้ยวออกให้เกลี้ยงก่อนทิ้งลงถังขวดพลาสติก' },
 
         // Recyclable Items & Thai Products (ขยะรีไซเคิล - แก้ว, โลหะ, UHT, กระดาษ, พลาสติกสะอาด)
-        'pp_pe_ps': { type: 'recyclable', thName: '🥣 พลาสติก PP, PE, PS', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.15, desc: 'พลาสติก PP/PE/PS (เบอร์ 5 และ 6) กล่องอาหารพลาสติก ล้างคราบอาหารก่อนส่งรีไซเคิล' },
-        'ldpe_bag': { type: 'recyclable', thName: '🛍️ ถุงพลาสติก 7-11 สะอาด (LDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 บาท', estValue: 0.05, desc: 'พลาสติก LDPE นิ่มยืดได้ (เบอร์ 4) เช่น ถุงหิ้วร้านสะดวกซื้อที่สะอาด รวบรวมส่งรีไซเคิล' },
-        'clean_7eleven_bag': { type: 'recyclable', thName: '🛍️ ถุงพลาสติก 7-Eleven สะอาด (LDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 บาท', estValue: 0.05, desc: 'ถุงพลาสติกหูหิ้วสะอาด ปราศจากคราบอาหาร รวบรวมมัดส่งโรงงานรีไซเคิลเม็ดพลาสติก' },
-        'seven_eleven_bento': { type: 'recyclable', thName: '🍱 กล่องข้าว 7-11 / Ezygo (PP)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.20, desc: 'กล่องอาหารพลาสติก PP ขาวใส ล้างคราบมันและเศษข้าวออกให้สะอาด สามารถรีไซเคิลได้' },
-        'm150_bottle': { type: 'recyclable', thName: '⚡ เอ็ม-150 / คาราบาวแดง (ขวดแก้ว)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.80 บาท', estValue: 0.50, desc: 'ขวดแก้วเครื่องดื่มชูกำลังสีชา ล้างน้ำเปล่า คัดแยกส่งโรงงานหลอมแก้วรีไซเคิล' },
-        'chang_singha_beer_bottle': { type: 'recyclable', thName: '🍺 เบียร์ช้าง / สิงห์ / ลีโอ (ขวดแก้ว)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.80 บาท', estValue: 0.70, desc: 'ขวดแก้วเบียร์ เทน้ำออกให้หมด ล้างน้ำ คัดแยกส่งโรงงานหลอมแก้วใหม่' },
-        'wine glass': { type: 'recyclable', thName: '🍷 ขวดแก้ว / แก้วน้ำ', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.80 บาท', estValue: 0.40, desc: 'ขวดแก้วเครื่องดื่ม คัดแยกออกจากขยะอื่นๆ เพื่อนำไปหลอมใหม่' },
-        'lactasoy_carton': { type: 'recyclable', thName: '🥛 นมแลคตาซอย / ไวตามิลค์ (UHT)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 บาท', estValue: 0.10, desc: 'กล่องเครื่องดื่ม UHT พับให้แบน แกะหลอดออก ตัด-ล้าง-ตากแห้ง ส่งโครงการรีไซเคิลกล่องเครื่องดื่ม' },
-        'thai_denmark_milk': { type: 'recyclable', thName: '🐄 นมวัวแดง ไทย-เดนมาร์ค (UHT)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 บาท', estValue: 0.10, desc: 'กล่องนม UHT ไทย-เดนมาร์ค แกะหลอด พับแบน ล้างสะอาดส่งรีไซเคิลทำแผ่นบอร์ดรักษ์โลก' },
-        'birdy_can': { type: 'recyclable', thName: '☕ กาแฟเบอร์ดี้ / เนสกาแฟ (กระป๋อง)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 60.00 บาท (อลูมิเนียม)', estValue: 0.80, desc: 'กระป๋องกาแฟอลูมิเนียม/เหล็ก เทน้ำออกให้หมด เหยียบแบนส่งรีไซเคิลหลอมได้ 100%' },
-        'sammaekrua_canned_fish': { type: 'recyclable', thName: '🐟 ปลากระป๋องสามแม่ครัว / โรซ่า (กระป๋องเหล็ก)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7.00 บาท', estValue: 0.50, desc: 'กระป๋องเหล็ก/ดีบุก ล้างคราบซอสมะเขือเทศและน้ำมันออกให้สะอาด ป้องกันกลิ่นบูด' },
-        'thai_post_box': { type: 'recyclable', thName: '📦 กล่องพัสดุไปรษณีย์ไทย / Flash', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.45, desc: 'กล่องกระดาษลูกฟูก แกะเทปกาวและสติกเกอร์ใบปะหน้าออก พับให้แบนเพื่อรีไซเคิล' },
-        'box': { type: 'recyclable', thName: '📦 กล่องพัสดุกระดาษ / กล่องลังลูกฟูก', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.45, desc: 'กระดาษกล่องลังสีน้ำตาล พับกล่องให้แบนเพื่อประหยัดพื้นที่' },
-        'cup': { type: 'recyclable', thName: '🥤 แก้วพลาสติก (PET/PP)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 - 6.00 บาท', estValue: 0.20, desc: 'แก้วพลาสติก PET หรือ PP เทน้ำออกให้หมด ล้างคราบเครื่องดื่มก่อนทิ้ง' },
-        'bowl': { type: 'recyclable', thName: '🥣 ชามพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.15, desc: 'ชามพลาสติก PP/PS ล้างคราบอาหารให้สะอาดก่อนนำไปส่งรีไซเคิล' },
-        'book': { type: 'recyclable', thName: '📚 หนังสือ / กระดาษขาวดำ A4', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2.00 - 5.00 บาท', estValue: 0.50, desc: 'กระดาษขาวดำ/สมุด/หนังสือ มัดรวมกันให้เรียบร้อยส่งรีไซเคิล' },
-        'fork': { type: 'recyclable', thName: '🍴 ช้อนส้อมพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.05, desc: 'พลาสติก PP/PS ล้างคราบอาหารออกก่อนทิ้งถังรีไซเคิล' },
-        'spoon': { type: 'recyclable', thName: '🥄 ช้อนพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3.00 บาท', estValue: 0.05, desc: 'พลาสติก PP/PS ล้างคราบอาหารก่อนนำไปคัดแยก' },
-        'backpack': { type: 'recyclable', thName: '🎒 กระเป๋า / ผ้า', bin: 'ขยะรีไซเคิล', price: 'ตามสภาพชิ้นงาน', estValue: 1.00, desc: 'ส่งต่อบริจาคหรือนำเข้ากระบวนการรีไซเคิลสิ่งทอ' },
-        'umbrella': { type: 'recyclable', thName: '☂️ ร่ม (โลหะ/พลาสติก)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7.00 บาท (โลหะ)', estValue: 0.70, desc: 'แยกชิ้นส่วนโลหะและพลาสติกก่อนส่งรีไซเคิล' },
+        'pp_pe_ps': { type: 'recyclable', thName: '🥣 พลาสติก PP, PE, PS', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.06, desc: 'พลาสติก PP/PE/PS (เบอร์ 5 และ 6) กล่องอาหารพลาสติก ล้างคราบอาหารก่อนส่งรีไซเคิล' },
+        'ldpe_bag': { type: 'recyclable', thName: '🛍️ ถุงพลาสติก 7-11 สะอาด (LDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.02, desc: 'พลาสติก LDPE นิ่มยืดได้ (เบอร์ 4) เช่น ถุงหิ้วร้านสะดวกซื้อที่สะอาด รวบรวมส่งรีไซเคิล' },
+        'clean_7eleven_bag': { type: 'recyclable', thName: '🛍️ ถุงพลาสติก 7-Eleven สะอาด (LDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.02, desc: 'ถุงพลาสติกหูหิ้วสะอาด ปราศจากคราบอาหาร รวบรวมมัดส่งโรงงานรีไซเคิลเม็ดพลาสติก' },
+        'seven_eleven_bento': { type: 'recyclable', thName: '🍱 กล่องข้าว 7-11 / Ezygo (PP)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.05, desc: 'กล่องอาหารพลาสติก PP ขาวใส ล้างคราบมันและเศษข้าวออกให้สะอาด สามารถรีไซเคิลได้' },
+        'm150_bottle': { type: 'recyclable', thName: '⚡ เอ็ม-150 / คาราบาวแดง (ขวดแก้ว)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.8 บาท (ขวดแก้วรวม)', estValue: 0.12, desc: 'ขวดแก้วเครื่องดื่มชูกำลังสีชา ล้างน้ำเปล่า คัดแยกส่งโรงงานหลอมแก้วรีไซเคิล' },
+        'chang_singha_beer_bottle': { type: 'recyclable', thName: '🍺 เบียร์ช้าง / สิงห์ / ลีโอ (ขวดแก้ว)', bin: 'ขยะรีไซเคิล', price: 'ลังละ 5–13 บาท (ช้าง 13 / ลีโอ 7 / สิงห์ 5)', estValue: 0.50, desc: 'ขวดแก้วเบียร์ เทน้ำออกให้หมด ล้างน้ำ คัดแยกส่งโรงงานหลอมแก้วใหม่' },
+        'wine glass': { type: 'recyclable', thName: '🍷 ขวดแก้ว / แก้วน้ำ', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 0.8 บาท (ขวดแก้วรวม)', estValue: 0.24, desc: 'ขวดแก้วเครื่องดื่ม คัดแยกออกจากขยะอื่นๆ เพื่อนำไปหลอมใหม่' },
+        'lactasoy_carton': { type: 'recyclable', thName: '🥛 นมแลคตาซอย / ไวตามิลค์ (UHT)', bin: 'ขยะรีไซเคิล', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0.00, desc: 'กล่องเครื่องดื่ม UHT พับให้แบน แกะหลอดออก ตัด-ล้าง-ตากแห้ง ส่งโครงการรีไซเคิลกล่องเครื่องดื่ม' },
+        'thai_denmark_milk': { type: 'recyclable', thName: '🐄 นมวัวแดง ไทย-เดนมาร์ค (UHT)', bin: 'ขยะรีไซเคิล', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0.00, desc: 'กล่องนม UHT ไทย-เดนมาร์ค แกะหลอด พับแบน ล้างสะอาดส่งรีไซเคิลทำแผ่นบอร์ดรักษ์โลก' },
+        'birdy_can': { type: 'recyclable', thName: '☕ กาแฟเบอร์ดี้ / เนสกาแฟ (กระป๋อง)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 60 บาท (กระป๋องอลูมิเนียม)', estValue: 0.90, desc: 'กระป๋องกาแฟอลูมิเนียม/เหล็ก เทน้ำออกให้หมด เหยียบแบนส่งรีไซเคิลหลอมได้ 100%' },
+        'sammaekrua_canned_fish': { type: 'recyclable', thName: '🐟 ปลากระป๋องสามแม่ครัว / โรซ่า (กระป๋องเหล็ก)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (กระป๋องสังกะสี)', estValue: 0.15, desc: 'กระป๋องเหล็ก/ดีบุก ล้างคราบซอสมะเขือเทศและน้ำมันออกให้สะอาด ป้องกันกลิ่นบูด' },
+        'thai_post_box': { type: 'recyclable', thName: '📦 กล่องพัสดุไปรษณีย์ไทย / Flash', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (กระดาษลัง)', estValue: 0.60, desc: 'กล่องกระดาษลูกฟูก แกะเทปกาวและสติกเกอร์ใบปะหน้าออก พับให้แบนเพื่อรีไซเคิล' },
+        'box': { type: 'recyclable', thName: '📦 กล่องพัสดุกระดาษ / กล่องลังลูกฟูก', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (กระดาษลัง)', estValue: 0.60, desc: 'กระดาษกล่องลังสีน้ำตาล พับกล่องให้แบนเพื่อประหยัดพื้นที่' },
+        'cup': { type: 'recyclable', thName: '🥤 แก้วพลาสติก (PET/PP)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.03, desc: 'แก้วพลาสติก PET หรือ PP เทน้ำออกให้หมด ล้างคราบเครื่องดื่มก่อนทิ้ง' },
+        'bowl': { type: 'recyclable', thName: '🥣 ชามพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.06, desc: 'ชามพลาสติก PP/PS ล้างคราบอาหารให้สะอาดก่อนนำไปส่งรีไซเคิล' },
+        'book': { type: 'recyclable', thName: '📚 หนังสือ / กระดาษขาวดำ A4', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 2–5 บาท (กระดาษรวม / A4)', estValue: 0.60, desc: 'กระดาษขาวดำ/สมุด/หนังสือ มัดรวมกันให้เรียบร้อยส่งรีไซเคิล' },
+        'fork': { type: 'recyclable', thName: '🍴 ช้อนส้อมพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.01, desc: 'พลาสติก PP/PS ล้างคราบอาหารออกก่อนทิ้งถังรีไซเคิล' },
+        'spoon': { type: 'recyclable', thName: '🥄 ช้อนพลาสติก (PP/PS)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.01, desc: 'พลาสติก PP/PS ล้างคราบอาหารก่อนนำไปคัดแยก' },
+        'backpack': { type: 'recyclable', thName: '🎒 กระเป๋า / ผ้า', bin: 'ขยะรีไซเคิล', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0.00, desc: 'ส่งต่อบริจาคหรือนำเข้ากระบวนการรีไซเคิลสิ่งทอ' },
+        'umbrella': { type: 'recyclable', thName: '☂️ ร่ม (โลหะ/พลาสติก)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7 บาท (เหล็ก)', estValue: 2.00, desc: 'แยกชิ้นส่วนโลหะและพลาสติกก่อนส่งรีไซเคิล' },
 
         // Hazardous Waste Items (ขยะอันตราย - สีแดง)
-        'panasonic_battery': { type: 'hazardous', thName: '🔋 ถ่านไฟฉาย Panasonic / อัลคาไลน์', bin: 'ขยะอันตราย', price: 'ชิ้นละ 0.50 บาท', estValue: 0.00, desc: 'มีสารแคดเมียม ปรอท และสารเคมีพิษ ห้ามทิ้งปนกับขยะทั่วไป ต้องทิ้งลงถังขยะอันตรายสีแดงเท่านั้น' },
-        'baygon_spray_can': { type: 'hazardous', thName: '💨 สเปรย์ไบกอน / ยาฆ่าแมลง', bin: 'ขยะอันตราย', price: 'กก.ละ 1.00 บาท', estValue: 0.00, desc: 'กระป๋องสเปรย์แรงดันสูงและมีสารเคมีอันตราย ห้ามเจาะรูหรือเผาไฟ ทิ้งลงถังขยะอันตราย' },
-        'cell phone': { type: 'hazardous', thName: '📱 มือถือเก่า / พาวเวอร์แบงก์ E-Waste', bin: 'ขยะอันตราย', price: 'เครื่องละ 20.00 - 50.00 บาท', estValue: 30.00, desc: 'ขยะอิเล็กทรอนิกส์ มีแบตเตอรี่ลิเธียมไอออนและโลหะหนัก ต้องทิ้งในถังขยะอันตรายหรือจุดรับ E-Waste' },
-        'razor_sharp_blade': { type: 'hazardous', thName: '🪒 ใบมีดโกน / คัตเตอร์ / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7.00 บาท (เหล็ก)', estValue: 0.00, desc: 'ของมีคมเสี่ยงอันตรายต่อเจ้าหน้าที่เก็บขยะ ควรห่อกระดาษหนาหรือใส่ขวดพลาสติกก่อนทิ้งถังขยะอันตราย' },
-        'laptop': { type: 'hazardous', thName: '💻 คอมพิวเตอร์ / จอภาพ E-Waste', bin: 'ขยะอันตราย', price: 'เครื่องละ 20.00 บาท', estValue: 20.00, desc: 'ขยะอิเล็กทรอนิกส์มีส่วนประกอบสารเคมีอันตราย ควรทิ้งถังขยะอันตราย' },
-        'remote': { type: 'hazardous', thName: '🔋 รีโมท / อุปกรณ์มีถ่าน', bin: 'ขยะอันตราย', price: 'ตามประเภท E-Waste', estValue: 2.00, desc: 'ถอดถ่านออก และแยกทิ้งตัวอุปกรณ์ในถังขยะอันตราย' },
-        'scissors': { type: 'hazardous', thName: '✂️ กรรไกร / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7.00 บาท (เหล็ก)', estValue: 0.70, desc: 'ของมีคมอันตราย ควรห่อหุ้มปลายแหลมให้ปลอดภัยก่อนทิ้งถังขยะอันตราย' },
-        'knife': { type: 'hazardous', thName: '🔪 มีด / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7.00 บาท (เหล็ก)', estValue: 0.70, desc: 'ห่อกระดาษหนาและแยกทิ้งในถังขยะอันตรายเพื่อป้องกันอันตราย' },
-        'keyboard': { type: 'hazardous', thName: '⌨️ คีย์บอร์ด / E-Waste', bin: 'ขยะอันตราย', price: 'ชิ้นละ 5.00 บาท', estValue: 5.00, desc: 'อุปกรณ์วงจรอิเล็กทรอนิกส์ชำรุด ทิ้งถังขยะอันตราย' },
-        'mouse': { type: 'hazardous', thName: '🖱️ เมาส์ / E-Waste', bin: 'ขยะอันตราย', price: 'ชิ้นละ 3.00 บาท', estValue: 3.00, desc: 'ขยะอิเล็กทรอนิกส์ คัดแยกทิ้งถังขยะอันตราย' },
-        'hair drier': { type: 'hazardous', thName: '🔌 ไดร์เป่าผม / เครื่องใช้ไฟฟ้า', bin: 'ขยะอันตราย', price: 'กก.ละ 1.00 บาท (ไฟเบอร์)', estValue: 2.00, desc: 'เครื่องใช้ไฟฟ้าชำรุดจัดเป็นขยะอันตราย' },
+        'panasonic_battery': { type: 'hazardous', thName: '🔋 ถ่านไฟฉาย Panasonic / อัลคาไลน์', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ (ส่งจุดรับขยะอันตราย)', estValue: 0.00, desc: 'มีสารแคดเมียม ปรอท และสารเคมีพิษ ห้ามทิ้งปนกับขยะทั่วไป ต้องทิ้งลงถังขยะอันตรายสีแดงเท่านั้น' },
+        'baygon_spray_can': { type: 'hazardous', thName: '💨 สเปรย์ไบกอน / ยาฆ่าแมลง', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ (ส่งจุดรับขยะอันตราย)', estValue: 0.00, desc: 'กระป๋องสเปรย์แรงดันสูงและมีสารเคมีอันตราย ห้ามเจาะรูหรือเผาไฟ ทิ้งลงถังขยะอันตราย' },
+        'cell phone': { type: 'hazardous', thName: '📱 มือถือเก่า / พาวเวอร์แบงก์ E-Waste', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ (ส่งจุดรับ E-Waste)', estValue: 0.00, desc: 'ขยะอิเล็กทรอนิกส์ มีแบตเตอรี่ลิเธียมไอออนและโลหะหนัก ต้องทิ้งในถังขยะอันตรายหรือจุดรับ E-Waste' },
+        'razor_sharp_blade': { type: 'hazardous', thName: '🪒 ใบมีดโกน / คัตเตอร์ / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7 บาท (เหล็ก)', estValue: 0.00, desc: 'ของมีคมเสี่ยงอันตรายต่อเจ้าหน้าที่เก็บขยะ ควรห่อกระดาษหนาหรือใส่ขวดพลาสติกก่อนทิ้งถังขยะอันตราย' },
+        'laptop': { type: 'hazardous', thName: '💻 คอมพิวเตอร์ / จอภาพ E-Waste', bin: 'ขยะอันตราย', price: 'เครื่องละ 20 บาท (จอคอม / ทีวี)', estValue: 20.00, desc: 'ขยะอิเล็กทรอนิกส์มีส่วนประกอบสารเคมีอันตราย ควรทิ้งถังขยะอันตราย' },
+        'remote': { type: 'hazardous', thName: '🔋 รีโมท / อุปกรณ์มีถ่าน', bin: 'ขยะอันตราย', price: 'กก.ละ 1 บาท (ไฟเบอร์ เครื่องใช้ไฟฟ้า)', estValue: 0.15, desc: 'ถอดถ่านออก และแยกทิ้งตัวอุปกรณ์ในถังขยะอันตราย' },
+        'scissors': { type: 'hazardous', thName: '✂️ กรรไกร / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7 บาท (เหล็ก)', estValue: 0.70, desc: 'ของมีคมอันตราย ควรห่อหุ้มปลายแหลมให้ปลอดภัยก่อนทิ้งถังขยะอันตราย' },
+        'knife': { type: 'hazardous', thName: '🔪 มีด / ของมีคม', bin: 'ขยะอันตราย', price: 'กก.ละ 7 บาท (เหล็ก)', estValue: 0.70, desc: 'ห่อกระดาษหนาและแยกทิ้งในถังขยะอันตรายเพื่อป้องกันอันตราย' },
+        'keyboard': { type: 'hazardous', thName: '⌨️ คีย์บอร์ด / E-Waste', bin: 'ขยะอันตราย', price: 'กก.ละ 1 บาท (ไฟเบอร์ เครื่องใช้ไฟฟ้า)', estValue: 0.50, desc: 'อุปกรณ์วงจรอิเล็กทรอนิกส์ชำรุด ทิ้งถังขยะอันตราย' },
+        'mouse': { type: 'hazardous', thName: '🖱️ เมาส์ / E-Waste', bin: 'ขยะอันตราย', price: 'กก.ละ 1 บาท (ไฟเบอร์ เครื่องใช้ไฟฟ้า)', estValue: 0.10, desc: 'ขยะอิเล็กทรอนิกส์ คัดแยกทิ้งถังขยะอันตราย' },
+        'hair drier': { type: 'hazardous', thName: '🔌 ไดร์เป่าผม / เครื่องใช้ไฟฟ้า', bin: 'ขยะอันตราย', price: 'กก.ละ 1 บาท (ไฟเบอร์ เครื่องใช้ไฟฟ้า)', estValue: 0.50, desc: 'เครื่องใช้ไฟฟ้าชำรุดจัดเป็นขยะอันตราย' },
 
         // Money & Banknotes (เงิน / ธนบัตร - เตือนพิเศษไม่ควรทิ้ง)
         'banknote': { type: 'money', thName: '💵 ธนบัตร (เงินบาทไทย)', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด ไม่ควรทิ้ง!', desc: 'นี่คือ เงิน ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
@@ -112,7 +112,14 @@ document.addEventListener('DOMContentLoaded', () => {
         })[ch]);
     }
 
-    const IGNORED_CLASSES = ['person', 'dog', 'cat', 'bird', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe'];
+    // People, animals and room/street things are never the item being thrown away; ignoring them stops
+    // the camera from "scanning" a chair or the TV behind the person as general waste
+    const IGNORED_CLASSES = [
+        'person', 'dog', 'cat', 'bird', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe',
+        'chair', 'couch', 'bed', 'dining table', 'toilet', 'bench', 'tv', 'refrigerator', 'oven', 'sink',
+        'car', 'bus', 'truck', 'train', 'airplane', 'boat', 'motorcycle', 'bicycle',
+        'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'kite'
+    ];
 
 
     // --- Firebase Integration (Project ID: waste-5b576) ---
@@ -133,6 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     firebase.initializeApp(firebaseConfig);
                 }
                 db = firebase.firestore();
+                // Keep scans saved on the device while offline; Firestore sends them when the internet is back
+                db.enablePersistence({ synchronizeTabs: true })
+                    .catch(err => console.warn('Offline storage for Firestore not available:', err.code || err));
 
                 if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = 'waste-5b576 (Connected)';
                 if (firebaseStatusEl) firebaseStatusEl.classList.add('online');
@@ -213,11 +223,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const STABILITY_THRESHOLD_MS = 1000; // Hold steady for 1.0s
 
     const AUTO_COMMIT_COOLDOWN_MS = 3000; // 3s cooldown between auto-commits
-    const DETECT_INTERVAL_MS = 120; // Run the AI at most ~8 times/sec so the video stays smooth
+    const DETECT_INTERVAL_MS = 150; // Run the AI at most ~6-7 times/sec so the video stays smooth
     const BOX_HOLD_MS = 600; // Keep the last boxes on screen briefly when a frame misses, to stop blinking
     let lastDetectTime = 0;
     let lastValidDetectionTime = 0;
     let lastPredictionUIKey = '';
+
+    // --- Accuracy helpers ---
+    // COCO-SSD drops anything under 0.5 by default, which made the confidence slider below 50% do nothing.
+    // Ask for weaker boxes too and apply the user's threshold ourselves.
+    const DETECT_MIN_SCORE = 0.30;
+    const DETECT_MAX_BOXES = 10;
+    // Visual memory (ภาพจำ): match camera crops against photos people taught the app
+    const visualMemory = (typeof VisualMemory !== 'undefined') ? new VisualMemory() : null;
+    const VISUAL_MATCH_SIM = 0.68;     // cosine similarity needed when COCO also sees an object
+    const VISUAL_ONLY_SIM = 0.75;      // stricter when COCO sees nothing (chip bags, cans, batteries...)
+    const VISUAL_MARGIN = 0.02;        // must beat the next-best different label by this much
+    const VISUAL_INTERVAL_MS = 300;    // embed at most ~3 times/sec in the live loop
+    const MAX_FEEDBACK_EXAMPLES = 60; 
+    // Your own waste model trained in Teachable Machine (see docs/train-your-model.md)
+    const wasteModel = (typeof WasteModel !== 'undefined') ? new WasteModel() : null;
+    const DEFAULT_MODEL_URL = './model/';
+    const WASTE_MODEL_MIN_PROB = 0.75;  // the model must be this sure before its answer is used
+    let lastModelTime = 0;
+    let lastModelResult = null;
+    let lastVisualTime = 0;
+    let lastVisualResult = null;
+    let feedbackExamples = [];         // { id, label, type, image, t } from "ผิด" corrections
+    let feedbackStats = { correct: 0, incorrect: 0 };
+    // Vote over the last moment of frames so one odd frame doesn't flip the answer
+    const VOTE_WINDOW_MS = 900;
+    let voteBuffer = [];
+    let lastCommit = null;             // what was just scanned, for the ถูก/ผิด buttons
 
     // Statistics & History State
     let stats = {
@@ -285,7 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const customProductCountBadge = document.getElementById('customProductCountBadge');
 
     let customThaiProducts = [];
-    let currentTrainerImage = null;
+    let currentTrainerImages = []; // up to MAX_TRAINER_PHOTOS reference photos (different angles)
+    const MAX_TRAINER_PHOTOS = 5;
+    let lastLiveRegion = null;     // where the camera last saw an object, to crop trainer photos
 
     // UI Prediction Card Elements
     const confidencePill = document.getElementById('confidencePill');
@@ -443,6 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'th-TH';
+            // Some browsers ignore lang and read Thai with an English voice; pick a Thai voice when there is one
+            const thaiVoice = window.speechSynthesis.getVoices().find(v => /^th(-|_|$)/i.test(v.lang));
+            if (thaiVoice) utterance.voice = thaiVoice;
             utterance.rate = 1.0;
             utterance.pitch = 1.0;
             window.speechSynthesis.speak(utterance);
@@ -456,6 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initialization & Model Loading ---
     async function initApp() {
         loadSavedStats();
+        loadFeedback();
         initFirebase();
         loadCustomProducts();
 
@@ -485,6 +528,10 @@ document.addEventListener('DOMContentLoaded', () => {
             cameraLoaderEl.classList.add('hidden');
             isDetecting = true;
             requestAnimationFrame(detectLoop);
+
+            // Extra models load in the background; scanning already works without them
+            initVisualMemory();
+            initWasteModel();
 
         } catch (modelErr) {
             console.error('Model load error:', modelErr);
@@ -589,9 +636,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && isKioskMode) keepScreenOn(true);
+    });
+
     // --- Real-time Detection Loop ---
     async function detectLoop() {
-        if (!isDetecting || !model) {
+        if (!isDetecting || !model || document.hidden) {
             requestAnimationFrame(detectLoop);
             return;
         }
@@ -601,9 +652,9 @@ document.addEventListener('DOMContentLoaded', () => {
             lastDetectTime = now;
             try {
                 syncCanvasSize();
-                const predictions = await model.detect(webcamEl);
-                renderStableBoxes(predictions);
-                processPredictions(predictions);
+                const { predictions, candidate } = await analyzeFrame(webcamEl, true);
+                renderStableBoxes(buildBoxes(predictions, candidate, canvasEl.width, canvasEl.height));
+                processCandidate(candidate);
             } catch (e) {
                 console.error('Detection loop error:', e);
             }
@@ -631,56 +682,203 @@ document.addEventListener('DOMContentLoaded', () => {
         return p.score >= currentConfidenceThreshold && !IGNORED_CLASSES.includes(p.class.toLowerCase());
     }
 
+    // --- Turning a detection into "which bin" ---
+    function productImages(prod) {
+        if (Array.isArray(prod.images) && prod.images.length) return prod.images;
+        return prod.image ? [prod.image] : [];
+    }
+
+    function customInfo(c, cocoClass) {
+        return {
+            type: c.bin,
+            thName: cocoClass ? `⭐ ${c.name} (${cocoClass})` : `⭐ ${c.name}`,
+            bin: c.binName || BIN_NAMES[c.bin] || 'ขยะทั่วไป',
+            price: c.price || 'กก.ละ 3.00-6.00 บาท',
+            estValue: parseFloat(c.estValue) || 0.25,
+            desc: c.advice || DEFAULT_GENERAL_WASTE.desc,
+            custom: true
+        };
+    }
+
+    // Generic answers for things people corrected with the ถูก/ผิด buttons
+    const TAUGHT_BIN_INFO = {
+        plastic_bottle: { type: 'plastic_bottle', thName: '🍾 ขวดพลาสติก (AI จำจากที่สอน)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6–7 บาท', estValue: 0.15, desc: 'ล้างให้สะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
+        recyclable: { type: 'recyclable', thName: '♻️ ขยะรีไซเคิล (AI จำจากที่สอน)', bin: 'ขยะรีไซเคิล', price: 'ดูตารางราคาตามวัสดุ', estValue: 0.30, desc: 'ล้างให้สะอาด แยกตามวัสดุ แล้วทิ้งลงถังรีไซเคิล' },
+        hazardous: { type: 'hazardous', thName: '☣️ ขยะอันตราย (AI จำจากที่สอน)', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0, desc: 'แยกใส่ถังขยะอันตราย ห้ามทิ้งปนกับขยะอื่น' },
+        general: { type: 'general', thName: '🗑️ ขยะทั่วไป (AI จำจากที่สอน)', bin: 'ขยะทั่วไป', desc: DEFAULT_GENERAL_WASTE.desc }
+    };
+
+    function infoForCocoClass(cocoClass) {
+        const itemKey = cocoClass.toLowerCase();
+        // Old-style trained products (no photo) still match by shape. Products with photos are
+        // matched by how they look instead, so one trained bottle no longer renames every bottle.
+        const c = customThaiProducts.find(p => p.shape === itemKey && productImages(p).length === 0);
+        if (c) return customInfo(c, cocoClass);
+        return WASTE_MAPPING[itemKey] || {
+            type: 'general',
+            thName: `ขยะทั่วไป (${cocoClass})`,
+            bin: 'ขยะทั่วไป',
+            desc: DEFAULT_GENERAL_WASTE.desc
+        };
+    }
+
+    function infoForModelResult(r) {
+        if (r.bin === 'money') return WASTE_MAPPING['banknote'];
+        const base = TAUGHT_BIN_INFO[r.bin] || TAUGHT_BIN_INFO.general;
+        return { ...base, thName: `🎯 ${r.name}` };
+    }
+
+    function infoForVisualLabel(label) {
+        if (label.startsWith('bin:')) return TAUGHT_BIN_INFO[label.slice(4)] || null;
+        const c = customThaiProducts.find(p => p.id === label);
+        return c ? customInfo(c) : null;
+    }
+
+    function rankPredictions(predictions, w, h) {
+        const centerX = w / 2;
+        const centerY = h / 2;
+        const maxDist = Math.hypot(centerX, centerY) || 1;
+        const priority = p => {
+            const midX = p.bbox[0] + p.bbox[2] / 2;
+            const midY = p.bbox[1] + p.bbox[3] / 2;
+            const dist = Math.hypot(midX - centerX, midY - centerY) / maxDist;
+            return p.score * (1.2 - dist * 0.35); // confidence weighted by closeness to the centre
+        };
+        return predictions
+            .filter(p => {
+                if (!isValidBox(p)) return false;
+                // Drop tiny boxes at the edge of the frame (< 1.2% of the image) unless very confident
+                const area = p.bbox[2] * p.bbox[3];
+                if (area < w * h * 0.012 && p.score < currentConfidenceThreshold + 0.12) return false;
+                return true;
+            })
+            .sort((a, b) => priority(b) - priority(a));
+    }
+
+    function centerRegion(w, h) {
+        return [w * 0.2, h * 0.15, w * 0.6, h * 0.7];
+    }
+
+    // One place that decides what the camera (or a photo) is looking at:
+    // 1) COCO-SSD finds objects, 2) visual memory checks the main object (or the centre of the
+    // frame when COCO finds nothing) against taught photos and wins when it is a close match.
+    async function analyzeFrame(source, live = false) {
+        const w = source.videoWidth || source.naturalWidth || source.width;
+        const h = source.videoHeight || source.naturalHeight || source.height;
+        const predictions = await model.detect(source, DETECT_MAX_BOXES, DETECT_MIN_SCORE);
+        const top = rankPredictions(predictions, w, h)[0] || null;
+
+        let candidate = top ? {
+            key: top.class.toLowerCase(),
+            score: top.score,
+            region: top.bbox,
+            info: infoForCocoClass(top.class)
+        } : null;
+
+        // Your own trained waste model knows Thai packaging far better than COCO, so it wins over COCO
+        if (wasteModel && wasteModel.ready) {
+            const now = performance.now();
+            let result = null;
+            if (!live || now - lastModelTime >= VISUAL_INTERVAL_MS) {
+                lastModelTime = now;
+                result = await wasteModel.predict(source);
+                if (live) lastModelResult = { result, t: now };
+            } else if (lastModelResult && now - lastModelResult.t < VISUAL_INTERVAL_MS * 2) {
+                result = lastModelResult.result;
+            }
+            if (result && result.prob >= WASTE_MODEL_MIN_PROB) {
+                if (result.bin === 'none') {
+                    // The model is sure there is no waste in view: only trust COCO if it is very sure too
+                    if (candidate && candidate.score < 0.75) candidate = null;
+                } else {
+                    candidate = {
+                        key: 'tm:' + result.label,
+                        score: result.prob,
+                        region: top ? top.bbox : centerRegion(w, h),
+                        info: infoForModelResult(result)
+                    };
+                }
+            }
+        }
+
+        if (visualMemory && visualMemory.isUsable()) {
+            const region = top ? top.bbox : centerRegion(w, h);
+            const now = performance.now();
+            let match = null;
+            if (!live || now - lastVisualTime >= VISUAL_INTERVAL_MS) {
+                lastVisualTime = now;
+                match = visualMemory.classify(await visualMemory.embed(source, region));
+                if (live) lastVisualResult = { match, t: now };
+            } else if (lastVisualResult && now - lastVisualResult.t < VISUAL_INTERVAL_MS * 2) {
+                match = lastVisualResult.match;
+            }
+
+            if (match) {
+                const info = infoForVisualLabel(match.label);
+                const need = top ? VISUAL_MATCH_SIM : VISUAL_ONLY_SIM;
+                if (info && match.sim >= need && match.margin >= VISUAL_MARGIN) {
+                    candidate = { key: 'vm:' + match.label, score: match.sim, region, info, visual: true };
+                }
+            }
+        }
+
+        return { predictions, candidate };
+    }
+
+    function buildBoxes(predictions, candidate, w, h) {
+        const boxes = rankPredictions(predictions, w, h).map(p => ({
+            region: p.bbox,
+            score: p.score,
+            info: infoForCocoClass(p.class)
+        }));
+        if (candidate && candidate.visual) {
+            const i = boxes.findIndex(b => b.region === candidate.region);
+            const vBox = { region: candidate.region, score: candidate.score, info: candidate.info, visual: true };
+            if (i >= 0) boxes[i] = vBox; else boxes.unshift(vBox);
+        }
+        return boxes;
+    }
+
     // Keep the previous boxes for a short moment when the AI misses a frame, so boxes don't blink on and off
-    function renderStableBoxes(predictions) {
+    function renderStableBoxes(boxes) {
         const now = performance.now();
-        if (predictions.some(isValidBox)) {
+        if (boxes.length > 0) {
             lastValidDetectionTime = now;
-            drawBoundingBoxes(predictions);
+            drawBoundingBoxes(boxes);
         } else if (now - lastValidDetectionTime > BOX_HOLD_MS) {
             drawBoundingBoxes([]);
         }
         // Otherwise leave the last boxes on screen
     }
 
+    const BOX_COLORS = {
+        plastic_bottle: '#0d9488',
+        recyclable: '#10b981',
+        hazardous: '#f43f5e',
+        money: '#d97706',
+        general: '#0ea5e9'
+    };
+
     // --- Bounding Box Canvas Renderer ---
-    function drawBoundingBoxes(predictions) {
+    function drawBoundingBoxes(boxes) {
         ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
         if (isKioskMode && kioskCtx) {
             kioskCtx.clearRect(0, 0, kioskCanvas.width, kioskCanvas.height);
         }
 
-        predictions.forEach(prediction => {
-            if (prediction.score < currentConfidenceThreshold) return;
-            if (IGNORED_CLASSES.includes(prediction.class.toLowerCase())) return;
+        boxes.forEach(box => {
+            const [x, y, width, height] = box.region;
+            const mappedInfo = box.info;
+            const boxColor = BOX_COLORS[mappedInfo.type] || BOX_COLORS.general;
 
-
-            const [x, y, width, height] = prediction.bbox;
-            const itemKey = prediction.class.toLowerCase();
-            const matchingCustoms = customThaiProducts.filter(p => p.shape === itemKey);
-            const mappedInfo = matchingCustoms.length > 0 ? {
-                type: matchingCustoms[0].bin,
-                thName: `⭐ ${matchingCustoms[0].name}`
-            } : (WASTE_MAPPING[itemKey] || DEFAULT_GENERAL_WASTE);
-
-            let boxColor = '#0ea5e9'; // general (cyan)
-            if (mappedInfo.type === 'plastic_bottle') {
-                boxColor = '#0d9488'; // teal
-            } else if (mappedInfo.type === 'recyclable') {
-                boxColor = '#10b981'; // green
-            } else if (mappedInfo.type === 'hazardous') {
-                boxColor = '#f43f5e'; // red
-            } else if (mappedInfo.type === 'money') {
-                boxColor = '#d97706'; // gold amber
-            }
-
-
-            // Draw bounding box on main canvas
+            // Draw bounding box on main canvas (dashed = matched from taught photos)
+            ctx.setLineDash(box.visual ? [10, 6] : []);
             ctx.strokeStyle = boxColor;
             ctx.lineWidth = 3;
             ctx.strokeRect(x, y, width, height);
+            ctx.setLineDash([]);
 
-            const labelText = `${mappedInfo.thName} (${Math.round(prediction.score * 100)}%)`;
+            const labelText = `${mappedInfo.thName} (${Math.round(box.score * 100)}%)`;
             ctx.font = '14px Sarabun, sans-serif';
             const textWidth = ctx.measureText(labelText).width;
 
@@ -700,9 +898,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const kW = width * scaleX;
                 const kH = height * scaleY;
 
+                kioskCtx.setLineDash(box.visual ? [12, 8] : []);
                 kioskCtx.strokeStyle = boxColor;
                 kioskCtx.lineWidth = 4;
                 kioskCtx.strokeRect(kX, kY, kW, kH);
+                kioskCtx.setLineDash([]);
 
                 kioskCtx.font = '18px Sarabun, sans-serif';
                 const kTextWidth = kioskCtx.measureText(labelText).width;
@@ -717,107 +917,112 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- Process Detection Results & Stability Trigger ---
-    function processPredictions(predictions) {
+    // --- Vote over recent frames & Hold-Steady trigger ---
+    function resetHold() {
+        currentStableClass = null;
+        holdProgressBar.style.width = '0%';
+        setLiveChip(null);
+    }
+
+    function processCandidate(candidate) {
         if (isCountdownActive) {
+            voteBuffer = [];
             currentStableClass = null;
             holdProgressBar.style.width = '0%';
             return;
         }
 
-        const validPredictions = predictions
-            .filter(p => {
-                const cls = p.class.toLowerCase();
-                if (IGNORED_CLASSES.includes(cls)) return false;
-                if (p.score < currentConfidenceThreshold) return false;
+        const nowP = performance.now();
+        voteBuffer = voteBuffer.filter(v => nowP - v.t <= VOTE_WINDOW_MS);
+        if (candidate) {
+            voteBuffer.push({ key: candidate.key, score: candidate.score, t: nowP, candidate });
+            lastLiveRegion = { region: candidate.region, t: nowP };
+        }
 
-                // Filter out tiny peripheral noise if dimensions exist (< 1.2% frame size)
-                const [x, y, w, h] = p.bbox;
-                const area = w * h;
-                const minArea = (canvasEl.width * canvasEl.height) * 0.012;
-                if (area < minArea && p.score < (currentConfidenceThreshold + 0.12)) return false;
-
-                return true;
-            })
-            .sort((a, b) => {
-                // Salience priority: confidence weighted by proximity to center of frame
-                const centerX = canvasEl.width / 2;
-                const centerY = canvasEl.height / 2;
-
-                const aMidX = a.bbox[0] + a.bbox[2] / 2;
-                const aMidY = a.bbox[1] + a.bbox[3] / 2;
-                const aDist = Math.hypot(aMidX - centerX, aMidY - centerY) / (Math.hypot(centerX, centerY) || 1);
-
-                const bMidX = b.bbox[0] + b.bbox[2] / 2;
-                const bMidY = b.bbox[1] + b.bbox[3] / 2;
-                const bDist = Math.hypot(bMidX - centerX, bMidY - centerY) / (Math.hypot(centerX, centerY) || 1);
-
-                const aPriority = a.score * (1.2 - aDist * 0.35);
-                const bPriority = b.score * (1.2 - bDist * 0.35);
-
-                return bPriority - aPriority;
-            });
-
-
-
-        const now = Date.now();
-
-        if (validPredictions.length === 0) {
+        if (voteBuffer.length === 0) {
             // Ignore a short miss so the progress bar doesn't jump back to zero on every blink
-            if (performance.now() - lastValidDetectionTime > BOX_HOLD_MS) {
-                currentStableClass = null;
-                holdProgressBar.style.width = '0%';
-            }
+            if (nowP - lastValidDetectionTime > BOX_HOLD_MS) resetHold();
             return;
         }
 
-        const topPrediction = validPredictions[0];
-        const itemKey = topPrediction.class.toLowerCase();
-        const matchingCustoms = customThaiProducts.filter(p => p.shape === itemKey);
-        let mappedInfo = null;
-        if (matchingCustoms.length > 0) {
-            const c = matchingCustoms[0];
-            mappedInfo = {
-                type: c.bin,
-                thName: `⭐ ${c.name} (${topPrediction.class})`,
-                bin: c.binName || BIN_NAMES[c.bin] || 'ขยะทั่วไป',
-                price: c.price || 'กก.ละ 3.00-6.00 บาท',
-                estValue: c.estValue || 0.25,
-                desc: c.advice || DEFAULT_GENERAL_WASTE.desc,
-                custom: true
-            };
-        } else {
-            mappedInfo = WASTE_MAPPING[itemKey] || {
-                type: 'general',
-                thName: `ขยะทั่วไป (${topPrediction.class})`,
-                bin: 'ขยะทั่วไป',
-                desc: DEFAULT_GENERAL_WASTE.desc
-            };
-        }
+        // Winner = label with the highest total confidence over the window
+        const totals = new Map();
+        const counts = new Map();
+        let sumAll = 0;
+        voteBuffer.forEach(v => {
+            totals.set(v.key, (totals.get(v.key) || 0) + v.score);
+            counts.set(v.key, (counts.get(v.key) || 0) + 1);
+            sumAll += v.score;
+        });
+        let winKey = null;
+        let best = -1;
+        totals.forEach((total, key) => { if (total > best) { best = total; winKey = key; } });
 
-        updatePredictionUI(mappedInfo, topPrediction.score);
+        const winner = [...voteBuffer].reverse().find(v => v.key === winKey).candidate;
+        const avgScore = best / counts.get(winKey);
+        const share = best / sumAll;
 
-        // Check Hold-Steady stability
-        if (currentStableClass === itemKey) {
+        updatePredictionUI(winner.info, avgScore);
+
+        const now = Date.now();
+        if (currentStableClass === winKey) {
             const timeHeld = now - stableStartTime;
             const progressPct = Math.min((timeHeld / STABILITY_THRESHOLD_MS) * 100, 100);
             holdProgressBar.style.width = `${progressPct}%`;
 
-            if (timeHeld >= STABILITY_THRESHOLD_MS && (now - lastAutoCommitTime) > AUTO_COMMIT_COOLDOWN_MS) {
-                commitWasteScan(mappedInfo, topPrediction.score);
+            // Only save when the answer clearly wins the vote (no flip-flopping between two items)
+            if (timeHeld >= STABILITY_THRESHOLD_MS && share >= 0.6 && (now - lastAutoCommitTime) > AUTO_COMMIT_COOLDOWN_MS) {
+                commitWasteScan(winner.info, avgScore, { source: webcamEl, region: winner.region });
                 lastAutoCommitTime = now;
                 holdProgressBar.style.width = '0%';
             }
         } else {
-            currentStableClass = itemKey;
+            currentStableClass = winKey;
             stableStartTime = now;
             holdProgressBar.style.width = '0%';
         }
     }
 
+    // --- Live answer shown right on the camera, so people don't have to look away ---
+    const liveResultChip = document.getElementById('liveResultChip');
+    const liveResultText = document.getElementById('liveResultText');
+    const LIVE_CHIP_IDLE = 'ยื่นขยะเข้ากลางกรอบ แล้วถือนิ่ง ๆ 1 วินาที';
+    let liveChipKey = '';
+
+    function setLiveChip(info) {
+        if (!liveResultChip) return;
+        const key = info ? `${info.type}|${info.thName}` : 'idle';
+        if (key === liveChipKey) return;
+        liveChipKey = key;
+        if (!info) {
+            liveResultChip.className = 'live-result-chip idle';
+            liveResultText.innerText = LIVE_CHIP_IDLE;
+            return;
+        }
+        liveResultChip.className = `live-result-chip ${info.type}`;
+        liveResultText.innerText = info.type === 'money'
+            ? `${info.thName} · ไม่ควรทิ้ง!`
+            : `${info.thName} → ${info.bin}`;
+    }
+
+    // Buy-back price from the เทศบาลตำบลแม่จัน price board, plus the rough value of this one item
+    function setPricePill(pill, textEl, info) {
+        if (!pill || !textEl) return;
+        if (!info.price || info.type === 'money') {
+            pill.classList.add('hidden');
+            return;
+        }
+        const est = Number(info.estValue) || 0;
+        textEl.innerText = est > 0
+            ? `ราคารับซื้อ ${info.price} · ชิ้นนี้ประมาณ ${est.toFixed(2)} บาท`
+            : `ราคารับซื้อ: ${info.price}`;
+        pill.classList.remove('hidden');
+    }
+
     // --- Update UI Badge & Cards ---
     function updatePredictionUI(info, score) {
-        confidencePill.innerText = `${Math.round(score * 100)}% Confidence`;
+        confidencePill.innerText = `ความมั่นใจ ${Math.round(score * 100)}%`;
+        setLiveChip(info);
 
         // Only rebuild the result card when the detected item changes (rebuilding every frame makes it flash)
         const uiKey = `${info.type}|${info.thName}|${info.bin}|${info.desc}`;
@@ -827,6 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
         binResultBadge.className = `bin-result-badge ${info.type}`;
         detectedObjectText.innerText = info.thName;
         binDescriptionText.innerText = info.desc;
+        setPricePill(itemPricePill, itemPriceText, info);
 
         if (info.type === 'plastic_bottle') {
             binIcon.innerHTML = `<i class="fa-solid fa-bottle-water"></i>`;
@@ -873,30 +1079,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Commit Scan to History & Stats ---
-    function commitWasteScan(info, score) {
-        stats.total += 1;
+    // Add (sign = 1) or take back (sign = -1) one scanned item from the stats
+    function applyStats(info, sign) {
+        const pos = v => Math.max(0, v);
+        stats.total = pos(stats.total + sign);
         if (info.type === 'plastic_bottle') {
-            stats.plastic_bottle = (stats.plastic_bottle || 0) + 1;
-            stats.co2 += 0.18;
-            stats.estimatedValue += (info.estValue || 0.30);
-            stats.meritPoints = (stats.meritPoints || 0) + 10;
+            stats.plastic_bottle = pos((stats.plastic_bottle || 0) + sign);
+            stats.co2 = pos(stats.co2 + 0.18 * sign);
+            stats.estimatedValue = pos(stats.estimatedValue + (info.estValue ?? 0.15) * sign);
+            stats.meritPoints = pos((stats.meritPoints || 0) + 10 * sign);
         } else if (info.type === 'recyclable') {
-            stats.recyclable += 1;
-            stats.co2 += 0.15;
-            stats.estimatedValue += (info.estValue || 0.40);
-            stats.meritPoints = (stats.meritPoints || 0) + 10;
+            stats.recyclable = pos((stats.recyclable || 0) + sign);
+            stats.co2 = pos(stats.co2 + 0.15 * sign);
+            stats.estimatedValue = pos(stats.estimatedValue + (info.estValue ?? 0.30) * sign);
+            stats.meritPoints = pos((stats.meritPoints || 0) + 10 * sign);
         } else if (info.type === 'hazardous') {
-            stats.hazardous += 1;
-            stats.estimatedValue += (info.estValue || 0.00);
-            stats.meritPoints = (stats.meritPoints || 0) + 15;
+            stats.hazardous = pos((stats.hazardous || 0) + sign);
+            stats.estimatedValue = pos(stats.estimatedValue + (info.estValue || 0.00) * sign);
+            stats.meritPoints = pos((stats.meritPoints || 0) + 15 * sign);
         } else if (info.type === 'money') {
             // Money is not waste
-            stats.meritPoints = (stats.meritPoints || 0) + 20;
+            stats.meritPoints = pos((stats.meritPoints || 0) + 20 * sign);
         } else {
-            stats.general += 1;
-            stats.meritPoints = (stats.meritPoints || 0) + 5;
+            stats.general = pos((stats.general || 0) + sign);
+            stats.meritPoints = pos((stats.meritPoints || 0) + 5 * sign);
         }
+    }
 
+    // capture = { source, region } of the camera frame/photo, kept so a wrong answer can be taught
+    // "สถิติวันนี้" really means today: start fresh counts each new day (merit points carry over)
+    function todayKey() {
+        const d = new Date();
+        return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    }
+
+    function ensureStatsAreToday() {
+        if (stats.day === todayKey()) return;
+        const merit = stats.meritPoints || 0;
+        stats = { total: 0, plastic_bottle: 0, recyclable: 0, general: 0, hazardous: 0, co2: 0.0, estimatedValue: 0.0, meritPoints: merit, day: todayKey() };
+    }
+
+    function commitWasteScan(info, score, capture = null) {
+        ensureStatsAreToday();
+        applyStats(info, 1);
 
         updateStatsUI();
 
@@ -913,6 +1138,13 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
 
+        let captureImage = null;
+        if (capture && capture.source && window.cropToDataUrl) {
+            try { captureImage = cropToDataUrl(capture.source, capture.region, 320); } catch (e) { captureImage = null; }
+        }
+        lastCommit = { info, historyId: historyItem.id, image: captureImage };
+        resetFeedbackUI();
+
         scanHistory.unshift(historyItem);
         if (scanHistory.length > 50) scanHistory.pop();
         renderHistoryTable();
@@ -925,8 +1157,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resultModalBackdrop) {
             modalObjectName.innerText = info.thName;
             modalCategoryPill.className = `modal-category-pill ${info.type}`;
-            modalCategoryPill.innerText = `${info.bin} (${Math.round(score * 100)}% Confidence)`;
+            modalCategoryPill.innerText = `${info.bin} · ความมั่นใจ ${Math.round(score * 100)}%`;
             modalDesc.innerText = info.desc;
+            setPricePill(document.getElementById('modalPricePill'), document.getElementById('modalPriceText'), info);
             modalObjectIcon.className = `modal-object-icon ${info.type}`;
             
             if (info.type === 'plastic_bottle') {
@@ -986,7 +1219,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- 7-6-5-4-3-2-1 Countdown Timer Function with Modal (7 Seconds Delay) ---
+    // --- Countdown before the next scan (result card stays up meanwhile) ---
+    const NEXT_SCAN_SECONDS = 5;
+
+    function setCountdownNumber(count) {
+        countdownNumberEl.innerText = count;
+        if (kioskCountdownNumEl) kioskCountdownNumEl.innerText = count;
+        if (modalTimerNum) modalTimerNum.innerText = count;
+    }
+
     function startScanCountdown() {
         if (countdownInterval) clearInterval(countdownInterval);
 
@@ -994,11 +1235,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentStableClass = null;
         holdProgressBar.style.width = '0%';
 
-        let count = 7;
-
-        countdownNumberEl.innerText = count;
-        if (kioskCountdownNumEl) kioskCountdownNumEl.innerText = count;
-        if (modalTimerNum) modalTimerNum.innerText = count;
+        let count = NEXT_SCAN_SECONDS;
+        setCountdownNumber(count);
 
         nextScanCountdownEl.classList.remove('hidden');
         if (kioskCountdownOverlay) kioskCountdownOverlay.classList.remove('hidden');
@@ -1007,23 +1245,33 @@ document.addEventListener('DOMContentLoaded', () => {
         countdownInterval = setInterval(() => {
             count -= 1;
             if (count > 0) {
-                countdownNumberEl.innerText = count;
-                if (kioskCountdownNumEl) kioskCountdownNumEl.innerText = count;
-                if (modalTimerNum) modalTimerNum.innerText = count;
-
+                setCountdownNumber(count);
                 countdownNumberEl.style.animation = 'none';
                 countdownNumberEl.offsetHeight;
                 countdownNumberEl.style.animation = 'popScale 0.3s ease-out';
             } else {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-                nextScanCountdownEl.classList.add('hidden');
-                if (kioskCountdownOverlay) kioskCountdownOverlay.classList.add('hidden');
-                if (resultModalBackdrop) resultModalBackdrop.classList.add('hidden');
-                isCountdownActive = false;
-                currentStableClass = null;
+                finishCountdown();
             }
         }, 1000);
+    }
+
+    // Pause while the person is answering "which bin was it?"
+    function pauseCountdown() {
+        if (countdownInterval) clearInterval(countdownInterval);
+        countdownInterval = null;
+        if (modalTimerNum) modalTimerNum.innerText = '⏸';
+    }
+
+    function finishCountdown() {
+        if (countdownInterval) clearInterval(countdownInterval);
+        countdownInterval = null;
+        nextScanCountdownEl.classList.add('hidden');
+        if (kioskCountdownOverlay) kioskCountdownOverlay.classList.add('hidden');
+        if (resultModalBackdrop) resultModalBackdrop.classList.add('hidden');
+        isCountdownActive = false;
+        currentStableClass = null;
+        voteBuffer = [];
+        setLiveChip(null);
     }
 
 
@@ -1086,6 +1334,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedStats = localStorage.getItem('ecoscan_stats');
             const savedHistory = localStorage.getItem('ecoscan_history');
             if (savedStats) stats = JSON.parse(savedStats);
+            if (stats.day === undefined) stats.day = todayKey(); // older saves: keep their numbers today
+            ensureStatsAreToday();
             if (!stats.plastic_bottle) stats.plastic_bottle = 0;
             if (!stats.hazardous) stats.hazardous = 0;
             if (savedHistory) scanHistory = JSON.parse(savedHistory);
@@ -1113,39 +1363,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isCameraActive && webcamEl.readyState === 4) {
             try {
-                const predictions = await model.detect(webcamEl);
-                const valid = predictions
-                    .filter(p => p.score >= currentConfidenceThreshold && !IGNORED_CLASSES.includes(p.class.toLowerCase()))
-                    .sort((a, b) => b.score - a.score);
-
-                if (valid.length > 0) {
-                    const top = valid[0];
-                    const itemKey = top.class.toLowerCase();
-                    const matchingCustoms = customThaiProducts.filter(p => p.shape === itemKey);
-                    let mappedInfo = null;
-                    if (matchingCustoms.length > 0) {
-                        const c = matchingCustoms[0];
-                        mappedInfo = {
-                            type: c.bin,
-                            thName: `⭐ ${c.name} (${top.class})`,
-                            bin: c.binName || BIN_NAMES[c.bin] || 'ขยะทั่วไป',
-                            price: c.price || 'กก.ละ 3.00-6.00 บาท',
-                            estValue: c.estValue || 0.25,
-                            desc: c.advice || DEFAULT_GENERAL_WASTE.desc,
-                            custom: true
-                        };
-                    } else {
-                        mappedInfo = WASTE_MAPPING[itemKey] || {
-                            type: 'general',
-                            thName: `ขยะทั่วไป (${top.class})`,
-                            bin: 'ขยะทั่วไป',
-                            desc: DEFAULT_GENERAL_WASTE.desc
-                        };
-                    }
-                    updatePredictionUI(mappedInfo, top.score);
-                    commitWasteScan(mappedInfo, top.score);
+                const { candidate } = await analyzeFrame(webcamEl);
+                if (candidate) {
+                    updatePredictionUI(candidate.info, candidate.score);
+                    commitWasteScan(candidate.info, candidate.score, { source: webcamEl, region: candidate.region });
                 } else {
-                    commitWasteScan(DEFAULT_GENERAL_WASTE, 0.50);
+                    commitWasteScan(DEFAULT_GENERAL_WASTE, 0.50, { source: webcamEl, region: null });
                 }
             } catch (e) {
                 console.error('Snapshot error:', e);
@@ -1191,38 +1414,22 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onload = (event) => {
             const img = new Image();
             img.onload = async () => {
-                if (!model) return;
-                const predictions = await model.detect(img);
-                drawBoundingBoxes(predictions);
-                const valid = predictions
-                    .filter(p => p.score >= currentConfidenceThreshold && !IGNORED_CLASSES.includes(p.class.toLowerCase()))
-                    .sort((a, b) => b.score - a.score);
+                if (!model || isCountdownActive) return;
+                const { predictions, candidate } = await analyzeFrame(img);
+                // Scale the photo's boxes onto the overlay canvas
+                const sx = canvasEl.width / img.naturalWidth;
+                const sy = canvasEl.height / img.naturalHeight;
+                drawBoundingBoxes(buildBoxes(predictions, candidate, img.naturalWidth, img.naturalHeight)
+                    .map(b => ({ ...b, region: [b.region[0] * sx, b.region[1] * sy, b.region[2] * sx, b.region[3] * sy] })));
 
-                if (valid.length > 0) {
-                    const top = valid[0];
-                    const itemKey = top.class.toLowerCase();
-                    const matchingCustoms = customThaiProducts.filter(p => p.shape === itemKey);
-                    let info = null;
-                    if (matchingCustoms.length > 0) {
-                        const c = matchingCustoms[0];
-                        info = {
-                            type: c.bin,
-                            thName: `⭐ ${c.name} (${top.class})`,
-                            bin: c.binName || BIN_NAMES[c.bin] || 'ขยะทั่วไป',
-                            price: c.price || 'กก.ละ 3.00-6.00 บาท',
-                            estValue: c.estValue || 0.25,
-                            desc: c.advice || DEFAULT_GENERAL_WASTE.desc,
-                            custom: true
-                        };
-                    } else {
-                        info = WASTE_MAPPING[itemKey] || DEFAULT_GENERAL_WASTE;
-                    }
-                    updatePredictionUI(info, top.score);
-                    commitWasteScan(info, top.score);
+                if (candidate) {
+                    updatePredictionUI(candidate.info, candidate.score);
+                    commitWasteScan(candidate.info, candidate.score, { source: img, region: candidate.region });
                 } else {
                     updatePredictionUI(DEFAULT_GENERAL_WASTE, 0.60);
-                    commitWasteScan(DEFAULT_GENERAL_WASTE, 0.60);
+                    commitWasteScan(DEFAULT_GENERAL_WASTE, 0.60, { source: img, region: null });
                 }
+                imageUploadEl.value = ''; // allow picking the same photo again
             };
             img.src = event.target.result;
         };
@@ -1302,7 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resetStatsBtn.addEventListener('click', () => {
         if (confirm('คุณต้องการรีเซ็ตสถิติและประวัติการสแกนทั้งหมดใช่หรือไม่?')) {
-            stats = { total: 0, plastic_bottle: 0, recyclable: 0, general: 0, hazardous: 0, co2: 0.0, estimatedValue: 0.0 };
+            stats = { total: 0, plastic_bottle: 0, recyclable: 0, general: 0, hazardous: 0, co2: 0.0, estimatedValue: 0.0, day: todayKey() };
             scanHistory = [];
 
             saveStats();
@@ -1312,9 +1519,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Kiosk Mode Handlers ---
+    // Keep a kiosk screen from sleeping while it's in use
+    let wakeLock = null;
+    async function keepScreenOn(on) {
+        try {
+            if (on && 'wakeLock' in navigator && !wakeLock) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                wakeLock.addEventListener('release', () => { wakeLock = null; });
+            } else if (!on && wakeLock) {
+                await wakeLock.release();
+                wakeLock = null;
+            }
+        } catch (e) { /* not supported or not allowed: fine */ }
+    }
+
     function enterKioskMode() {
         isKioskMode = true;
         kioskOverlay.classList.remove('hidden');
+        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+        keepScreenOn(true);
         if (webcamStream) {
             kioskWebcam.srcObject = webcamStream;
             kioskCanvas.width = canvasEl.width || 640;
@@ -1325,6 +1550,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function exitKioskMode() {
         isKioskMode = false;
+        keepScreenOn(false);
+        if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
         kioskOverlay.classList.add('hidden');
     }
 
@@ -1367,9 +1594,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', () => {
-            if (resultModalBackdrop) resultModalBackdrop.classList.add('hidden');
-        });
+        closeModalBtn.addEventListener('click', finishCountdown);
     }
 
     // --- Confidence Threshold Adjuster & Synchronizer ---
@@ -1474,6 +1699,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (changed) {
                             persistCustomProducts();
+                            cloudProducts.forEach(cp => queueMemory(() => addProductToMemory(cp)));
                             customThaiProducts.forEach(prod => {
                                 WASTE_MAPPING[prod.id] = {
                                     type: prod.bin,
@@ -1534,6 +1760,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render Cards in Trainer Studio Modal
         const shapeNames = {
+            'any': '🤖 จำจากรูปถ่าย',
             'bottle': 'ขวด (Bottle)',
             'cup': 'แก้ว/ถ้วย (Cup)',
             'bowl': 'ชาม (Bowl)',
@@ -1551,7 +1778,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="trainer-prod-meta">
                         <span class="trainer-bin-pill ${escapeHtml(prod.bin)}">${escapeHtml(prod.binName || BIN_NAMES[prod.bin])}</span>
-                        <span style="color: #64748b;">${escapeHtml(shapeNames[prod.shape] || prod.shape)}</span>
+                        <span style="color: #64748b;">${escapeHtml(shapeNames[prod.shape] || prod.shape)} · 📷 ${productImages(prod).length} รูป</span>
                     </div>
                     <div style="font-size: 0.76rem; color: #475569;">
                         <div>💰 ${escapeHtml(prod.price || 'กก.ละ 3.00-6.00 บาท')} (~${(parseFloat(prod.estValue) || 0.25).toFixed(2)} บ./ชิ้น)</div>
@@ -1599,6 +1826,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveCustomProduct(prod) {
         customThaiProducts.unshift(prod);
         persistCustomProducts();
+        queueMemory(() => addProductToMemory(prod));
 
         // Register into active dictionary
         WASTE_MAPPING[prod.id] = {
@@ -1610,7 +1838,8 @@ document.addEventListener('DOMContentLoaded', () => {
             desc: prod.advice || 'คัดแยกให้สะอาดก่อนทิ้ง',
             custom: true,
             shape: prod.shape,
-            image: prod.image
+            image: prod.image,
+            images: prod.images
         };
 
         // Sync with Firestore if online
@@ -1636,6 +1865,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         customThaiProducts = customThaiProducts.filter(p => p.id !== id);
         delete WASTE_MAPPING[id];
+        if (visualMemory) { visualMemory.removeLabel(id); updateAiStatus(); }
         persistCustomProducts();
 
         if (db) {
@@ -1684,8 +1914,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('กรุณาเปิดกล้องเว็บแคมก่อนถ่ายรูปภาพอ้างอิง');
                 return;
             }
-            currentTrainerImage = shrinkImageToDataUrl(webcamEl, webcamEl.videoWidth, webcamEl.videoHeight);
-            showTrainerPreview();
+            // Crop to the object the camera is looking at (or the centre), so the photo is about the item, not the room
+            const recent = lastLiveRegion && performance.now() - lastLiveRegion.t < 1500 ? lastLiveRegion.region : null;
+            const region = recent || centerRegion(webcamEl.videoWidth, webcamEl.videoHeight);
+            addTrainerImage(window.cropToDataUrl
+                ? cropToDataUrl(webcamEl, region, 320)
+                : shrinkImageToDataUrl(webcamEl, webcamEl.videoWidth, webcamEl.videoHeight));
         });
     }
 
@@ -1699,8 +1933,8 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (evt) => {
                 const img = new Image();
                 img.onload = () => {
-                    currentTrainerImage = shrinkImageToDataUrl(img, img.naturalWidth, img.naturalHeight);
-                    showTrainerPreview();
+                    addTrainerImage(shrinkImageToDataUrl(img, img.naturalWidth, img.naturalHeight));
+                    trainerImageUpload.value = '';
                 };
                 img.src = evt.target.result;
             };
@@ -1708,14 +1942,46 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const trainerThumbs = document.getElementById('trainerThumbs');
+
+    function addTrainerImage(dataUrl) {
+        if (!dataUrl) return;
+        if (currentTrainerImages.length >= MAX_TRAINER_PHOTOS) currentTrainerImages.shift();
+        currentTrainerImages.push(dataUrl);
+        showTrainerPreview();
+    }
+
+    function clearTrainerImages() {
+        currentTrainerImages = [];
+        showTrainerPreview();
+    }
+
     function showTrainerPreview() {
+        const latest = currentTrainerImages[currentTrainerImages.length - 1];
         if (trainerPreviewImg) {
-            trainerPreviewImg.src = currentTrainerImage;
-            trainerPreviewImg.classList.remove('hidden');
+            trainerPreviewImg.src = latest || '';
+            trainerPreviewImg.classList.toggle('hidden', !latest);
         }
         if (trainerPreviewPlaceholder) {
-            trainerPreviewPlaceholder.classList.add('hidden');
+            trainerPreviewPlaceholder.classList.toggle('hidden', !!latest);
         }
+        if (trainerThumbs) {
+            trainerThumbs.innerHTML = currentTrainerImages.map((src, i) => `
+                <div class="trainer-thumb">
+                    <img src="${src}" alt="รูปที่ ${i + 1}">
+                    <button type="button" class="trainer-thumb-del" data-idx="${i}" title="ลบรูปนี้">&times;</button>
+                </div>`).join('') +
+                `<span class="trainer-thumb-count">${currentTrainerImages.length}/${MAX_TRAINER_PHOTOS} รูป · ถ่ายหลายมุมช่วยให้ AI จำแม่นขึ้น</span>`;
+        }
+    }
+
+    if (trainerThumbs) {
+        trainerThumbs.addEventListener('click', (e) => {
+            const del = e.target.closest('.trainer-thumb-del');
+            if (!del) return;
+            currentTrainerImages.splice(parseInt(del.getAttribute('data-idx'), 10), 1);
+            showTrainerPreview();
+        });
     }
 
     // Trainer Form Submit Handler
@@ -1731,6 +1997,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const estVal = parseFloat(trainProductEstValue.value) || 0.25;
             const advice = trainProductAdvice.value.trim() || 'คัดแยกให้สะอาดก่อนทิ้ง';
             const id = 'thai_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+            if (shape === 'any' && currentTrainerImages.length === 0) {
+                alert('กรุณาถ่ายรูปหรืออัปโหลดรูปสินค้าอย่างน้อย 1 รูป เพื่อให้ AI จำหน้าตาสินค้าได้');
+                return;
+            }
 
             const newProduct = {
                 id,
@@ -1741,7 +2011,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 price,
                 estValue: estVal,
                 advice,
-                image: currentTrainerImage,
+                image: currentTrainerImages[0] || null,
+                images: currentTrainerImages.slice(),
                 timestamp: new Date().toISOString()
             };
 
@@ -1749,16 +2020,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Reset form
             trainerForm.reset();
-            currentTrainerImage = null;
-            if (trainerPreviewImg) {
-                trainerPreviewImg.src = '';
-                trainerPreviewImg.classList.add('hidden');
-            }
-            if (trainerPreviewPlaceholder) {
-                trainerPreviewPlaceholder.classList.remove('hidden');
-            }
+            clearTrainerImages();
 
-            alert(`🎉 ฝึกสอนโมเดล AI สำเร็จ!\nเพิ่มสินค้า: "${name}" ลงใน ${BIN_NAMES[bin]}\nคุณสามารถคลิกทดลองจากแถบทดสอบ หรือส่องกล้องทดสอบได้ทันที`);
+            alert(`🎉 ฝึกสอนโมเดล AI สำเร็จ!\nเพิ่มสินค้า: "${name}" ลงใน ${BIN_NAMES[bin]}\nลองส่องสินค้าให้กล้องดูได้ทันที (กรอบเส้นประ = AI จำจากรูปที่คุณสอน)`);
         });
     }
 
@@ -1766,14 +2030,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resetTrainerFormBtn) {
         resetTrainerFormBtn.addEventListener('click', () => {
             trainerForm.reset();
-            currentTrainerImage = null;
-            if (trainerPreviewImg) {
-                trainerPreviewImg.src = '';
-                trainerPreviewImg.classList.add('hidden');
-            }
-            if (trainerPreviewPlaceholder) {
-                trainerPreviewPlaceholder.classList.remove('hidden');
-            }
+            clearTrainerImages();
         });
     }
 
@@ -1787,6 +2044,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm('คุณต้องการลบข้อมูลสินค้าไทยที่คุณฝึกสอนไว้ทั้งหมดใช่หรือไม่?')) {
                 customThaiProducts.forEach(p => {
                     delete WASTE_MAPPING[p.id];
+                    if (visualMemory) visualMemory.removeLabel(p.id);
                     // Also remove from the cloud, otherwise they come back on the next page load
                     if (db) {
                         db.collection('custom_thai_products').doc(p.id).delete()
@@ -1796,9 +2054,290 @@ document.addEventListener('DOMContentLoaded', () => {
                 customThaiProducts = [];
                 localStorage.removeItem('ecoscan_custom_thai_products');
                 renderCustomProductsUI();
+                updateAiStatus();
             }
         });
     }
+
+    // ==========================================================================
+    // Visual Memory (ภาพจำ AI) & ถูก/ผิด feedback
+    // ==========================================================================
+
+    let memoryQueue = Promise.resolve();
+    // Embedding photos is async; run one job at a time so adds/removes stay in order
+    function queueMemory(job) {
+        memoryQueue = memoryQueue.then(job).catch(e => console.warn('Visual memory job failed:', e));
+        return memoryQueue;
+    }
+
+    function updateAiStatus() {
+        if (!model) return;
+        const modelPart = wasteModel && wasteModel.ready ? ' · โมเดลขยะไทย ✓' : '';
+        if (!visualMemory || !visualMemory.ready) {
+            aiStatusTextEl.innerText = 'AI พร้อมทำงาน' + modelPart;
+            return;
+        }
+        aiStatusTextEl.innerText = `AI พร้อม · ภาพจำ ${visualMemory.size} ภาพ${modelPart}`;
+    }
+
+    // --- Your own waste model (Teachable Machine) ---
+    const modelUrlInput = document.getElementById('modelUrlInput');
+    const loadModelBtn = document.getElementById('loadModelBtn');
+    const clearModelBtn = document.getElementById('clearModelBtn');
+    const modelStatusText = document.getElementById('modelStatusText');
+
+    function setModelStatus(text, ok = null) {
+        if (!modelStatusText) return;
+        modelStatusText.innerText = text;
+        modelStatusText.className = 'model-status' + (ok === true ? ' ok' : ok === false ? ' bad' : '');
+    }
+
+    function savedModelUrl() {
+        const fromLink = new URLSearchParams(location.search).get('model');
+        if (fromLink) return fromLink;
+        try { return localStorage.getItem('ecoscan_model_url') || ''; } catch (e) { return ''; }
+    }
+
+    async function loadWasteModel(url, quietIfMissing) {
+        if (!wasteModel) return false;
+        try {
+            setModelStatus('กำลังโหลดโมเดล...');
+            await wasteModel.load(url);
+            const bins = wasteModel.labels.map((l, i) => `${l} → ${BIN_NAMES[wasteModel.bins[i]] || 'ไม่มีขยะ'}`);
+            setModelStatus(`ใช้งานอยู่: ${wasteModel.labels.length} หมวด (${bins.join(', ')})`, true);
+            updateAiStatus();
+            return true;
+        } catch (e) {
+            console.warn('Waste model not loaded:', e);
+            wasteModel.ready = false;
+            if (quietIfMissing) setModelStatus('ยังไม่ได้ใส่โมเดลของคุณ (ใช้ AI พื้นฐาน + ภาพจำ)');
+            else setModelStatus('โหลดไม่สำเร็จ: ตรวจลิงก์ให้ลงท้ายด้วย /models/xxxx/ หรือโฟลเดอร์ที่มี model.json', false);
+            updateAiStatus();
+            return false;
+        }
+    }
+
+    async function initWasteModel() {
+        const url = savedModelUrl();
+        if (modelUrlInput) modelUrlInput.value = url;
+        await loadWasteModel(url || DEFAULT_MODEL_URL, !url);
+    }
+
+    if (loadModelBtn) {
+        loadModelBtn.addEventListener('click', async () => {
+            const url = (modelUrlInput.value || '').trim();
+            if (!url) return;
+            if (await loadWasteModel(url, false)) {
+                try { localStorage.setItem('ecoscan_model_url', url); } catch (e) { /* ignore */ }
+            }
+        });
+    }
+
+    if (clearModelBtn) {
+        clearModelBtn.addEventListener('click', async () => {
+            try { localStorage.removeItem('ecoscan_model_url'); } catch (e) { /* ignore */ }
+            if (modelUrlInput) modelUrlInput.value = '';
+            if (wasteModel) wasteModel.ready = false;
+            await loadWasteModel(DEFAULT_MODEL_URL, true);
+        });
+    }
+
+    async function addProductToMemory(prod) {
+        if (!visualMemory || !visualMemory.ready) return;
+        visualMemory.removeLabel(prod.id);
+        const imgs = productImages(prod);
+        for (let i = 0; i < imgs.length; i++) {
+            visualMemory.add(`${prod.id}#${i}`, prod.id, await visualMemory.embedDataUrl(imgs[i]), { group: prod.bin });
+        }
+        updateAiStatus();
+    }
+
+    async function addFeedbackToMemory(ex) {
+        if (!visualMemory || !visualMemory.ready) return;
+        // A person's correction outranks a near-identical taught photo
+        visualMemory.add(ex.id, ex.label, await visualMemory.embedDataUrl(ex.image), { group: ex.type, boost: 0.06 });
+        updateAiStatus();
+    }
+
+    async function initVisualMemory() {
+        if (!visualMemory) return;
+        try {
+            aiStatusTextEl.innerText = 'AI พร้อม · กำลังโหลดภาพจำ...';
+            await visualMemory.load();
+            for (const prod of customThaiProducts) await queueMemory(() => addProductToMemory(prod));
+            for (const ex of feedbackExamples) await queueMemory(() => addFeedbackToMemory(ex));
+        } catch (e) {
+            console.warn('Visual memory unavailable, using object detection only:', e);
+        }
+        updateAiStatus();
+    }
+
+    function loadFeedback() {
+        try {
+            feedbackExamples = JSON.parse(localStorage.getItem('ecoscan_feedback_examples') || '[]');
+            feedbackStats = JSON.parse(localStorage.getItem('ecoscan_feedback_stats') || '{"correct":0,"incorrect":0}');
+        } catch (e) {
+            feedbackExamples = [];
+            feedbackStats = { correct: 0, incorrect: 0 };
+        }
+        updateAccuracyUI();
+    }
+
+    function persistFeedback() {
+        try {
+            localStorage.setItem('ecoscan_feedback_stats', JSON.stringify(feedbackStats));
+            localStorage.setItem('ecoscan_feedback_examples', JSON.stringify(feedbackExamples));
+        } catch (e) {
+            // Storage full: drop the oldest half of the taught photos and try once more
+            feedbackExamples = feedbackExamples.slice(Math.floor(feedbackExamples.length / 2));
+            try { localStorage.setItem('ecoscan_feedback_examples', JSON.stringify(feedbackExamples)); } catch (e2) { /* give up quietly */ }
+        }
+    }
+
+    function updateAccuracyUI() {
+        if (!accuracyPillEl) return;
+        const total = feedbackStats.correct + feedbackStats.incorrect;
+        if (total === 0) {
+            accuracyPillEl.innerText = 'ยังไม่มีผู้ใช้ยืนยันผล';
+            return;
+        }
+        const pct = Math.round((feedbackStats.correct / total) * 100);
+        accuracyPillEl.innerText = `ผู้ใช้ยืนยันว่าถูก ${pct}% (${feedbackStats.correct}/${total} ครั้ง)`;
+    }
+
+    const feedbackBox = document.getElementById('feedbackBox');
+    const feedbackAsk = document.getElementById('feedbackAsk');
+    const feedbackBins = document.getElementById('feedbackBins');
+    const feedbackThanks = document.getElementById('feedbackThanks');
+    const feedbackYesBtn = document.getElementById('feedbackYesBtn');
+    const feedbackNoBtn = document.getElementById('feedbackNoBtn');
+    const skipCountdownBtn = document.getElementById('skipCountdownBtn');
+
+    function resetFeedbackUI() {
+        if (!feedbackBox) return;
+        feedbackBox.classList.remove('hidden');
+        feedbackAsk.classList.remove('hidden');
+        feedbackBins.classList.add('hidden');
+        feedbackThanks.classList.add('hidden');
+        // Hide the bin the AI already picked, so the choices are only the other bins
+        feedbackBins.querySelectorAll('[data-bin]').forEach(b => {
+            b.classList.toggle('hidden', !!lastCommit && b.getAttribute('data-bin') === lastCommit.info.type);
+        });
+    }
+
+    function showFeedbackThanks(text) {
+        feedbackAsk.classList.add('hidden');
+        feedbackBins.classList.add('hidden');
+        feedbackThanks.innerText = text;
+        feedbackThanks.classList.remove('hidden');
+    }
+
+    if (feedbackYesBtn) {
+        feedbackYesBtn.addEventListener('click', () => {
+            if (!lastCommit) return;
+            feedbackStats.correct += 1;
+            persistFeedback();
+            updateAccuracyUI();
+            showFeedbackThanks('ขอบคุณที่ช่วยยืนยัน 👍');
+            lastCommit = null;
+            setTimeout(finishCountdown, 700);
+        });
+    }
+
+    if (feedbackNoBtn) {
+        feedbackNoBtn.addEventListener('click', () => {
+            if (!lastCommit) return;
+            pauseCountdown();
+            feedbackAsk.classList.add('hidden');
+            feedbackBins.classList.remove('hidden');
+        });
+    }
+
+    if (feedbackBins) {
+        feedbackBins.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-bin]');
+            if (!btn || !lastCommit) return;
+            const type = btn.getAttribute('data-bin');
+            const newInfo = TAUGHT_BIN_INFO[type];
+            const commit = lastCommit;
+            lastCommit = null;
+
+            // Fix today's stats and the history row
+            applyStats(commit.info, -1);
+            applyStats(newInfo, 1);
+            const row = scanHistory.find(h => h.id === commit.historyId);
+            if (row) {
+                row.item = `✏️ ${row.item}`;
+                row.bin = newInfo.bin;
+                row.type = type;
+            }
+            feedbackStats.incorrect += 1;
+
+            // Remember what this looked like so the AI gets it right next time
+            if (commit.image) {
+                const ex = { id: 'fb_' + Date.now(), label: 'bin:' + type, type, image: commit.image, t: Date.now() };
+                feedbackExamples.push(ex);
+                if (feedbackExamples.length > MAX_FEEDBACK_EXAMPLES) {
+                    const dropped = feedbackExamples.shift();
+                    if (visualMemory) visualMemory.removeId(dropped.id);
+                }
+                queueMemory(() => addFeedbackToMemory(ex));
+            }
+
+            persistFeedback();
+            saveStats();
+            updateStatsUI();
+            renderHistoryTable();
+            updateAccuracyUI();
+
+            showFeedbackThanks(commit.image
+                ? `จำแล้ว! ครั้งหน้าของแบบนี้จะบอกให้ทิ้ง "${newInfo.bin}"`
+                : `แก้เป็น "${newInfo.bin}" แล้ว`);
+            if (currentDialect === 'khammuang') {
+                speakThaiText(`ขอบคุณเจ้า จำไว้แล้วเจ้า อันนี้ทิ้ง${newInfo.bin}`);
+            } else {
+                speakThaiText(`ขอบคุณครับ จำไว้แล้ว อันนี้ทิ้ง${newInfo.bin}`);
+            }
+            setTimeout(finishCountdown, 1600);
+        });
+    }
+
+    if (skipCountdownBtn) skipCountdownBtn.addEventListener('click', finishCountdown);
+
+    // ==========================================================================
+    // Installable app & offline (PWA)
+    // ==========================================================================
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker not registered:', err));
+    }
+
+    const offlineBadge = document.getElementById('offlineBadge');
+    function updateOnlineBadge() {
+        if (offlineBadge) offlineBadge.classList.toggle('hidden', navigator.onLine);
+    }
+    window.addEventListener('online', updateOnlineBadge);
+    window.addEventListener('offline', updateOnlineBadge);
+    updateOnlineBadge();
+
+    const installAppBtn = document.getElementById('installAppBtn');
+    let installPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        installPrompt = e;
+        if (installAppBtn) installAppBtn.classList.remove('hidden');
+    });
+    if (installAppBtn) {
+        installAppBtn.addEventListener('click', async () => {
+            if (!installPrompt) return;
+            installPrompt.prompt();
+            await installPrompt.userChoice.catch(() => null);
+            installPrompt = null;
+            installAppBtn.classList.add('hidden');
+        });
+    }
+    window.addEventListener('appinstalled', () => {
+        if (installAppBtn) installAppBtn.classList.add('hidden');
+    });
 
     // --- Start Application ---
     initApp();
