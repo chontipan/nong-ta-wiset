@@ -2521,3 +2521,169 @@ body {
 }
 
 
+
+/* ==========================================================================
+   Easier scanning: live answer on the camera, ถูก/ผิด feedback, trainer photos
+   ========================================================================== */
+.live-result-chip {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    z-index: 4;
+    max-width: calc(100% - 28px);
+    padding: 0.55rem 1.1rem;
+    border-radius: 50px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+    transition: background-color 0.25s ease;
+}
+.live-result-chip.idle { background: rgba(15, 23, 42, 0.72); font-weight: 500; font-size: 0.95rem; }
+.live-result-chip.plastic_bottle { background: #0d9488; }
+.live-result-chip.recyclable { background: #059669; }
+.live-result-chip.hazardous { background: #e11d48; }
+.live-result-chip.general { background: #0284c7; }
+.live-result-chip.money { background: #d97706; }
+
+.kbd-hint { opacity: 0.7; font-weight: 400; font-size: 0.85em; }
+
+.accuracy-pill {
+    margin-top: 0.6rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* Sample buttons are for demos, so they start folded away */
+.sample-details { margin-top: 0.4rem; }
+.sample-details-summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 0.55rem 0.8rem;
+    border-radius: var(--radius-sm);
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px dashed rgba(16, 185, 129, 0.35);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+.sample-details-summary::-webkit-details-marker { display: none; }
+.sample-details-summary::after { content: ' ▾'; }
+.sample-details[open] .sample-details-summary::after { content: ' ▴'; }
+.sample-details[open] .sample-details-summary { margin-bottom: 0.6rem; }
+
+/* Result modal: ถูก / ผิด */
+.feedback-box {
+    width: 100%;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+}
+.feedback-question {
+    display: block;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 0.6rem;
+}
+.feedback-actions { display: flex; gap: 0.6rem; justify-content: center; }
+.feedback-btn {
+    flex: 1;
+    max-width: 180px;
+    min-height: 48px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 14px;
+    justify-content: center;
+}
+.feedback-btn.yes { background: #d1fae5; color: #047857; border: 2px solid #6ee7b7; }
+.feedback-btn.no { background: #ffe4e6; color: #be123c; border: 2px solid #fda4af; }
+.feedback-bin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+.feedback-bin {
+    min-height: 52px;
+    border-radius: 14px;
+    border: none;
+    color: #ffffff;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+.feedback-bin.plastic_bottle { background: #0d9488; }
+.feedback-bin.recyclable { background: #059669; }
+.feedback-bin.hazardous { background: #e11d48; }
+.feedback-bin.general { background: #0284c7; }
+.feedback-bin.hidden { display: none; }
+.feedback-thanks { font-weight: 700; color: #047857; margin: 0; }
+
+.modal-footer-countdown { flex-wrap: wrap; justify-content: center; }
+.skip-countdown-btn {
+    background: #d97706;
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    padding: 0.35rem 0.9rem;
+    font-weight: 700;
+}
+
+/* Trainer: several photos per product */
+.trainer-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+.trainer-thumb { position: relative; width: 64px; height: 64px; }
+.trainer-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid #c4b5fd;
+}
+.trainer-thumb-del {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: #e11d48;
+    color: #ffffff;
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.trainer-thumb-count { font-size: 0.78rem; color: var(--text-muted); }
+
+@media (max-width: 640px) {
+    .live-result-chip { font-size: 0.92rem; bottom: 10px; padding: 0.45rem 0.9rem; }
+    .result-modal-card { padding: 1.3rem; gap: 0.9rem; }
+}
+.feedback-box.hidden, .feedback-box .hidden { display: none; }
+/* Elements toggled with .hidden that had no hide rule (e.g. empty "trained products" box, trainer preview) */
+.custom-trained-section.hidden,
+.trainer-preview-img.hidden,
+.trainer-placeholder-text.hidden { display: none; }
+
+/* Phones: nothing may be wider than the screen (header buttons and the camera card used to overflow) */
+.dashboard-grid > * { min-width: 0; }
+@media (max-width: 640px) {
+    .header-controls { flex-wrap: wrap; gap: 0.5rem; justify-content: flex-start; }
+    .camera-card .card-header { flex-wrap: wrap; gap: 0.5rem; }
+    .camera-select { max-width: 100%; }
+    .eco-metrics-grid { grid-template-columns: 1fr; }
+    .price-categories-grid { grid-template-columns: 1fr; }
+}

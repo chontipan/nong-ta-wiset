@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="styles.css">
 
     <!-- TensorFlow.js and COCO-SSD Model -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 
     <!-- Firebase App & Firestore JS SDK (v10 Compat) -->
@@ -101,7 +101,7 @@
                     </div>
 
                     <div class="mode-badge" id="scanModeBadge">
-                        <i class="fa-solid fa-bolt"></i> Hold Steady Auto-Detect
+                        <i class="fa-solid fa-bolt"></i> สแกนอัตโนมัติ
                     </div>
                 </div>
 
@@ -118,6 +118,11 @@
                         <div class="laser-line"></div>
                     </div>
 
+                    <!-- Live answer on the camera itself -->
+                    <div class="live-result-chip idle" id="liveResultChip" aria-live="polite">
+                        <span id="liveResultText">ยื่นขยะเข้ากลางกรอบ แล้วถือนิ่ง ๆ 1 วินาที</span>
+                    </div>
+
                     <!-- Loading / Error Mask -->
                     <div class="camera-loader" id="cameraLoader">
                         <div class="spinner"></div>
@@ -127,7 +132,7 @@
 
                 <div class="camera-actions">
                     <button class="btn btn-primary" id="snapshotBtn">
-                        <i class="fa-solid fa-expand"></i> สแกนวัตถุตรงหน้า (Spacebar)
+                        <i class="fa-solid fa-expand"></i> สแกนเลย <span class="kbd-hint">(Spacebar)</span>
                     </button>
                     <input type="file" id="imageUpload" accept="image/*" style="display: none;">
                     <button class="btn btn-secondary" id="uploadBtn">
@@ -153,6 +158,11 @@
                         </div>
                         <div id="customTrainedButtons" class="sample-buttons custom-buttons-row"></div>
                     </div>
+
+                    <details class="sample-details">
+                    <summary class="sample-details-summary">
+                        <i class="fa-solid fa-flask"></i> ปุ่มทดลองจำแนกโดยไม่ใช้กล้อง (แตะเพื่อเปิด)
+                    </summary>
 
                     <!-- Group 1: Plastic Bottles (ถังขวดพลาสติก) -->
                     <div class="sample-group">
@@ -215,6 +225,7 @@
                             <button class="btn btn-sm btn-outline sample-btn money-btn" data-item="banknote">💵 ธนบัตร (เงินบาทไทย ⚠️ ไม่ควรทิ้ง)</button>
                         </div>
                     </div>
+                    </details>
                 </div>
 
 
@@ -280,7 +291,7 @@
                 <div class="card prediction-card" id="predictionCard">
                     <div class="card-header">
                         <h2><i class="fa-solid fa-bullseye"></i> ผลการจำแนกวัตถุ</h2>
-                        <span class="confidence-pill" id="confidencePill">--% Confidence</span>
+                        <span class="confidence-pill" id="confidencePill">ความมั่นใจ --%</span>
                     </div>
 
                     <div class="prediction-body">
@@ -303,10 +314,12 @@
                         </div>
 
 
-                        <!-- 7-6-5-4-3-2-1 Countdown for Next Scan -->
+                        <!-- Countdown for Next Scan -->
                         <div class="next-scan-countdown hidden" id="nextScanCountdown">
-                            <i class="fa-solid fa-clock-rotate-left spin-icon"></i> สแกนชิ้นต่อไปใน <span class="countdown-number" id="countdownNumber">7</span> วินาที...
+                            <i class="fa-solid fa-clock-rotate-left spin-icon"></i> สแกนชิ้นต่อไปใน <span class="countdown-number" id="countdownNumber">5</span> วินาที...
                         </div>
+
+                        <div class="accuracy-pill" id="accuracyPill">ยังไม่มีผู้ใช้ยืนยันผล</div>
 
                     </div>
                 </div>
@@ -529,11 +542,33 @@
                 <div class="modal-category-pill plastic_bottle" id="modalCategoryPill">ถังขวดพลาสติก</div>
                 <p class="modal-desc" id="modalDesc">ทิ้งลงถังขวดพลาสติก</p>
 
+                <!-- ถูก/ผิด: corrections are remembered by the AI -->
+                <div class="feedback-box" id="feedbackBox">
+                    <div class="feedback-ask" id="feedbackAsk">
+                        <span class="feedback-question">AI ทายถูกไหม?</span>
+                        <div class="feedback-actions">
+                            <button type="button" class="btn feedback-btn yes" id="feedbackYesBtn"><i class="fa-solid fa-check"></i> ถูกต้อง</button>
+                            <button type="button" class="btn feedback-btn no" id="feedbackNoBtn"><i class="fa-solid fa-xmark"></i> ไม่ถูก</button>
+                        </div>
+                    </div>
+                    <div class="feedback-bins hidden" id="feedbackBins">
+                        <span class="feedback-question">ควรทิ้งถังไหน? AI จะจำภาพนี้ไว้</span>
+                        <div class="feedback-bin-grid">
+                            <button type="button" class="feedback-bin plastic_bottle" data-bin="plastic_bottle">🍾 ขวดพลาสติก</button>
+                            <button type="button" class="feedback-bin recyclable" data-bin="recyclable">♻️ รีไซเคิล</button>
+                            <button type="button" class="feedback-bin hazardous" data-bin="hazardous">☣️ อันตราย</button>
+                            <button type="button" class="feedback-bin general" data-bin="general">🗑️ ทั่วไป</button>
+                        </div>
+                    </div>
+                    <p class="feedback-thanks hidden" id="feedbackThanks"></p>
+                </div>
+
 
             </div>
 
             <div class="modal-footer-countdown">
-                <i class="fa-solid fa-clock-rotate-left spin-icon"></i> สแกนชิ้นต่อไปใน <span class="modal-timer-num" id="modalTimerNum">7</span> วินาที... (ปิดให้อัตโนมัติ)
+                <span><i class="fa-solid fa-clock-rotate-left spin-icon"></i> สแกนชิ้นต่อไปใน <span class="modal-timer-num" id="modalTimerNum">5</span> วินาที</span>
+                <button type="button" class="btn btn-sm skip-countdown-btn" id="skipCountdownBtn">สแกนชิ้นต่อไปเลย <i class="fa-solid fa-forward"></i></button>
             </div>
         </div>
     </div>
@@ -575,8 +610,9 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="trainProductShape"><i class="fa-solid fa-shapes"></i> 3. รูปทรงทางกายภาพ (AI Base Shape) *</label>
+                            <label for="trainProductShape"><i class="fa-solid fa-shapes"></i> 3. วิธีให้ AI จำ *</label>
                             <select id="trainProductShape" class="form-select" required>
+                                <option value="any" selected>🤖 จำจากรูปถ่าย (แนะนำ · แม่นที่สุด)</option>
                                 <option value="bottle">🍾 ทรงขวด (Bottle) - น้ำดื่ม, ชาเขียว, น้ำยาซักผ้า, ซอส, ขวดแก้ว</option>
                                 <option value="cup">🥤 ทรงแก้ว/ถ้วย (Cup) - แก้วกาแฟ, ชานม, แก้วพลาสติก</option>
                                 <option value="bowl">🥣 ทรงชาม/ถ้วยบะหมี่ (Bowl) - มาม่าคัพ, ชามอาหาร</option>
@@ -603,10 +639,10 @@
                         </div>
 
                         <div class="form-group full-width snapshot-section">
-                            <label><i class="fa-solid fa-camera"></i> 7. ภาพอ้างอิงสินค้า (ถ่ายจากกล้องเว็บแคม หรือ อัปโหลด)</label>
+                            <label><i class="fa-solid fa-camera"></i> 7. รูปสินค้า (ถ่ายได้สูงสุด 5 มุม ยิ่งหลายมุม AI ยิ่งจำแม่น)</label>
                             <div class="snapshot-controls">
                                 <button type="button" class="btn btn-sm btn-outline" id="trainerSnapBtn">
-                                    <i class="fa-solid fa-camera-retro"></i> ถ่ายรูปจากกล้องเว็บแคมขณะนี้
+                                    <i class="fa-solid fa-camera-retro"></i> ถ่ายรูปจากกล้อง (ถือสินค้าไว้กลางจอ)
                                 </button>
                                 <input type="file" id="trainerImageUpload" accept="image/*" style="display: none;">
                                 <button type="button" class="btn btn-sm btn-outline" id="trainerUploadBtn">
@@ -616,9 +652,10 @@
                             <div class="snapshot-preview-box" id="trainerSnapshotPreviewBox">
                                 <img id="trainerPreviewImg" class="trainer-preview-img hidden" alt="Product Reference Preview">
                                 <span id="trainerPreviewPlaceholder" class="trainer-placeholder-text">
-                                    <i class="fa-solid fa-image"></i> ยังไม่มีรูปภาพตัวอย่าง (ระบบจะใช้ไอคอนรูปทรงอัตโนมัติ)
+                                    <i class="fa-solid fa-image"></i> ยังไม่มีรูปสินค้า
                                 </span>
                             </div>
+                            <div class="trainer-thumbs" id="trainerThumbs"></div>
                         </div>
                     </div>
 
@@ -649,6 +686,7 @@
     </div>
 
     <!-- Application Script -->
+    <script src="ai-vision.js"></script>
     <script src="app.js"></script>
 </body>
 
