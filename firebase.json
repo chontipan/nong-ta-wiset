@@ -6,7 +6,8 @@
       "server.js",
       "README.md",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "firestore.rules"
     ],
     "headers": [
       {
@@ -19,5 +20,8 @@
         ]
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }

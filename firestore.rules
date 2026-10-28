@@ -1,0 +1,84 @@
+rules_version = '2';
+
+// Security rules for the waste-5b576 Firestore database.
+// The app has no login, so these rules can't tell users apart. They limit
+// what can be written: only the expected fields, with sane types and sizes,
+// and scan history can't be edited or deleted after it is written.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isShortString(v, max) {
+      return v is string && v.size() <= max;
+    }
+
+    function validBin(v) {
+      return v in ['plastic_bottle', 'recyclable', 'general', 'hazardous', 'money', 'organic'];
+    }
+
+    // Scan history: anyone can read and add, nobody can change or delete
+    match /scans/{scanId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['item', 'bin', 'type', 'confidence', 'timestamp', 'timeString'])
+                    && isShortString(request.resource.data.item, 200)
+                    && isShortString(request.resource.data.bin, 60)
+                    && validBin(request.resource.data.type)
+                    && isShortString(request.resource.data.confidence, 8)
+                    && isShortString(request.resource.data.timeString, 20)
+                    && request.resource.data.timestamp == request.time;
+      allow update, delete: if false;
+    }
+
+    // Shared counters: only the known number fields, each can only go up by a small step
+    match /stats/{docId} {
+      allow read: if true;
+      allow create, update: if docId == 'today'
+                    && request.resource.data.keys().hasOnly(
+                         ['total', 'plastic_bottle', 'recyclable', 'general', 'hazardous', 'co2', 'lastUpdated'])
+                    && request.resource.data.lastUpdated == request.time
+                    && smallIncrease('total', 1)
+                    && smallIncrease('plastic_bottle', 1)
+                    && smallIncrease('recyclable', 1)
+                    && smallIncrease('general', 1)
+                    && smallIncrease('hazardous', 1)
+                    && smallIncrease('co2', 0.2);
+      allow delete: if false;
+
+      function oldValue(field) {
+        return resource == null ? 0 : resource.data.get(field, 0);
+      }
+      function smallIncrease(field, maxStep) {
+        return !(field in request.resource.data)
+            || (request.resource.data[field] is number
+                && request.resource.data[field] >= oldValue(field)
+                && request.resource.data[field] - oldValue(field) <= maxStep);
+      }
+    }
+
+    // Trained Thai products: anyone can read, add and delete (the app has a delete button),
+    // but not rewrite an existing product. Reference photos are capped at ~200KB.
+    match /custom_thai_products/{productId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['id', 'name', 'bin', 'binName', 'shape', 'price', 'estValue', 'advice', 'image', 'timestamp'])
+                    && request.resource.data.id == productId
+                    && isShortString(request.resource.data.name, 100)
+                    && validBin(request.resource.data.bin)
+                    && isShortString(request.resource.data.shape, 40)
+                    && (!('binName' in request.resource.data) || isShortString(request.resource.data.binName, 60))
+                    && (!('price' in request.resource.data) || isShortString(request.resource.data.price, 100))
+                    && (!('estValue' in request.resource.data) || request.resource.data.estValue is number)
+                    && (!('advice' in request.resource.data) || isShortString(request.resource.data.advice, 500))
+                    && (!('image' in request.resource.data) || request.resource.data.image == null
+                        || isShortString(request.resource.data.image, 200000))
+                    && (!('timestamp' in request.resource.data) || isShortString(request.resource.data.timestamp, 40));
+      allow update: if false;
+      allow delete: if true;
+    }
+
+    // Everything else is closed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
