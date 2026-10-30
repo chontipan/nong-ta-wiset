@@ -7,7 +7,10 @@
       "README.md",
       "**/.*",
       "**/node_modules/**",
-      "firestore.rules"
+      "firestore.rules",
+      "package.json",
+      "package-lock.json",
+      "tests/**"
     ],
     "headers": [
       {

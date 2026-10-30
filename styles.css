@@ -2731,3 +2731,34 @@ body {
 .stats-grid .stat-box.value { grid-column: 1 / -1; }
 .price-list li strong { white-space: nowrap; }
 .price-source a[href^="tel:"] { white-space: nowrap; }
+
+/* Deleted trained products that can be restored */
+.trainer-hidden-section {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #cbd5e1;
+}
+.trainer-hidden-section h4 {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0 0 0.5rem;
+}
+.trainer-hidden-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.trainer-hidden-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: #475569;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 0.35rem 0.6rem;
+}
+.trainer-hidden-item small {
+    color: #94a3b8;
+}
