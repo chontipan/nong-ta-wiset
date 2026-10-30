@@ -1,12 +1,48 @@
-name: Deploy to Firebase Hosting
+name: Test and deploy to Firebase
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 jobs:
+  # Runs on every PR and every push: the live site only updates if this passes
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4  # the Firestore emulator needs Java
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Firestore security rules tests
+        run: npm run test:rules
+      - name: Page smoke test (fake camera, no writes to the live database)
+        run: npm run test:smoke
+
+  # Each PR gets its own temporary preview link, posted as a comment on the PR
+  preview:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: waste-5b576
+          expires: 7d
+
   deploy:
+    if: github.event_name != 'pull_request'
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +55,8 @@ jobs:
 
   # Separate job so a rules problem never blocks the website deploy
   deploy-firestore-rules:
+    if: github.event_name != 'pull_request'
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

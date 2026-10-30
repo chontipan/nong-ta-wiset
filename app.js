@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 db.enablePersistence({ synchronizeTabs: true })
                     .catch(err => console.warn('Offline storage for Firestore not available:', err.code || err));
 
-                if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = 'waste-5b576 (Connected)';
+                if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = `waste-5b576 (Connected) · ตู้ ${KIOSK_ID}`;
                 if (firebaseStatusEl) firebaseStatusEl.classList.add('online');
 
                 listenToCloudHistory();
@@ -157,31 +157,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Which kiosk this screen is: set once with ?kiosk=ชื่อจุด in the link, remembered on the device
+    const KIOSK_ID = (() => {
+        const clean = v => String(v || '').trim().replace(/[^\p{L}\p{N}-]+/gu, '-').slice(0, 40);
+        let id = '';
+        try {
+            const fromLink = clean(new URLSearchParams(location.search).get('kiosk'));
+            if (fromLink) localStorage.setItem('ecoscan_kiosk_id', fromLink);
+            id = fromLink || clean(localStorage.getItem('ecoscan_kiosk_id'));
+        } catch (e) { /* storage blocked: use the default */ }
+        return id || 'main';
+    })();
+
+    // Local calendar day as YYYY-MM-DD, so daily totals line up with the kiosk's clock
+    function dayId(d = new Date()) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
     function saveScanToCloud(historyItem, info) {
         if (!db) return;
         try {
+            const day = dayId();
             db.collection('scans').add({
                 item: historyItem.item,
                 bin: historyItem.bin,
                 type: historyItem.type,
                 confidence: historyItem.confidence,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                timeString: historyItem.time
+                timeString: historyItem.time,
+                day,
+                kiosk: KIOSK_ID
             });
 
-            // Update cloud aggregate stats doc
-            const statsRef = db.collection('stats').doc('today');
-            statsRef.set({
-                total: firebase.firestore.FieldValue.increment(1),
-                plastic_bottle: firebase.firestore.FieldValue.increment(info.type === 'plastic_bottle' ? 1 : 0),
-                recyclable: firebase.firestore.FieldValue.increment(info.type === 'recyclable' ? 1 : 0),
-                general: firebase.firestore.FieldValue.increment(info.type === 'general' ? 1 : 0),
-                hazardous: firebase.firestore.FieldValue.increment(info.type === 'hazardous' ? 1 : 0),
-                co2: firebase.firestore.FieldValue.increment(
-                    info.type === 'plastic_bottle' ? 0.18 : (info.type === 'recyclable' ? 0.15 : 0)
-                ),
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
+            // Daily totals: one doc for all kiosks (stats/2026-10-30) and one per kiosk (stats/2026-10-30__main)
+            const inc = firebase.firestore.FieldValue.increment;
+            const counts = {
+                total: inc(1),
+                plastic_bottle: inc(info.type === 'plastic_bottle' ? 1 : 0),
+                recyclable: inc(info.type === 'recyclable' ? 1 : 0),
+                general: inc(info.type === 'general' ? 1 : 0),
+                hazardous: inc(info.type === 'hazardous' ? 1 : 0),
+                co2: inc(info.type === 'plastic_bottle' ? 0.18 : (info.type === 'recyclable' ? 0.15 : 0)),
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                day
+            };
+            db.collection('stats').doc(day).set(counts, { merge: true })
+                .catch(err => console.warn('Daily stats save failed:', err.code || err));
+            db.collection('stats').doc(`${day}__${KIOSK_ID}`).set({ ...counts, kiosk: KIOSK_ID }, { merge: true })
+                .catch(err => console.warn('Kiosk stats save failed:', err.code || err));
         } catch (e) {
             console.error('Cloud save error:', e);
         }
@@ -512,6 +536,14 @@ document.addEventListener('DOMContentLoaded', () => {
             showCameraFallbackMessage('ไม่พบกล้องหรือยังไม่อนุญาตการใช้กล้อง — สามารถใช้ปุ่มตัวอย่างสิ่งของหรืออัปโหลดรูปภาพทดสอบแทนได้');
         }
 
+        // Came back from the nightly refresh: go straight back to the kiosk screen
+        try {
+            if (sessionStorage.getItem('ecoscan_resume_kiosk') === '1') {
+                sessionStorage.removeItem('ecoscan_resume_kiosk');
+                enterKioskMode();
+            }
+        } catch (e) { /* storage blocked: stay on the normal screen */ }
+
         // 2. Load COCO-SSD Model (High-Accuracy MobileNet V2 with Lite Fallback)
         try {
             loaderMessageEl.innerText = 'กำลังดาวน์โหลดโมเดล AI คุณภาพสูง (COCO-SSD MobileNet V2)...';
@@ -535,8 +567,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (modelErr) {
             console.error('Model load error:', modelErr);
-            loaderMessageEl.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถโหลดโมเดล AI ได้</span><br><small>กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองเปิดใหม่อีกครั้ง</small>`;
+            loaderMessageEl.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถโหลดโมเดล AI ได้</span><br><small>กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต ระบบจะลองใหม่เองใน 1 นาที</small>`;
             aiStatusTextEl.innerText = 'ข้อผิดพลาด AI';
+            // An unattended kiosk shouldn't stay broken: try again once the internet is likely back
+            setTimeout(() => location.reload(), 60 * 1000);
         }
     }
 
@@ -639,6 +673,83 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden && isKioskMode) keepScreenOn(true);
     });
+
+    // --- Self-healing for unattended kiosks ---
+    // 1) Camera watchdog: if the picture stops (cable pulled, USB reset, driver hiccup),
+    //    reopen the camera by itself instead of leaving a frozen screen.
+    const CAMERA_STALL_MS = 10000;
+    const WATCHDOG_EVERY_MS = 3000;
+    let lastVideoTime = -1;
+    let lastVideoAdvance = Date.now();
+    let cameraRecovering = false;
+    let cameraRetryDelay = 2000;
+
+    function cameraLooksDead() {
+        if (!isCameraActive || !webcamStream) return false;
+        const track = webcamStream.getVideoTracks()[0];
+        if (!track || track.readyState === 'ended') return true;
+        if (webcamEl.currentTime !== lastVideoTime) {
+            lastVideoTime = webcamEl.currentTime;
+            lastVideoAdvance = Date.now();
+            return false;
+        }
+        return Date.now() - lastVideoAdvance > CAMERA_STALL_MS;
+    }
+
+    async function recoverCamera() {
+        if (cameraRecovering) return;
+        cameraRecovering = true;
+        console.warn('Camera stopped sending pictures, reconnecting...');
+        cameraLoaderEl.classList.remove('hidden');
+        loaderMessageEl.innerText = 'กล้องหลุด กำลังเชื่อมต่อใหม่...';
+        try {
+            try {
+                await startWebcam(selectedDeviceId);
+            } catch (e) {
+                // A re-plugged camera can come back with a new id: take any camera
+                selectedDeviceId = null;
+                await startWebcam(null);
+            }
+            cameraLoaderEl.classList.add('hidden');
+            lastVideoAdvance = Date.now();
+            cameraRetryDelay = 2000;
+        } catch (err) {
+            console.warn('Camera reconnect failed, will retry:', err);
+            loaderMessageEl.innerText = 'ยังเชื่อมต่อกล้องไม่ได้ กำลังลองใหม่...';
+            cameraRetryDelay = Math.min(cameraRetryDelay * 2, 60000);
+            lastVideoAdvance = Date.now() + cameraRetryDelay - CAMERA_STALL_MS;
+        } finally {
+            cameraRecovering = false;
+        }
+    }
+
+    setInterval(() => {
+        if (document.hidden || cameraRecovering) return;
+        if (cameraLooksDead()) recoverCamera();
+    }, WATCHDOG_EVERY_MS);
+
+    // 2) Nightly refresh: a page that runs for days slowly piles up memory. Reload once a night
+    //    (around 03:00) when nobody is using the screen, and come back in kiosk mode if it was on.
+    const NIGHTLY_RELOAD_HOUR = 3;
+    const IDLE_BEFORE_RELOAD_MS = 5 * 60 * 1000;
+    const pageStartedAt = Date.now();
+    let lastUserActivity = Date.now();
+    ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+        window.addEventListener(ev, () => { lastUserActivity = Date.now(); }, { passive: true }));
+
+    setInterval(() => {
+        const now = new Date();
+        if (now.getHours() !== NIGHTLY_RELOAD_HOUR) return;
+        if (Date.now() - pageStartedAt < 60 * 60 * 1000) return; // just (re)loaded
+        const busySince = Math.max(lastUserActivity, lastAutoCommitTime); // auto-scans count as use too
+        if (Date.now() - busySince < IDLE_BEFORE_RELOAD_MS) return;
+        try {
+            if (localStorage.getItem('ecoscan_last_nightly_reload') === dayId(now)) return;
+            localStorage.setItem('ecoscan_last_nightly_reload', dayId(now));
+            sessionStorage.setItem('ecoscan_resume_kiosk', isKioskMode ? '1' : '');
+        } catch (e) { return; } // can't remember the reload: skip it rather than risk a loop
+        location.reload();
+    }, 60 * 1000);
 
     // --- Real-time Detection Loop ---
     async function detectLoop() {
@@ -1649,79 +1760,128 @@ document.addEventListener('DOMContentLoaded', () => {
     // Thai Product AI Training Studio Engine
     // ==========================================================================
 
+    // Products deleted on any kiosk stay in the cloud marked hidden, so they can be restored
+    let hiddenCloudProducts = [];
+
+    function registerProduct(prod) {
+        WASTE_MAPPING[prod.id] = {
+            type: prod.bin,
+            thName: prod.name,
+            bin: prod.binName || BIN_NAMES[prod.bin] || 'ขยะทั่วไป',
+            price: prod.price || 'กก.ละ 3.00-6.00 บาท',
+            estValue: parseFloat(prod.estValue) || 0.25,
+            desc: prod.advice || 'คัดแยกให้สะอาดก่อนทิ้ง',
+            custom: true,
+            shape: prod.shape,
+            image: prod.image,
+            images: prod.images
+        };
+    }
+
     function loadCustomProducts() {
         try {
             const stored = localStorage.getItem('ecoscan_custom_thai_products');
-            if (stored) {
-                customThaiProducts = JSON.parse(stored);
-            } else {
-                customThaiProducts = [];
-            }
+            customThaiProducts = stored ? JSON.parse(stored) : [];
         } catch (e) {
             console.warn('Failed to load custom products from localStorage:', e);
             customThaiProducts = [];
         }
 
         // Register custom products into active WASTE_MAPPING dictionary
-        customThaiProducts.forEach(prod => {
-            WASTE_MAPPING[prod.id] = {
-                type: prod.bin,
-                thName: prod.name,
-                bin: prod.binName || BIN_NAMES[prod.bin] || 'ขยะทั่วไป',
-                price: prod.price || 'กก.ละ 3.00-6.00 บาท',
-                estValue: parseFloat(prod.estValue) || 0.25,
-                desc: prod.advice || 'คัดแยกให้สะอาดก่อนทิ้ง',
-                custom: true,
-                shape: prod.shape,
-                image: prod.image
-            };
-        });
-
+        customThaiProducts.forEach(registerProduct);
         renderCustomProductsUI();
 
         // Also sync from Firestore cloud database if connected
         if (db) {
             db.collection('custom_thai_products').orderBy('timestamp', 'desc').get()
                 .then(snapshot => {
-                    if (!snapshot.empty) {
-                        const cloudProducts = [];
-                        snapshot.forEach(doc => {
-                            cloudProducts.push({ id: doc.id, ...doc.data() });
-                        });
+                    const cloudProducts = [];
+                    snapshot.forEach(doc => cloudProducts.push({ id: doc.id, ...doc.data() }));
 
-                        let changed = false;
-                        cloudProducts.forEach(cp => {
-                            if (!customThaiProducts.some(p => p.id === cp.id)) {
-                                customThaiProducts.push(cp);
-                                changed = true;
-                            }
-                        });
+                    hiddenCloudProducts = cloudProducts.filter(cp => cp.hidden === true);
+                    let changed = false;
 
-                        if (changed) {
-                            persistCustomProducts();
-                            cloudProducts.forEach(cp => queueMemory(() => addProductToMemory(cp)));
-                            customThaiProducts.forEach(prod => {
-                                WASTE_MAPPING[prod.id] = {
-                                    type: prod.bin,
-                                    thName: prod.name,
-                                    bin: prod.binName || BIN_NAMES[prod.bin] || 'ขยะทั่วไป',
-                                    price: prod.price || 'กก.ละ 3.00-6.00 บาท',
-                                    estValue: parseFloat(prod.estValue) || 0.25,
-                                    desc: prod.advice || 'คัดแยกให้สะอาดก่อนทิ้ง',
-                                    custom: true,
-                                    shape: prod.shape,
-                                    image: prod.image
-                                };
-                            });
-                            renderCustomProductsUI();
+                    // Deleted on another kiosk: drop it here too
+                    hiddenCloudProducts.forEach(hp => {
+                        if (customThaiProducts.some(p => p.id === hp.id)) {
+                            customThaiProducts = customThaiProducts.filter(p => p.id !== hp.id);
+                            delete WASTE_MAPPING[hp.id];
+                            if (visualMemory) visualMemory.removeLabel(hp.id);
+                            changed = true;
                         }
+                    });
+
+                    cloudProducts.filter(cp => cp.hidden !== true).forEach(cp => {
+                        if (!customThaiProducts.some(p => p.id === cp.id)) {
+                            customThaiProducts.push(cp);
+                            registerProduct(cp);
+                            queueMemory(() => addProductToMemory(cp));
+                            changed = true;
+                        }
+                    });
+
+                    if (changed) {
+                        persistCustomProducts();
+                        updateAiStatus();
                     }
+                    renderCustomProductsUI();
                 })
                 .catch(err => console.log('Firestore custom products offline:', err));
         }
     }
 
+    function renderHiddenProductsUI() {
+        const section = document.getElementById('trainerHiddenSection');
+        const list = document.getElementById('trainerHiddenList');
+        if (!section || !list) return;
+        if (hiddenCloudProducts.length === 0) {
+            section.classList.add('hidden');
+            list.innerHTML = '';
+            return;
+        }
+        section.classList.remove('hidden');
+        list.innerHTML = hiddenCloudProducts.map(prod => `
+            <div class="trainer-hidden-item">
+                <span>${escapeHtml(prod.name)} <small>(${escapeHtml(prod.binName || BIN_NAMES[prod.bin] || '')})</small></span>
+                <button type="button" class="btn btn-sm btn-outline restore-prod-btn" data-id="${escapeHtml(prod.id)}">
+                    <i class="fa-solid fa-rotate-left"></i> กู้คืน
+                </button>
+            </div>
+        `).join('');
+        list.querySelectorAll('.restore-prod-btn').forEach(b => {
+            b.addEventListener('click', () => restoreCustomProduct(b.getAttribute('data-id')));
+        });
+    }
+
+    function restoreCustomProduct(id) {
+        const prod = hiddenCloudProducts.find(p => p.id === id);
+        if (!prod) return;
+        hiddenCloudProducts = hiddenCloudProducts.filter(p => p.id !== id);
+        const { hidden, hiddenAt, ...clean } = prod;
+        if (!customThaiProducts.some(p => p.id === id)) customThaiProducts.unshift(clean);
+        registerProduct(clean);
+        queueMemory(() => addProductToMemory(clean));
+        persistCustomProducts();
+        if (db) {
+            db.collection('custom_thai_products').doc(id)
+                .update({ hidden: false, hiddenAt: firebase.firestore.FieldValue.serverTimestamp() })
+                .catch(err => console.log('Firestore restore failed:', err));
+        }
+        renderCustomProductsUI();
+        updateAiStatus();
+    }
+
+    // Hide in the cloud instead of deleting, so a mistake (or a prank) can be undone
+    function hideProductInCloud(prod) {
+        if (!db || !prod) return;
+        db.collection('custom_thai_products').doc(prod.id)
+            .update({ hidden: true, hiddenAt: firebase.firestore.FieldValue.serverTimestamp() })
+            .catch(err => console.log('Firestore hide failed:', err));
+        if (!hiddenCloudProducts.some(p => p.id === prod.id)) hiddenCloudProducts.unshift({ ...prod, hidden: true });
+    }
+
     function renderCustomProductsUI() {
+        renderHiddenProductsUI();
         if (!trainerProductsContainer || !customTrainedButtons) return;
 
         const count = customThaiProducts.length;
@@ -1829,18 +1989,7 @@ document.addEventListener('DOMContentLoaded', () => {
         queueMemory(() => addProductToMemory(prod));
 
         // Register into active dictionary
-        WASTE_MAPPING[prod.id] = {
-            type: prod.bin,
-            thName: prod.name,
-            bin: prod.binName || BIN_NAMES[prod.bin] || 'ขยะทั่วไป',
-            price: prod.price || 'กก.ละ 3.00-6.00 บาท',
-            estValue: parseFloat(prod.estValue) || 0.25,
-            desc: prod.advice || 'คัดแยกให้สะอาดก่อนทิ้ง',
-            custom: true,
-            shape: prod.shape,
-            image: prod.image,
-            images: prod.images
-        };
+        registerProduct(prod);
 
         // Sync with Firestore if online
         if (db) {
@@ -1861,17 +2010,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function deleteCustomProduct(id) {
         const prod = customThaiProducts.find(p => p.id === id);
         const name = prod ? prod.name : 'สินค้านี้';
-        if (!confirm(`คุณต้องการลบ "${name}" ออกจากการฝึกสอน AI ใช่หรือไม่?`)) return;
+        if (!confirm(`คุณต้องการลบ "${name}" ออกจากการฝึกสอน AI ใช่หรือไม่?\n(กู้คืนได้ภายหลังในหน้าสตูดิโอฝึกสอน)`)) return;
 
         customThaiProducts = customThaiProducts.filter(p => p.id !== id);
         delete WASTE_MAPPING[id];
         if (visualMemory) { visualMemory.removeLabel(id); updateAiStatus(); }
         persistCustomProducts();
 
-        if (db) {
-            db.collection('custom_thai_products').doc(id).delete()
-                .catch(err => console.log('Firestore delete failed:', err));
-        }
+        hideProductInCloud(prod);
 
         renderCustomProductsUI();
     }
@@ -2045,11 +2191,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 customThaiProducts.forEach(p => {
                     delete WASTE_MAPPING[p.id];
                     if (visualMemory) visualMemory.removeLabel(p.id);
-                    // Also remove from the cloud, otherwise they come back on the next page load
-                    if (db) {
-                        db.collection('custom_thai_products').doc(p.id).delete()
-                            .catch(err => console.log('Firestore delete failed:', err));
-                    }
+                    // Also hide in the cloud, otherwise they come back on the next page load
+                    hideProductInCloud(p);
                 });
                 customThaiProducts = [];
                 localStorage.removeItem('ecoscan_custom_thai_products');

@@ -11,6 +11,10 @@ service cloud.firestore {
       return v is string && v.size() <= max;
     }
 
+    function isDayId(v) {
+      return v is string && v.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
     function validBin(v) {
       return v in ['plastic_bottle', 'recyclable', 'general', 'hazardous', 'money', 'organic'];
     }
@@ -19,23 +23,29 @@ service cloud.firestore {
     match /scans/{scanId} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(
-                         ['item', 'bin', 'type', 'confidence', 'timestamp', 'timeString'])
+                         ['item', 'bin', 'type', 'confidence', 'timestamp', 'timeString', 'day', 'kiosk'])
                     && isShortString(request.resource.data.item, 200)
                     && isShortString(request.resource.data.bin, 60)
                     && validBin(request.resource.data.type)
                     && isShortString(request.resource.data.confidence, 8)
                     && isShortString(request.resource.data.timeString, 20)
-                    && request.resource.data.timestamp == request.time;
+                    && request.resource.data.timestamp == request.time
+                    && (!('day' in request.resource.data) || isDayId(request.resource.data.day))
+                    && (!('kiosk' in request.resource.data) || isShortString(request.resource.data.kiosk, 40));
       allow update, delete: if false;
     }
 
-    // Shared counters: only the known number fields, each can only go up by a small step
+    // Daily counters: stats/2026-10-30 (all kiosks) and stats/2026-10-30__<kiosk> (one kiosk).
+    // Only the known number fields, each can only go up by a small step.
+    // The old cumulative 'today' doc stays readable but is no longer written.
     match /stats/{docId} {
       allow read: if true;
-      allow create, update: if docId == 'today'
+      allow create, update: if docId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}(__[^/]{1,40})?$')
                     && request.resource.data.keys().hasOnly(
-                         ['total', 'plastic_bottle', 'recyclable', 'general', 'hazardous', 'co2', 'lastUpdated'])
+                         ['total', 'plastic_bottle', 'recyclable', 'general', 'hazardous', 'co2', 'lastUpdated', 'day', 'kiosk'])
                     && request.resource.data.lastUpdated == request.time
+                    && request.resource.data.day == docId.split('__')[0]
+                    && (!('kiosk' in request.resource.data) || docId == request.resource.data.day + '__' + request.resource.data.kiosk)
                     && smallIncrease('total', 1)
                     && smallIncrease('plastic_bottle', 1)
                     && smallIncrease('recyclable', 1)
@@ -55,8 +65,8 @@ service cloud.firestore {
       }
     }
 
-    // Trained Thai products: anyone can read, add and delete (the app has a delete button),
-    // but not rewrite an existing product. Reference photos are capped at ~200KB, up to 5 photos.
+    // Trained Thai products: anyone can read and add. Nobody can delete or rewrite one:
+    // the app's delete button only hides it (hidden + hiddenAt), so it can be restored. Reference photos are capped at ~200KB, up to 5 photos.
     match /custom_thai_products/{productId} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(
@@ -75,8 +85,10 @@ service cloud.firestore {
                     && (!('images' in request.resource.data)
                         || (request.resource.data.images is list && request.resource.data.images.size() <= 5))
                     && (!('timestamp' in request.resource.data) || isShortString(request.resource.data.timestamp, 40));
-      allow update: if false;
-      allow delete: if true;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hidden', 'hiddenAt'])
+                    && request.resource.data.hidden is bool
+                    && request.resource.data.hiddenAt == request.time;
+      allow delete: if false;
     }
 
     // Everything else is closed
