@@ -1,0 +1,17 @@
+{
+  "name": "nong-ta-wiset",
+  "private": true,
+  "description": "น้องตาวิเศษ: dev tools and tests only. The website itself has no build step.",
+  "scripts": {
+    "start": "node server.js",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-nong-ta-wiset \"node --test tests/firestore-rules.test.mjs\"",
+    "test:smoke": "node --test tests/smoke.test.mjs",
+    "test": "npm run test:rules && npm run test:smoke"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.0.0",
+    "firebase-tools": "^13.35.1",
+    "playwright": "^1.48.0"
+  }
+}

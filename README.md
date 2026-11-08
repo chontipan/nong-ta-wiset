@@ -64,14 +64,35 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/chontipan/Waste.git
-cd Waste
+git clone https://github.com/chontipan/nong-ta-wiset.git
+cd nong-ta-wiset
 
 # รัน Local Server ด้วย Node.js
 node server.js
 ```
 
 เปิดเบราว์เซอร์ไปที่: `http://localhost:8080`
+
+---
+
+## 🏪 ตั้งค่าตู้ (Kiosk)
+
+- **ตั้งชื่อตู้**: เปิดลิงก์ `https://waste-5b576.web.app/?kiosk=ตลาดแม่จัน` ครั้งเดียว เครื่องจะจำชื่อไว้ ทุกการสแกนจะบันทึกชื่อตู้ไปด้วย
+- **สถิติรายวัน** ใน Firestore: `stats/2026-10-30` (รวมทุกตู้) และ `stats/2026-10-30__ตลาดแม่จัน` (แยกตู้)
+- **ตู้ดูแลตัวเอง**: กล้องหลุดจะเชื่อมต่อใหม่เอง, รีเฟรชหน้าเองตอนตี 3 เมื่อไม่มีคนใช้ (กลับเข้าโหมดตู้ให้เอง), โหลด AI ไม่ได้จะลองใหม่ทุก 1 นาที
+- **ลบสินค้าที่สอน AI** แค่ซ่อนไว้ กู้คืนได้ที่ท้ายหน้าสตูดิโอฝึกสอน (ไม่มีใครลบข้อมูลถาวรได้)
+
+---
+
+## 🧪 การทดสอบ
+
+```bash
+npm install
+npm run test:rules   # ทดสอบกฎ Firestore ด้วย emulator (ต้องมี Java)
+npm run test:smoke   # เปิดหน้าเว็บจริงด้วยกล้องจำลอง ไม่เขียนข้อมูลลงฐานข้อมูลจริง
+```
+
+GitHub Actions รันทั้งสองชุดทุก PR และทุก push ถ้าไม่ผ่านจะไม่ deploy ขึ้นเว็บจริง และทุก PR จะได้ลิงก์ทดลอง (preview) อายุ 7 วันในคอมเมนต์
 
 ---
 
