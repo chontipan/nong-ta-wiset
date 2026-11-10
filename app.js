@@ -260,14 +260,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const DETECT_MAX_BOXES = 10;
     // Visual memory (ภาพจำ): match camera crops against photos people taught the app
     const visualMemory = (typeof VisualMemory !== 'undefined') ? new VisualMemory() : null;
-    const VISUAL_MATCH_SIM = 0.68;     // cosine similarity needed when COCO also sees an object
-    const VISUAL_ONLY_SIM = 0.75;      // stricter when COCO sees nothing (chip bags, cans, batteries...)
+    // Tuned on AlphaTrash camera photos + 430 non-waste photos (tools/eval-alphatrash): real photos of a
+    // taught item usually score 0.55-0.70, so 0.75 ignored most matches. 0.68 roughly doubles the hits
+    // and stays at 0% false alarms on non-waste photos (about 5% on near-empty frames, which the vote smooths out).
+    const VISUAL_MATCH_SIM = 0.62;     // cosine similarity needed when COCO also sees an object
+    const VISUAL_ONLY_SIM = 0.68;      // stricter when COCO sees nothing (chip bags, cans, batteries...)
     const VISUAL_MARGIN = 0.02;        // must beat the next-best different label by this much
     const VISUAL_INTERVAL_MS = 300;    // embed at most ~3 times/sec in the live loop
     const MAX_FEEDBACK_EXAMPLES = 60; 
     // Your own waste model trained in Teachable Machine (see docs/train-your-model.md)
     const wasteModel = (typeof WasteModel !== 'undefined') ? new WasteModel() : null;
     const DEFAULT_MODEL_URL = './model/';
+    // Ready-made model trained on AlphaTrash (5,691 Thai trash photos), see models/alphatrash/README.md
+    const ALPHATRASH_MODEL_URL = './models/alphatrash/';
     const WASTE_MODEL_MIN_PROB = 0.75;  // the model must be this sure before its answer is used
     let lastModelTime = 0;
     let lastModelResult = null;
@@ -2272,6 +2277,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!url) return;
             if (await loadWasteModel(url, false)) {
                 try { localStorage.setItem('ecoscan_model_url', url); } catch (e) { /* ignore */ }
+            }
+        });
+    }
+
+    const alphaTrashModelBtn = document.getElementById('alphaTrashModelBtn');
+    if (alphaTrashModelBtn) {
+        alphaTrashModelBtn.addEventListener('click', async () => {
+            if (modelUrlInput) modelUrlInput.value = ALPHATRASH_MODEL_URL;
+            if (await loadWasteModel(ALPHATRASH_MODEL_URL, false)) {
+                try { localStorage.setItem('ecoscan_model_url', ALPHATRASH_MODEL_URL); } catch (e) { /* ignore */ }
             }
         });
     }

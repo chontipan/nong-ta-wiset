@@ -45,3 +45,13 @@ python3 sweep.py feats.jsonl mapping.json results
 
 ชุดข้อมูลไม่มีขยะอันตราย จึงวัดถังอันตรายไม่ได้ ภาพทุกภาพถ่ายในกล่องพื้นขาวกล้องตัวเดียว
 ผล C จึงน่าจะสูงกว่าที่ตู้จริงทำได้ ถ้ากล้องหรือฉากหลังต่างกัน
+
+## ฝึกโมเดลสำเร็จรูป (models/alphatrash)
+
+```bash
+python3 mkneg.py          # สร้างภาพพื้นหลัง (ต้องมี flower_photos ของ TensorFlow + scikit-image) แก้ path ในไฟล์ก่อน
+node train-tm.js /data/alphatrash-dataset/trash_dataset <bg dir> ../../models/alphatrash cache.json
+```
+
+ผลของโมเดลอยู่ใน `results/alphatrash_model_eval.json` ส่วนการเลือกเกณฑ์ภาพจำใหม่ (0.68 / 0.62)
+มาจากการเทียบภาพขยะ 849 ภาพกับภาพที่ไม่ใช่ขยะ 430 ภาพ
