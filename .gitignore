@@ -10,3 +10,6 @@ firestore-debug.log*
 .DS_Store
 Thumbs.db
 *.log
+tools/eval-alphatrash/node_modules/
+tools/eval-alphatrash/feats.jsonl
+tools/eval-alphatrash/mapping.json

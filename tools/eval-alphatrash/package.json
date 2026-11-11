@@ -1,0 +1,9 @@
+{
+  "name": "eval-alphatrash",
+  "private": true,
+  "description": "Measures the app's waste AI on the AlphaTrash dataset",
+  "dependencies": {
+    "@tensorflow-models/coco-ssd": "2.2.3",
+    "@tensorflow/tfjs-node": "4.22.0"
+  }
+}

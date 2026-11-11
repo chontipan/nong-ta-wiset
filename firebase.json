@@ -10,7 +10,8 @@
       "firestore.rules",
       "package.json",
       "package-lock.json",
-      "tests/**"
+      "tests/**",
+      "tools/**"
     ],
     "headers": [
       {
