@@ -1,0 +1,409 @@
+{
+ "alphatrash": {
+  "app_model": {
+   "n": 849,
+   "bin_acc": 0.9717314487632509,
+   "class5_acc": 0.9599528857479388,
+   "class5_balanced": 0.9554525756512341,
+   "recall5": {
+    "plastic": 0.9883268482490273,
+    "metal": 0.9811320754716981,
+    "paper": 0.8721804511278195,
+    "organic": 0.9918032786885246,
+    "general": 0.9438202247191011
+   },
+   "glass_to_recyclable": null
+  },
+  "app_model_said_background": 0.0,
+  "mobilenet_trained_alphatrash": {
+   "n": 849,
+   "bin_acc": 0.9564193168433451,
+   "class5_acc": 0.9411071849234394,
+   "class5_balanced": 0.9410726741194834,
+   "recall5": {
+    "plastic": 0.953307392996109,
+    "metal": 0.9811320754716981,
+    "paper": 0.9022556390977443,
+    "organic": 0.9754098360655737,
+    "general": 0.8932584269662921
+   },
+   "glass_to_recyclable": null
+  },
+  "clip_zero_shot": {
+   "n": 849,
+   "bin_acc": 0.800942285041225,
+   "class5_acc": 0.6336866902237926,
+   "class5_balanced": 0.6411113803906071,
+   "recall5": {
+    "plastic": 0.5953307392996109,
+    "metal": 0.6729559748427673,
+    "paper": 0.6691729323308271,
+    "organic": 0.6557377049180327,
+    "general": 0.6123595505617978
+   },
+   "glass_to_recyclable": null
+  },
+  "clip_trained_alphatrash": {
+   "n": 849,
+   "bin_acc": 0.9717314487632509,
+   "class5_acc": 0.9575971731448764,
+   "class5_balanced": 0.9612333492514656,
+   "recall5": {
+    "plastic": 0.953307392996109,
+    "metal": 0.9622641509433962,
+    "paper": 0.9774436090225563,
+    "organic": 0.9918032786885246,
+    "general": 0.9213483146067416
+   },
+   "glass_to_recyclable": null
+  }
+ },
+ "trashnet": {
+  "app_model": {
+   "n": 2527,
+   "bin_acc": 0.43173723783142065,
+   "class5_acc": 0.31786771964461996,
+   "class5_balanced": 0.38633851805731706,
+   "recall5": {
+    "plastic": 0.533195020746888,
+    "metal": 0.18292682926829268,
+    "paper": 0.23069207622868607,
+    "general": 0.5985401459854015
+   },
+   "glass_to_recyclable": 0.6327345309381237
+  },
+  "app_model_said_background": 0.14562722595963593,
+  "mobilenet_trained_alphatrash": {
+   "n": 2527,
+   "bin_acc": 0.49228333992876927,
+   "class5_acc": 0.35538005923000987,
+   "class5_balanced": 0.42067669036805394,
+   "recall5": {
+    "plastic": 0.5933609958506224,
+    "metal": 0.18048780487804877,
+    "paper": 0.27382146439317956,
+    "general": 0.635036496350365
+   },
+   "glass_to_recyclable": 0.6586826347305389
+  },
+  "clip_zero_shot": {
+   "n": 2527,
+   "bin_acc": 0.8741590819153146,
+   "class5_acc": 0.7487660414610069,
+   "class5_balanced": 0.727824269511934,
+   "recall5": {
+    "plastic": 0.5975103734439834,
+    "metal": 0.8951219512195122,
+    "paper": 0.7763289869608826,
+    "general": 0.6423357664233577
+   },
+   "glass_to_recyclable": 1.0
+  },
+  "clip_trained_alphatrash": {
+   "n": 2527,
+   "bin_acc": 0.6394934705184012,
+   "class5_acc": 0.5138203356367226,
+   "class5_balanced": 0.5402943313358448,
+   "recall5": {
+    "plastic": 0.7199170124481328,
+    "metal": 0.3780487804878049,
+    "paper": 0.4573721163490471,
+    "general": 0.6058394160583942
+   },
+   "glass_to_recyclable": 0.9221556886227545
+  },
+  "mobilenet_in_domain_cv": {
+   "n": 2527,
+   "bin_acc": 0.962010288880095,
+   "class5_acc": 0.868213228035538,
+   "class5_balanced": 0.7877048343265443,
+   "recall5": {
+    "plastic": 0.7925311203319502,
+    "metal": 0.8682926829268293,
+    "paper": 0.9498495486459378,
+    "general": 0.5401459854014599
+   },
+   "glass_to_recyclable": 0.998003992015968
+  },
+  "clip_in_domain_cv": {
+   "n": 2527,
+   "bin_acc": 0.9794222398100515,
+   "class5_acc": 0.9294175715695953,
+   "class5_balanced": 0.8838593170167347,
+   "recall5": {
+    "plastic": 0.8900414937759336,
+    "metal": 0.9146341463414634,
+    "paper": 0.9789368104312939,
+    "general": 0.7518248175182481
+   },
+   "glass_to_recyclable": 0.998003992015968
+  },
+  "few_shot": {
+   "5": {
+    "mobilenet_alphatrash_plus_k": {
+     "bin_acc": 0.5921662669864108,
+     "class5_acc": 0.4550348953140578,
+     "class5_balanced": 0.49402999486649823
+    },
+    "mobilenet_k_only": {
+     "bin_acc": 0.8422062350119903,
+     "class5_acc": 0.6101694915254237,
+     "class5_balanced": 0.5511471237532559
+    },
+    "clip_alphatrash_plus_k": {
+     "bin_acc": 0.7984012789768185,
+     "class5_acc": 0.669790628115653,
+     "class5_balanced": 0.6552379702977568
+    },
+    "clip_k_only": {
+     "bin_acc": 0.8856914468425259,
+     "class5_acc": 0.7107676969092721,
+     "class5_balanced": 0.6953303758915318
+    }
+   },
+   "10": {
+    "mobilenet_alphatrash_plus_k": {
+     "bin_acc": 0.6383528461849012,
+     "class5_acc": 0.4944612286002014,
+     "class5_balanced": 0.5445834416073035
+    },
+    "mobilenet_k_only": {
+     "bin_acc": 0.84715381509891,
+     "class5_acc": 0.681067472306143,
+     "class5_balanced": 0.6483622174853909
+    },
+    "clip_alphatrash_plus_k": {
+     "bin_acc": 0.7983044004844569,
+     "class5_acc": 0.6710976837865055,
+     "class5_balanced": 0.6783127301117651
+    },
+    "clip_k_only": {
+     "bin_acc": 0.9035930561162697,
+     "class5_acc": 0.7754279959718027,
+     "class5_balanced": 0.7671930452887403
+    }
+   },
+   "20": {
+    "mobilenet_alphatrash_plus_k": {
+     "bin_acc": 0.7246806757313558,
+     "class5_acc": 0.5605344295991779,
+     "class5_balanced": 0.5845725581140115
+    },
+    "mobilenet_k_only": {
+     "bin_acc": 0.8908941079522045,
+     "class5_acc": 0.7356628982528264,
+     "class5_balanced": 0.6904148433165834
+    },
+    "clip_alphatrash_plus_k": {
+     "bin_acc": 0.8777091058920478,
+     "class5_acc": 0.7634121274409045,
+     "class5_balanced": 0.7477519966670426
+    },
+    "clip_k_only": {
+     "bin_acc": 0.9264936135146271,
+     "class5_acc": 0.8343268242548818,
+     "class5_balanced": 0.8235527403337025
+    }
+   },
+   "50": {
+    "mobilenet_alphatrash_plus_k": {
+     "bin_acc": 0.8014931927975406,
+     "class5_acc": 0.6479737130339541,
+     "class5_balanced": 0.6509846598318816
+    },
+    "mobilenet_k_only": {
+     "bin_acc": 0.9193675889328065,
+     "class5_acc": 0.8001095290251916,
+     "class5_balanced": 0.7590043556920355
+    },
+    "clip_alphatrash_plus_k": {
+     "bin_acc": 0.9331576635924461,
+     "class5_acc": 0.8496166484118293,
+     "class5_balanced": 0.8373960023317568
+    },
+    "clip_k_only": {
+     "bin_acc": 0.9482652613087396,
+     "class5_acc": 0.8834611171960569,
+     "class5_balanced": 0.8649287121662681
+    }
+   }
+  }
+ },
+ "realwaste": {
+  "app_model": {
+   "n": 4752,
+   "bin_acc": 0.44507575757575757,
+   "class5_acc": 0.3538781163434903,
+   "class5_balanced": 0.3550190143621134,
+   "recall5": {
+    "plastic": 0.42888165038002174,
+    "metal": 0.3189873417721519,
+    "paper": 0.2601456815816857,
+    "organic": 0.36363636363636365,
+    "general": 0.4034440344403444
+   },
+   "glass_to_recyclable": 0.5047619047619047
+  },
+  "app_model_said_background": 0.1835016835016835,
+  "mobilenet_trained_alphatrash": {
+   "n": 4752,
+   "bin_acc": 0.5242003367003367,
+   "class5_acc": 0.39981532779316714,
+   "class5_balanced": 0.40064030646139087,
+   "recall5": {
+    "plastic": 0.3485342019543974,
+    "metal": 0.18354430379746836,
+    "paper": 0.3485952133194589,
+    "organic": 0.5407319952774499,
+    "general": 0.5817958179581796
+   },
+   "glass_to_recyclable": 0.44761904761904764
+  },
+  "clip_zero_shot": {
+   "n": 4752,
+   "bin_acc": 0.7598905723905723,
+   "class5_acc": 0.5941828254847645,
+   "class5_balanced": 0.6094281654486118,
+   "recall5": {
+    "plastic": 0.28230184581976114,
+    "metal": 0.8886075949367088,
+    "paper": 0.4141519250780437,
+    "organic": 0.7449822904368358,
+    "general": 0.7170971709717097
+   },
+   "glass_to_recyclable": 0.8761904761904762
+  },
+  "clip_trained_alphatrash": {
+   "n": 4752,
+   "bin_acc": 0.6146885521885522,
+   "class5_acc": 0.5138504155124654,
+   "class5_balanced": 0.5138510918345826,
+   "recall5": {
+    "plastic": 0.4245385450597177,
+    "metal": 0.28354430379746837,
+    "paper": 0.43912591050988553,
+    "organic": 0.9669421487603306,
+    "general": 0.45510455104551045
+   },
+   "glass_to_recyclable": 0.7119047619047619
+  },
+  "mobilenet_in_domain_cv": {
+   "n": 4752,
+   "bin_acc": 0.9307659932659933,
+   "class5_acc": 0.8367959372114496,
+   "class5_balanced": 0.8360587935717625,
+   "recall5": {
+    "plastic": 0.7893593919652552,
+    "metal": 0.8037974683544303,
+    "paper": 0.8636836628511967,
+    "organic": 0.9362455726092089,
+    "general": 0.7872078720787208
+   },
+   "glass_to_recyclable": 0.9666666666666667
+  },
+  "clip_in_domain_cv": {
+   "n": 4752,
+   "bin_acc": 0.9572811447811448,
+   "class5_acc": 0.8972760849492152,
+   "class5_balanced": 0.8968960564991247,
+   "recall5": {
+    "plastic": 0.8555917480998915,
+    "metal": 0.8848101265822785,
+    "paper": 0.918834547346514,
+    "organic": 0.9728453364817001,
+    "general": 0.8523985239852399
+   },
+   "glass_to_recyclable": 0.9928571428571429
+  },
+  "few_shot": {
+   "5": {
+    "mobilenet_alphatrash_plus_k": {
+     "bin_acc": 0.6698432867429055,
+     "class5_acc": 0.5078709078244719,
+     "class5_balanced": 0.5052878872208163
+    },
+    "mobilenet_k_only": {
+     "bin_acc": 0.8391783142736129,
+     "class5_acc": 0.5700023218017181,
+     "class5_balanced": 0.5687374790645472
+    },
+    "clip_alphatrash_plus_k": {
+     "bin_acc": 0.8001270648030495,
+     "class5_acc": 0.660645460877641,
+     "class5_balanced": 0.6604592261612382
+    },
+    "clip_k_only": {
+     "bin_acc": 0.8916984328674291,
+     "class5_acc": 0.687996285117251,
+     "class5_balanced": 0.6869105470230906
+    }
+   },
+   "10": {
+    "mobilenet_alphatrash_plus_k": {
+     "bin_acc": 0.7092071611253197,
+     "class5_acc": 0.524147594581971,
+     "class5_balanced": 0.5230535272365946
+    },
+    "mobilenet_k_only": {
+     "bin_acc": 0.8586956521739131,
+     "class5_acc": 0.6170948155067725,
+     "class5_balanced": 0.615546097652952
+    },
+    "clip_alphatrash_plus_k": {
+     "bin_acc": 0.8264705882352941,
+     "class5_acc": 0.6891172349369454,
+     "class5_balanced": 0.6888141429999703
+    },
+    "clip_k_only": {
+     "bin_acc": 0.8970588235294118,
+     "class5_acc": 0.7200373657169548,
+     "class5_balanced": 0.7212719821160696
+    }
+   },
+   "20": {
+    "mobilenet_alphatrash_plus_k": {
+     "bin_acc": 0.7645077720207254,
+     "class5_acc": 0.5956994328922496,
+     "class5_balanced": 0.5953800056020515
+    },
+    "mobilenet_k_only": {
+     "bin_acc": 0.8722366148531953,
+     "class5_acc": 0.6672495274102079,
+     "class5_balanced": 0.6666799754742034
+    },
+    "clip_alphatrash_plus_k": {
+     "bin_acc": 0.8683937823834196,
+     "class5_acc": 0.7439035916824196,
+     "class5_balanced": 0.74486301355234
+    },
+    "clip_k_only": {
+     "bin_acc": 0.917573402417962,
+     "class5_acc": 0.779820415879017,
+     "class5_balanced": 0.7804750003923964
+    }
+   },
+   "50": {
+    "mobilenet_alphatrash_plus_k": {
+     "bin_acc": 0.8283018867924529,
+     "class5_acc": 0.6600195982361587,
+     "class5_balanced": 0.6596334848168391
+    },
+    "mobilenet_k_only": {
+     "bin_acc": 0.8960017969451931,
+     "class5_acc": 0.7360117589416952,
+     "class5_balanced": 0.7352301859818943
+    },
+    "clip_alphatrash_plus_k": {
+     "bin_acc": 0.9081311769991014,
+     "class5_acc": 0.8008819206271435,
+     "class5_balanced": 0.800857788848963
+    },
+    "clip_k_only": {
+     "bin_acc": 0.9343665768194069,
+     "class5_acc": 0.8241058304752572,
+     "class5_balanced": 0.8240873857706777
+    }
+   }
+  }
+ }
+}
