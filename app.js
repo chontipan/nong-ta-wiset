@@ -1219,10 +1219,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const VOTE_MAX_FRAMES = 7;
+        const VOTE_MIN_FRAMES = 3;
         const nowP = performance.now();
         voteBuffer = voteBuffer.filter(v => nowP - v.t <= VOTE_WINDOW_MS);
         if (candidate) {
             voteBuffer.push({ key: candidate.key, score: candidate.score, t: nowP, candidate });
+            if (voteBuffer.length > VOTE_MAX_FRAMES) {
+                voteBuffer = voteBuffer.slice(-VOTE_MAX_FRAMES);
+            }
             lastLiveRegion = { region: candidate.region, t: nowP };
         }
 
@@ -1232,24 +1237,33 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Winner = label with the highest total confidence over the window
+        // Multi-Frame Majority Voting: pick label with the most frames, tie-break by highest average confidence
         const totals = new Map();
         const counts = new Map();
-        let sumAll = 0;
         voteBuffer.forEach(v => {
             totals.set(v.key, (totals.get(v.key) || 0) + v.score);
             counts.set(v.key, (counts.get(v.key) || 0) + 1);
-            sumAll += v.score;
         });
         let winKey = null;
-        let best = -1;
-        totals.forEach((total, key) => { if (total > best) { best = total; winKey = key; } });
+        let bestCount = -1;
+        let bestAvg = -1;
+        counts.forEach((cnt, key) => {
+            const avg = totals.get(key) / cnt;
+            if (cnt > bestCount || (cnt === bestCount && avg > bestAvg)) {
+                bestCount = cnt;
+                bestAvg = avg;
+                winKey = key;
+            }
+        });
 
         const winner = [...voteBuffer].reverse().find(v => v.key === winKey).candidate;
-        const avgScore = best / counts.get(winKey);
-        const share = best / sumAll;
+        const avgScore = bestAvg;
+        const voteRatio = bestCount / voteBuffer.length;
 
-        updatePredictionUI(winner.info, avgScore);
+        // Only update live UI once we have at least 2 agreeing frames (filters out single-frame motion blur)
+        if (bestCount >= 2 || voteBuffer.length === 1) {
+            updatePredictionUI(winner.info, avgScore);
+        }
 
         const now = Date.now();
         if (currentStableClass === winKey) {
@@ -1257,10 +1271,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const progressPct = Math.min((timeHeld / STABILITY_THRESHOLD_MS) * 100, 100);
             holdProgressBar.style.width = `${progressPct}%`;
 
-            // Only save when the answer clearly wins the vote (no flip-flopping between two items)
-            if (timeHeld >= STABILITY_THRESHOLD_MS && share >= 0.6 && (now - lastAutoCommitTime) > AUTO_COMMIT_COOLDOWN_MS) {
+            // Commit only when held steady AND backed by a clear multi-frame majority (at least 3 agreeing frames & >=60% share)
+            if (
+                timeHeld >= STABILITY_THRESHOLD_MS &&
+                bestCount >= VOTE_MIN_FRAMES &&
+                voteRatio >= 0.6 &&
+                (now - lastAutoCommitTime) > AUTO_COMMIT_COOLDOWN_MS
+            ) {
                 commitWasteScan(winner.info, avgScore, { source: webcamEl, region: winner.region });
                 lastAutoCommitTime = now;
+                voteBuffer = [];
                 holdProgressBar.style.width = '0%';
             }
         } else {
