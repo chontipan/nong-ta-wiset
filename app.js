@@ -319,6 +319,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageUploadEl = document.getElementById('imageUpload');
     const resetStatsBtn = document.getElementById('resetStatsBtn');
     const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const mascotHelperCard = document.getElementById('mascotHelperCard');
+    const mascotGreetingText = document.getElementById('mascotGreetingText');
+
+    // --- Admin PIN Lock (protects trainer & stats reset on public kiosks) ---
+    const DEFAULT_ADMIN_PIN = '2569';
+    function requireAdminPin(actionName = 'จัดการระบบ') {
+        try {
+            if (sessionStorage.getItem('ecoscan_admin_unlocked') === '1') return true;
+        } catch (e) { /* ignore */ }
+        const expected = (localStorage.getItem('ecoscan_admin_pin') || DEFAULT_ADMIN_PIN).trim();
+        const entered = prompt(`🔒 กรุณาใส่รหัส PIN เจ้าหน้าที่ 4 หลัก เพื่อ${actionName}:`);
+        if (entered === null) return false;
+        if (entered.trim() === expected) {
+            try { sessionStorage.setItem('ecoscan_admin_unlocked', '1'); } catch (e) { /* ignore */ }
+            return true;
+        }
+        alert('รหัส PIN ไม่ถูกต้องครับ');
+        return false;
+    }
+
+    // --- Dynamic Mascot Speech Bubble Reactions ---
+    function updateMascotReaction(info) {
+        if (!mascotGreetingText) return;
+        const isKhammuang = currentDialect === 'khammuang';
+        let msg = '';
+        if (info.type === 'money') {
+            msg = isKhammuang
+                ? '“อุ๊ย! อันนี้แม่นเงินเน้อเจ้า อย่าเอาทิ้ง เก็บใส่เป๋าไว้ดี ๆ เน้อเจ้า 💵”'
+                : '“อุ๊ย! นี่คือเงินนะครับ อย่าทิ้ง เก็บไว้ให้ดีนะครับ 💵”';
+        } else if (info.type === 'plastic_bottle') {
+            msg = isKhammuang
+                ? `“เก่งขนาดเจ้า! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังขวดพลาสติกเน้อเจ้า 🍾”`
+                : `“เยี่ยมเลยครับ! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังขวดพลาสติกนะครับ 🍾”`;
+        } else if (info.type === 'recyclable') {
+            msg = isKhammuang
+                ? `“ฮอมบุญตวยกันเจ้า! ${info.thName} ทิ้งลงถังรีไซเคิล ขายได้เงินเข้ากองทุนเน้อเจ้า ♻️”`
+                : `“ร่วมทำบุญด้วยกันครับ! ${info.thName} ทิ้งลงถังรีไซเคิลนะครับ ♻️”`;
+        } else if (info.type === 'hazardous') {
+            msg = isKhammuang
+                ? `“ระวังเน้อเจ้า! ${info.thName} เป๋นขยะอันตราย ทิ้งลงถังสีแดงอย่างระมัดระวังเน้อเจ้า ☣️”`
+                : `“ระวังนะครับ! ${info.thName} เป็นขยะอันตราย แยกทิ้งลงถังสีแดงนะครับ ☣️”`;
+        } else {
+            msg = isKhammuang
+                ? `“ขอบคุณเจ้า! ${info.thName} เอาทิ้งลง${info.bin}หื้อเรียบร้อยเน้อเจ้า 🗑️”`
+                : `“ขอบคุณครับ! ${info.thName} ทิ้งลง${info.bin}ให้เรียบร้อยนะครับ 🗑️”`;
+        }
+        mascotGreetingText.innerText = msg;
+        if (mascotHelperCard) {
+            mascotHelperCard.classList.remove('mascot-pop');
+            void mascotHelperCard.offsetWidth;
+            mascotHelperCard.classList.add('mascot-pop');
+        }
+    }
 
     // AI Trainer Studio DOM Elements & State
     const openTrainerHeaderBtn = document.getElementById('openTrainerHeaderBtn');
@@ -1235,6 +1288,7 @@ document.addEventListener('DOMContentLoaded', () => {
         applyStats(info, 1);
 
         updateStatsUI();
+        updateMascotReaction(info);
 
         // Add history log entry
         const timeString = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1601,11 +1655,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentDialect = 'central';
                 dialectLabel.innerText = '🇹🇭 เสียงภาษากลาง';
                 toggleDialectBtn.className = 'btn btn-sm btn-outline dialect-btn central';
+                if (mascotGreetingText) {
+                    mascotGreetingText.innerText = '“สวัสดีครับ! ยื่นขยะมาหน้ากล้อง ให้น้องช่วยบอกถังนะครับ ♻️”';
+                }
                 speakThaiText('สลับเป็นเสียงภาษากลางครับ');
             } else {
                 currentDialect = 'khammuang';
                 dialectLabel.innerText = '🌺 เสียงคำเมือง';
                 toggleDialectBtn.className = 'btn btn-sm btn-outline dialect-btn';
+                if (mascotGreetingText) {
+                    mascotGreetingText.innerText = '“สวัสดีเจ้า! ยื่นขยะมาหน้ากล้อง หื้อน้องช่วยบอกถังเน้อเจ้า ฮอมบุญตวยกันเจ้า ♻️”';
+                }
                 speakThaiText('สลับเป๋นเสียงคำเมืองล้านนาเจ้า');
             }
         });
@@ -1619,6 +1679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     resetStatsBtn.addEventListener('click', () => {
+        if (!requireAdminPin('รีเซ็ตสถิติและประวัติการสแกน')) return;
         if (confirm('คุณต้องการรีเซ็ตสถิติและประวัติการสแกนทั้งหมดใช่หรือไม่?')) {
             stats = { total: 0, plastic_bottle: 0, recyclable: 0, general: 0, hazardous: 0, co2: 0.0, estimatedValue: 0.0, day: todayKey() };
             scanHistory = [];
@@ -2030,9 +2091,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (trainerModalBackdrop) trainerModalBackdrop.classList.add('hidden');
     }
 
-    // Modal Triggers
-    if (openTrainerHeaderBtn) openTrainerHeaderBtn.addEventListener('click', openTrainerModal);
-    if (openTrainerBtn) openTrainerBtn.addEventListener('click', openTrainerModal);
+    // Modal Triggers (protected by Staff PIN on public kiosks)
+    const guardedOpenTrainer = () => {
+        if (!requireAdminPin('เปิดสตูดิโอฝึกสอนสินค้าไทย')) return;
+        openTrainerModal();
+    };
+    if (openTrainerHeaderBtn) openTrainerHeaderBtn.addEventListener('click', guardedOpenTrainer);
+    if (openTrainerBtn) openTrainerBtn.addEventListener('click', guardedOpenTrainer);
     if (closeTrainerModalBtn) closeTrainerModalBtn.addEventListener('click', closeTrainerModal);
     if (trainerModalBackdrop) {
         trainerModalBackdrop.addEventListener('click', (e) => {

@@ -2941,6 +2941,16 @@ body {
     50% { transform: translateY(-5px); }
 }
 
+.mascot-helper-card.mascot-pop {
+    animation: mascotCardPop 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes mascotCardPop {
+    0% { transform: scale(0.97); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.35); }
+    50% { transform: scale(1.02); box-shadow: 0 8px 24px rgba(13, 148, 136, 0.22); }
+    100% { transform: scale(1); }
+}
+
 .mascot-speech {
     display: flex;
     flex-direction: column;
