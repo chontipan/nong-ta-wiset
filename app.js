@@ -321,6 +321,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportCsvBtn = document.getElementById('exportCsvBtn');
     const mascotHelperCard = document.getElementById('mascotHelperCard');
     const mascotGreetingText = document.getElementById('mascotGreetingText');
+    const mascotSortingImg = document.getElementById('mascotSortingImg');
+    const modalMascotImg = document.getElementById('modalMascotImg');
+    const kioskBannerMascot = document.getElementById('kioskBannerMascot');
+
+    const MASCOT_POSES = {
+        plastic_bottle: 'logos/mascot-sorting.jpg',
+        recyclable: 'logos/mascot-recyclable.jpg',
+        general: 'logos/mascot-general.jpg',
+        hazardous: 'logos/mascot-hazardous.jpg',
+        money: 'logos/mascot-money.jpg'
+    };
+
+    function setMascotPose(type) {
+        const src = MASCOT_POSES[type] || MASCOT_POSES.plastic_bottle;
+        if (mascotSortingImg && !mascotSortingImg.src.endsWith(src)) mascotSortingImg.src = src;
+        if (modalMascotImg && !modalMascotImg.src.endsWith(src)) modalMascotImg.src = src;
+        if (kioskBannerMascot && !kioskBannerMascot.src.endsWith(src)) kioskBannerMascot.src = src;
+    }
 
     // --- Admin PIN Lock (protects trainer & stats reset on public kiosks) ---
     const DEFAULT_ADMIN_PIN = '2569';
@@ -341,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Dynamic Mascot Speech Bubble Reactions ---
     function updateMascotReaction(info) {
+        setMascotPose(info.type);
         if (!mascotGreetingText) return;
         const isKhammuang = currentDialect === 'khammuang';
         let msg = '';
@@ -1192,6 +1211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const uiKey = `${info.type}|${info.thName}|${info.bin}|${info.desc}`;
         if (uiKey === lastPredictionUIKey) return;
         lastPredictionUIKey = uiKey;
+        setMascotPose(info.type);
 
         binResultBadge.className = `bin-result-badge ${info.type}`;
         detectedObjectText.innerText = info.thName;

@@ -2989,6 +2989,38 @@ body {
     box-shadow: 0 3px 10px rgba(13, 148, 136, 0.15);
 }
 
+.kiosk-banner-mascot {
+    width: 108px;
+    height: 108px;
+    object-fit: contain;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 4px;
+    flex-shrink: 0;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.16);
+    animation: mascotFloat 3.6s ease-in-out infinite;
+}
+
+.modal-mascot-wrap {
+    width: 132px;
+    height: 132px;
+    margin: 0 auto 0.5rem;
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1);
+}
+
+.modal-mascot-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    animation: mascotFloat 3.2s ease-in-out infinite;
+}
+
 @media (max-width: 640px) {
     .mascot-helper-card {
         padding: 0.85rem 1rem !important;
