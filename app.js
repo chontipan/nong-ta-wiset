@@ -888,7 +888,8 @@ document.addEventListener('DOMContentLoaded', () => {
         plastic_bottle: { type: 'plastic_bottle', thName: '🍾 ขวดพลาสติก (AI จำจากที่สอน)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6–7 บาท', estValue: 0.15, desc: 'ล้างให้สะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
         recyclable: { type: 'recyclable', thName: '♻️ ขยะรีไซเคิล (AI จำจากที่สอน)', bin: 'ขยะรีไซเคิล', price: 'ดูตารางราคาตามวัสดุ', estValue: 0.30, desc: 'ล้างให้สะอาด แยกตามวัสดุ แล้วทิ้งลงถังรีไซเคิล' },
         hazardous: { type: 'hazardous', thName: '☣️ ขยะอันตราย (AI จำจากที่สอน)', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0, desc: 'แยกใส่ถังขยะอันตราย ห้ามทิ้งปนกับขยะอื่น' },
-        general: { type: 'general', thName: '🗑️ ขยะทั่วไป (AI จำจากที่สอน)', bin: 'ขยะทั่วไป', desc: DEFAULT_GENERAL_WASTE.desc }
+        general: { type: 'general', thName: '🗑️ ขยะทั่วไป (AI จำจากที่สอน)', bin: 'ขยะทั่วไป', desc: DEFAULT_GENERAL_WASTE.desc },
+        money: { type: 'money', thName: '💵 ธนบัตรไทย (AI จำจากที่สอน)', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด ไม่ควรทิ้ง!', estValue: 0, desc: 'นี่คือ เงิน ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' }
     };
 
     function infoForCocoClass(cocoClass) {

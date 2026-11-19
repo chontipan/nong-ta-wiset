@@ -3021,6 +3021,22 @@ body {
     animation: mascotFloat 3.2s ease-in-out infinite;
 }
 
+.feedback-bin.money {
+    grid-column: 1 / -1;
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #f59e0b;
+}
+
+.feedback-bin.money:hover {
+    background: #fde68a;
+}
+
+.trainer-bin-pill.money {
+    background: #fef3c7;
+    color: #b45309;
+}
+
 @media (max-width: 640px) {
     .mascot-helper-card {
         padding: 0.85rem 1rem !important;
