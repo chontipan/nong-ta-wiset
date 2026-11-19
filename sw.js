@@ -2,7 +2,7 @@
    Keeps the app, AI libraries and AI models on the device so a kiosk keeps
    working when the internet drops. Bump CACHE_VERSION when the cache rules change. */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const APP_CACHE = `app-${CACHE_VERSION}`;
 const LIB_CACHE = `libs-${CACHE_VERSION}`;
 
@@ -14,7 +14,10 @@ const APP_SHELL = [
     'styles.css',
     'manifest.webmanifest',
     'icons/icon-192.png',
-    'icons/icon-512.png'
+    'icons/icon-512.png',
+    'logos/logo-up.png',
+    'logos/logo-ict-up.png',
+    'logos/logo-maechan.jpg'
 ];
 
 // Versioned libraries, fonts and AI model files: they never change at the same URL
