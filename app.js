@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try { sessionStorage.setItem('ecoscan_admin_unlocked', '1'); } catch (e) { /* ignore */ }
             return true;
         }
-        alert('รหัส PIN ไม่ถูกต้องครับ');
+        alert('รหัส PIN ไม่ถูกต้อง');
         return false;
     }
 
@@ -365,24 +365,24 @@ document.addEventListener('DOMContentLoaded', () => {
         let msg = '';
         if (info.type === 'money') {
             msg = isKhammuang
-                ? '“อุ๊ย! อันนี้แม่นเงินเน้อเจ้า อย่าเอาทิ้ง เก็บใส่เป๋าไว้ดี ๆ เน้อเจ้า 💵”'
-                : '“อุ๊ย! นี่คือเงินนะครับ อย่าทิ้ง เก็บไว้ให้ดีนะครับ 💵”';
+                ? '“อุ๊ย! อันนี้แม่นเงินเน้อ อย่าเอาทิ้ง เก็บใส่เป๋าไว้ดี ๆ เน้อ 💵”'
+                : '“อุ๊ย! นี่คือเงินนะ อย่าทิ้ง เก็บไว้ให้ดีนะ 💵”';
         } else if (info.type === 'plastic_bottle') {
             msg = isKhammuang
-                ? `“เก่งขนาดเจ้า! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังขวดพลาสติกเน้อเจ้า 🍾”`
-                : `“เยี่ยมเลยครับ! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังขวดพลาสติกนะครับ 🍾”`;
+                ? `“เก่งขนาด! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังขวดพลาสติกเน้อ 🍾”`
+                : `“เยี่ยมเลย! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังขวดพลาสติกนะ 🍾”`;
         } else if (info.type === 'recyclable') {
             msg = isKhammuang
-                ? `“ฮอมบุญตวยกันเจ้า! ${info.thName} ทิ้งลงถังรีไซเคิล ขายได้เงินเข้ากองทุนเน้อเจ้า ♻️”`
-                : `“ร่วมทำบุญด้วยกันครับ! ${info.thName} ทิ้งลงถังรีไซเคิลนะครับ ♻️”`;
+                ? `“ฮอมบุญตวยกัน! ${info.thName} ทิ้งลงถังรีไซเคิล ขายได้เงินเข้ากองทุนเน้อ ♻️”`
+                : `“ร่วมทำบุญด้วยกัน! ${info.thName} ทิ้งลงถังรีไซเคิลนะ ♻️”`;
         } else if (info.type === 'hazardous') {
             msg = isKhammuang
-                ? `“ระวังเน้อเจ้า! ${info.thName} เป๋นขยะอันตราย ทิ้งลงถังสีแดงอย่างระมัดระวังเน้อเจ้า ☣️”`
-                : `“ระวังนะครับ! ${info.thName} เป็นขยะอันตราย แยกทิ้งลงถังสีแดงนะครับ ☣️”`;
+                ? `“ระวังเน้อ! ${info.thName} เป๋นขยะอันตราย ทิ้งลงถังสีแดงอย่างระมัดระวังเน้อ ☣️”`
+                : `“ระวังนะ! ${info.thName} เป็นขยะอันตราย แยกทิ้งลงถังสีแดงนะ ☣️”`;
         } else {
             msg = isKhammuang
-                ? `“ขอบคุณเจ้า! ${info.thName} เอาทิ้งลง${info.bin}หื้อเรียบร้อยเน้อเจ้า 🗑️”`
-                : `“ขอบคุณครับ! ${info.thName} ทิ้งลง${info.bin}ให้เรียบร้อยนะครับ 🗑️”`;
+                ? `“ขอบคุณเน้อ! ${info.thName} เอาทิ้งลง${info.bin}หื้อเรียบร้อยเน้อ 🗑️”`
+                : `“ขอบคุณนะ! ${info.thName} ทิ้งลง${info.bin}ให้เรียบร้อยนะ 🗑️”`;
         }
         mascotGreetingText.innerText = msg;
         if (mascotHelperCard) {
@@ -641,8 +641,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function tryAutoWelcomeSpeech() {
         if (isSoundMuted) return;
         const greeting = currentDialect === 'khammuang'
-            ? 'สวัสดีเจ้า น้องตาวิเศษพร้อมฮอมบุญแยกขยะแล้วเจ้า ยื่นขยะมาหน้ากล้องได้เลยเน้อเจ้า'
-            : 'สวัสดีครับ น้องตาวิเศษพร้อมแยกขยะแล้วครับ ยื่นขยะมาหน้ากล้องได้เลยนะครับ';
+            ? 'สวัสดี น้องตาวิเศษพร้อมฮอมบุญแยกขยะแล้ว ยื่นขยะมาหน้ากล้องได้เลยเน้อ'
+            : 'สวัสดี น้องตาวิเศษพร้อมแยกขยะแล้ว ยื่นขยะมาหน้ากล้องได้เลยนะ';
         speakThaiText(greeting, { isAuto: true });
     }
 
@@ -1469,31 +1469,31 @@ document.addEventListener('DOMContentLoaded', () => {
         playChime(info.type);
         if (info.type === 'money') {
             if (currentDialect === 'khammuang') {
-                speakThaiText('อันนี้แม่นเงินเน้อเจ้า! อย่าเอาทิ้งเน้อเจ้า เก็บไว้ในเป๋าเป๋นบุญเป๋นกุศลเจ้า');
+                speakThaiText('อันนี้แม่นเงินเน้อ! อย่าเอาทิ้งเน้อ เก็บไว้ในเป๋าเป๋นบุญเป๋นกุศล');
             } else {
                 speakThaiText('นี่คือ เงิน ไม่ควรทิ้ง');
             }
         } else if (info.type === 'plastic_bottle') {
             if (currentDialect === 'khammuang') {
-                speakThaiText(`${info.thName} เอาทิ้งลงถังขวดพลาสติกเน้อเจ้า ฮอมบุญตวยกันเจ้า`);
+                speakThaiText(`${info.thName} เอาทิ้งลงถังขวดพลาสติกเน้อ ฮอมบุญตวยกัน`);
             } else {
                 speakThaiText(`${info.thName} ทิ้งลง${info.bin}`);
             }
         } else if (info.type === 'recyclable') {
             if (currentDialect === 'khammuang') {
-                speakThaiText(`${info.thName} เอาทิ้งลงถังรีไซเคิลเน้อเจ้า ฮอมบุญตวยกันเจ้า`);
+                speakThaiText(`${info.thName} เอาทิ้งลงถังรีไซเคิลเน้อ ฮอมบุญตวยกัน`);
             } else {
                 speakThaiText(`${info.thName} ทิ้งลง${info.bin}`);
             }
         } else if (info.type === 'hazardous') {
             if (currentDialect === 'khammuang') {
-                speakThaiText(`อันตรายเน้อเจ้า! ${info.thName} เอาทิ้งลงถังขยะอันตรายสีแดงเน้อเจ้า`);
+                speakThaiText(`อันตรายเน้อ! ${info.thName} เอาทิ้งลงถังขยะอันตรายสีแดงเน้อ`);
             } else {
                 speakThaiText(`${info.thName} ทิ้งลง${info.bin}`);
             }
         } else {
             if (currentDialect === 'khammuang') {
-                speakThaiText(`${info.thName} เอาทิ้งลง${info.bin}เน้อเจ้า`);
+                speakThaiText(`${info.thName} เอาทิ้งลง${info.bin}เน้อ`);
             } else {
                 speakThaiText(`${info.thName} ทิ้งลง${info.bin}`);
             }
@@ -1782,17 +1782,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 dialectLabel.innerText = '🇹🇭 เสียงภาษากลาง';
                 toggleDialectBtn.className = 'btn btn-sm btn-outline dialect-btn central';
                 if (mascotGreetingText) {
-                    mascotGreetingText.innerText = '“สวัสดีครับ! ยื่นขยะมาหน้ากล้อง ให้น้องช่วยบอกถังนะครับ ♻️”';
+                    mascotGreetingText.innerText = '“สวัสดี! ยื่นขยะมาหน้ากล้อง ให้น้องช่วยบอกถังนะ ♻️”';
                 }
-                speakThaiText('สลับเป็นเสียงภาษากลางครับ');
+                speakThaiText('สลับเป็นเสียงภาษากลาง');
             } else {
                 currentDialect = 'khammuang';
                 dialectLabel.innerText = '🌺 เสียงคำเมือง';
                 toggleDialectBtn.className = 'btn btn-sm btn-outline dialect-btn';
                 if (mascotGreetingText) {
-                    mascotGreetingText.innerText = '“สวัสดีเจ้า! ยื่นขยะมาหน้ากล้อง หื้อน้องช่วยบอกถังเน้อเจ้า ฮอมบุญตวยกันเจ้า ♻️”';
+                    mascotGreetingText.innerText = '“สวัสดี! ยื่นขยะมาหน้ากล้อง หื้อน้องช่วยบอกถังเน้อ ฮอมบุญตวยกัน ♻️”';
                 }
-                speakThaiText('สลับเป๋นเสียงคำเมืองล้านนาเจ้า');
+                speakThaiText('สลับเป๋นเสียงคำเมืองล้านนา');
             }
         });
     }
@@ -2188,9 +2188,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Audio confirmation in selected dialect
         if (currentDialect === 'khammuang') {
-            speakThaiText(`บันทึกการฝึกสอนสินค้า ${prod.name} เรียบร้อยแล้วเจ้า`);
+            speakThaiText(`บันทึกการฝึกสอนสินค้า ${prod.name} เรียบร้อยแล้วเน้อ`);
         } else {
-            speakThaiText(`บันทึกการฝึกสอนสินค้า ${prod.name} เรียบร้อยแล้วครับ`);
+            speakThaiText(`บันทึกการฝึกสอนสินค้า ${prod.name} เรียบร้อยแล้ว`);
         }
     }
 
@@ -2661,9 +2661,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `จำแล้ว! ครั้งหน้าของแบบนี้จะบอกให้ทิ้ง "${newInfo.bin}"`
                 : `แก้เป็น "${newInfo.bin}" แล้ว`);
             if (currentDialect === 'khammuang') {
-                speakThaiText(`ขอบคุณเจ้า จำไว้แล้วเจ้า อันนี้ทิ้ง${newInfo.bin}`);
+                speakThaiText(`ขอบคุณเน้อ จำไว้แล้ว อันนี้ทิ้ง${newInfo.bin}`);
             } else {
-                speakThaiText(`ขอบคุณครับ จำไว้แล้ว อันนี้ทิ้ง${newInfo.bin}`);
+                speakThaiText(`ขอบคุณ จำไว้แล้ว อันนี้ทิ้ง${newInfo.bin}`);
             }
             setTimeout(finishCountdown, 1600);
         });
@@ -2754,8 +2754,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const clickedSpeechControl = target && target.closest && target.closest('.sample-btn, #toggleDialectBtn, #toggleSoundBtn');
             if (!clickedSpeechControl && !isSoundMuted) {
                 const msg = pendingSpeechText || (currentDialect === 'khammuang'
-                    ? 'สวัสดีเจ้า น้องตาวิเศษพร้อมฮอมบุญแยกขยะแล้วเจ้า'
-                    : 'สวัสดีครับ น้องตาวิเศษพร้อมแยกขยะแล้วครับ');
+                    ? 'สวัสดี น้องตาวิเศษพร้อมฮอมบุญแยกขยะแล้ว'
+                    : 'สวัสดี น้องตาวิเศษพร้อมแยกขยะแล้ว');
                 pendingSpeechText = '';
                 speakThaiText(msg);
             }
