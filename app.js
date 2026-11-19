@@ -601,12 +601,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isSoundMuted || !('speechSynthesis' in window) || !text) return;
         try {
             if (!cachedThaiVoice) refreshThaiVoice();
-            window.speechSynthesis.cancel();
+            // On iOS Safari, calling cancel() when idle can drop the next speak() call
+            if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+                window.speechSynthesis.cancel();
+            }
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'th-TH';
             if (cachedThaiVoice) utterance.voice = cachedThaiVoice;
             utterance.rate = 1.0;
             utterance.pitch = 1.0;
+            utterance.volume = 1.0;
             utterance.onstart = () => {
                 speechUnlocked = true;
                 pendingSpeechText = '';
@@ -620,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             window.speechSynthesis.speak(utterance);
 
-            // Safari/iOS sometimes silently drops autoplay speech without firing onerror
+            // Safari/iOS silently drops autoplay speech without firing onerror
             if (isAuto && !speechUnlocked) {
                 setTimeout(() => {
                     if (!speechUnlocked && !window.speechSynthesis.speaking) {
@@ -2739,7 +2743,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Unlock AudioContext & SpeechSynthesis on first user tap (required by iOS Safari & Chrome autoplay)
+    // Unlock AudioContext & SpeechSynthesis on first click/touchend (iOS Safari ignores touchstart for speech!)
     function unlockAudioOnGesture(e) {
         if (speechUnlocked) return;
         speechUnlocked = true;
@@ -2763,8 +2767,7 @@ document.addEventListener('DOMContentLoaded', () => {
             unlockAudioOnGesture(e);
         });
     }
-    window.addEventListener('touchstart', unlockAudioOnGesture, { once: true, passive: true });
-    window.addEventListener('click', unlockAudioOnGesture, { once: true, passive: true });
+    window.addEventListener('click', unlockAudioOnGesture, { once: true });
 
     // Battery Saver (pause AI when app/tab is in background) + Screen Wake Lock
     let wakeLockSentinel = null;
