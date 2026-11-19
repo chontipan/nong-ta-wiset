@@ -2,7 +2,7 @@
    Keeps the app, AI libraries and AI models on the device so a kiosk keeps
    working when the internet drops. Bump CACHE_VERSION when the cache rules change. */
 
-const CACHE_VERSION = 'v21';
+const CACHE_VERSION = 'v22';
 const APP_CACHE = `app-${CACHE_VERSION}`;
 const LIB_CACHE = `libs-${CACHE_VERSION}`;
 

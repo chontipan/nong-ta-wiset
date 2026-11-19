@@ -2996,9 +2996,402 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     requestScreenWakeLock();
 
+    // --- Admin Price Board Editor & Cloud Sync (settings/price_board) ---
+    const priceDatePillEl = document.getElementById('priceDatePill');
+    const openPriceEditorBtn = document.getElementById('openPriceEditorBtn');
+    const priceEditorModalBackdrop = document.getElementById('priceEditorModalBackdrop');
+    const closePriceEditorBtn = document.getElementById('closePriceEditorBtn');
+    const priceEditorForm = document.getElementById('priceEditorForm');
+    const priceDateInput = document.getElementById('priceDateInput');
+    const priceEditorFields = document.getElementById('priceEditorFields');
+    const resetPriceBoardBtn = document.getElementById('resetPriceBoardBtn');
+
+    const DEFAULT_PRICE_DATE = priceDatePillEl ? priceDatePillEl.innerText.trim() : 'วันที่ 20 พฤศจิกายน 2569';
+    const DEFAULT_PRICE_ITEMS = {};
+    const PRICE_ITEM_LABELS = {};
+    document.querySelectorAll('#priceCategoriesGrid li[data-price-key]').forEach(li => {
+        const key = li.getAttribute('data-price-key');
+        const labelEl = li.querySelector('span');
+        const valEl = li.querySelector('strong');
+        if (key && labelEl && valEl) {
+            PRICE_ITEM_LABELS[key] = labelEl.innerText.trim();
+            DEFAULT_PRICE_ITEMS[key] = valEl.innerText.trim();
+        }
+    });
+
+    let currentPriceBoard = { dateLabel: DEFAULT_PRICE_DATE, items: { ...DEFAULT_PRICE_ITEMS } };
+
+    function applyPriceBoardToDOM(board) {
+        if (!board) return;
+        currentPriceBoard = {
+            dateLabel: board.dateLabel || DEFAULT_PRICE_DATE,
+            items: { ...DEFAULT_PRICE_ITEMS, ...(board.items || {}) }
+        };
+        if (priceDatePillEl) priceDatePillEl.innerText = currentPriceBoard.dateLabel;
+        document.querySelectorAll('#priceCategoriesGrid li[data-price-key]').forEach(li => {
+            const key = li.getAttribute('data-price-key');
+            const valEl = li.querySelector('strong');
+            if (key && valEl && currentPriceBoard.items[key] !== undefined) {
+                valEl.innerText = currentPriceBoard.items[key];
+            }
+        });
+    }
+
+    function loadSavedPriceBoard() {
+        try {
+            const raw = localStorage.getItem('ecoscan_price_board');
+            if (raw) applyPriceBoardToDOM(JSON.parse(raw));
+        } catch (e) { /* ignore */ }
+    }
+
+    function listenToCloudPriceBoard() {
+        if (!db) return;
+        try {
+            db.collection('settings').doc('price_board').onSnapshot(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    applyPriceBoardToDOM(data);
+                    try {
+                        localStorage.setItem('ecoscan_price_board', JSON.stringify({
+                            dateLabel: data.dateLabel,
+                            items: data.items
+                        }));
+                    } catch (e) { /* ignore */ }
+                }
+            }, err => console.warn('Price board sync warning:', err));
+        } catch (e) { /* ignore */ }
+    }
+
+    function openPriceEditorModal() {
+        if (!priceEditorModalBackdrop || !priceEditorFields) return;
+        if (priceDateInput) priceDateInput.value = currentPriceBoard.dateLabel;
+        priceEditorFields.innerHTML = Object.keys(PRICE_ITEM_LABELS).map(key => `
+            <div class="price-edit-row">
+                <label for="pe_${escapeHtml(key)}">${escapeHtml(PRICE_ITEM_LABELS[key])}</label>
+                <input type="text" id="pe_${escapeHtml(key)}" data-price-key="${escapeHtml(key)}" class="form-input" value="${escapeHtml(currentPriceBoard.items[key] || '')}" required>
+            </div>
+        `).join('');
+        priceEditorModalBackdrop.classList.remove('hidden');
+    }
+
+    function closePriceEditorModal() {
+        if (priceEditorModalBackdrop) priceEditorModalBackdrop.classList.add('hidden');
+    }
+
+    if (openPriceEditorBtn) {
+        openPriceEditorBtn.addEventListener('click', () => {
+            if (!requireAdminPin('แก้ไขตารางราคารับซื้อขยะรีไซเคิล')) return;
+            openPriceEditorModal();
+        });
+    }
+    if (closePriceEditorBtn) closePriceEditorBtn.addEventListener('click', closePriceEditorModal);
+    if (priceEditorModalBackdrop) {
+        priceEditorModalBackdrop.addEventListener('click', (e) => {
+            if (e.target === priceEditorModalBackdrop) closePriceEditorModal();
+        });
+    }
+
+    if (priceEditorForm) {
+        priceEditorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newDate = (priceDateInput ? priceDateInput.value.trim() : '') || DEFAULT_PRICE_DATE;
+            const newItems = {};
+            priceEditorFields.querySelectorAll('input[data-price-key]').forEach(inp => {
+                newItems[inp.getAttribute('data-price-key')] = inp.value.trim();
+            });
+            const payload = { dateLabel: newDate, items: newItems };
+            applyPriceBoardToDOM(payload);
+            try { localStorage.setItem('ecoscan_price_board', JSON.stringify(payload)); } catch (err) { /* ignore */ }
+            if (db) {
+                try {
+                    await db.collection('settings').doc('price_board').set({
+                        dateLabel: newDate,
+                        items: newItems,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (cloudErr) {
+                    console.warn('Cloud price board save warning:', cloudErr);
+                }
+            }
+            closePriceEditorModal();
+            alert('บันทึกตารางราคารับซื้อเรียบร้อยและอัปเดตทุกเครื่องแล้ว');
+        });
+    }
+
+    if (resetPriceBoardBtn) {
+        resetPriceBoardBtn.addEventListener('click', () => {
+            if (!confirm('คืนค่าราคาทั้งหมดกลับเป็นประกาศเริ่มต้นใช่หรือไม่?')) return;
+            if (priceDateInput) priceDateInput.value = DEFAULT_PRICE_DATE;
+            priceEditorFields.querySelectorAll('input[data-price-key]').forEach(inp => {
+                const k = inp.getAttribute('data-price-key');
+                inp.value = DEFAULT_PRICE_ITEMS[k] || '';
+            });
+        });
+    }
+
+    // --- Monthly Executive Report Dashboard & Print/PDF Export ---
+    const openReportHeaderBtn = document.getElementById('openReportHeaderBtn');
+    const reportModalBackdrop = document.getElementById('reportModalBackdrop');
+    const closeReportModalBtn = document.getElementById('closeReportModalBtn');
+    const reportMonthPicker = document.getElementById('reportMonthPicker');
+    const reportKioskFilter = document.getElementById('reportKioskFilter');
+    const refreshReportBtn = document.getElementById('refreshReportBtn');
+    const exportMonthlyCsvBtn = document.getElementById('exportMonthlyCsvBtn');
+    const printReportBtn = document.getElementById('printReportBtn');
+    const reportStatusNote = document.getElementById('reportStatusNote');
+    const reportPrintMeta = document.getElementById('reportPrintMeta');
+    const repTotalCount = document.getElementById('repTotalCount');
+    const repEstValue = document.getElementById('repEstValue');
+    const repCo2Saved = document.getElementById('repCo2Saved');
+    const repTreesEq = document.getElementById('repTreesEq');
+    const reportCategoryBars = document.getElementById('reportCategoryBars');
+    const reportKioskTableBody = document.getElementById('reportKioskTableBody');
+    const reportDailyTableBody = document.getElementById('reportDailyTableBody');
+
+    let cachedMonthlyDocs = []; // { id, day, kiosk, total, plastic_bottle, recyclable, general, hazardous, co2 }
+    let lastRenderedDailyRows = [];
+
+    function currentYearMonth() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function formatThaiMonth(ym) {
+        const [y, m] = ym.split('-').map(Number);
+        const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+            'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+        return `${months[(m || 1) - 1] || ''} ${y + 543}`;
+    }
+
+    async function fetchMonthlyReportData(ym) {
+        if (reportStatusNote) reportStatusNote.innerText = 'กำลังโหลดข้อมูลรายเดือนจาก Cloud Firestore...';
+        cachedMonthlyDocs = [];
+
+        if (db) {
+            try {
+                const startDay = `${ym}-01`;
+                const endDay = `${ym}-31`;
+                const snap = await db.collection('stats')
+                    .where('day', '>=', startDay)
+                    .where('day', '<=', endDay)
+                    .get();
+                snap.forEach(doc => {
+                    const d = doc.data() || {};
+                    const isPerKiosk = doc.id.includes('__');
+                    cachedMonthlyDocs.push({
+                        id: doc.id,
+                        day: d.day || doc.id.split('__')[0],
+                        kiosk: isPerKiosk ? (d.kiosk || doc.id.split('__')[1] || 'ไม่ระบุ') : '__all__',
+                        total: Number(d.total) || 0,
+                        plastic_bottle: Number(d.plastic_bottle) || 0,
+                        recyclable: Number(d.recyclable) || 0,
+                        general: Number(d.general) || 0,
+                        hazardous: Number(d.hazardous) || 0,
+                        co2: Number(d.co2) || 0
+                    });
+                });
+            } catch (err) {
+                console.warn('Monthly report Firestore fetch warning:', err);
+            }
+        }
+
+        // Fallback to local today stats if selected month is current month and cloud returned nothing
+        if (cachedMonthlyDocs.length === 0 && ym === currentYearMonth() && stats.total > 0) {
+            cachedMonthlyDocs.push({
+                id: todayKey(),
+                day: todayKey(),
+                kiosk: '__all__',
+                total: stats.total || 0,
+                plastic_bottle: stats.plastic_bottle || 0,
+                recyclable: stats.recyclable || 0,
+                general: stats.general || 0,
+                hazardous: stats.hazardous || 0,
+                co2: stats.co2 || 0
+            });
+            if (reportStatusNote) reportStatusNote.innerText = 'แสดงข้อมูลจากเครื่องนี้ (ยังไม่พบข้อมูลคลาวด์ในเดือนที่เลือก)';
+        } else if (reportStatusNote) {
+            reportStatusNote.innerText = cachedMonthlyDocs.length > 0
+                ? `โหลดข้อมูลเดือน${formatThaiMonth(ym)} สำเร็จ (${cachedMonthlyDocs.length} รายการ)`
+                : `ยังไม่มีข้อมูลการสแกนในเดือน${formatThaiMonth(ym)}`;
+        }
+
+        // Populate kiosk dropdown
+        if (reportKioskFilter) {
+            const kiosks = Array.from(new Set(cachedMonthlyDocs.filter(d => d.kiosk !== '__all__').map(d => d.kiosk))).sort();
+            const prev = reportKioskFilter.value;
+            reportKioskFilter.innerHTML = `<option value="__all__">ทุกตู้รวมกัน</option>` +
+                kiosks.map(k => `<option value="${escapeHtml(k)}">ตู้: ${escapeHtml(k)}</option>`).join('');
+            if (kiosks.includes(prev)) reportKioskFilter.value = prev;
+        }
+
+        renderMonthlyReport();
+    }
+
+    function renderMonthlyReport() {
+        const ym = (reportMonthPicker && reportMonthPicker.value) || currentYearMonth();
+        const selectedKiosk = (reportKioskFilter && reportKioskFilter.value) || '__all__';
+        const rows = cachedMonthlyDocs
+            .filter(d => d.kiosk === selectedKiosk)
+            .sort((a, b) => a.day.localeCompare(b.day));
+
+        lastRenderedDailyRows = rows;
+
+        const sum = rows.reduce((acc, r) => {
+            acc.total += r.total;
+            acc.plastic_bottle += r.plastic_bottle;
+            acc.recyclable += r.recyclable;
+            acc.general += r.general;
+            acc.hazardous += r.hazardous;
+            acc.co2 += r.co2;
+            return acc;
+        }, { total: 0, plastic_bottle: 0, recyclable: 0, general: 0, hazardous: 0, co2: 0 });
+
+        const estValue = sum.plastic_bottle * 0.15 + sum.recyclable * 0.30;
+        const trees = sum.co2 / 9.0;
+
+        if (reportPrintMeta) {
+            const scopeLabel = selectedKiosk === '__all__' ? 'รวมทุกจุดตั้งตู้' : `จุดตั้งตู้: ${selectedKiosk}`;
+            reportPrintMeta.innerText = `ประจำเดือน${formatThaiMonth(ym)} · ${scopeLabel} · พิมพ์เมื่อ ${new Date().toLocaleDateString('th-TH')}`;
+        }
+        if (repTotalCount) repTotalCount.innerText = sum.total.toLocaleString('th-TH');
+        if (repEstValue) repEstValue.innerText = estValue.toFixed(2);
+        if (repCo2Saved) repCo2Saved.innerText = sum.co2.toFixed(2);
+        if (repTreesEq) repTreesEq.innerText = (trees > 0 && trees < 1) ? trees.toFixed(2) : trees.toFixed(1);
+
+        // 4-Bin Horizontal Bars
+        if (reportCategoryBars) {
+            const cats = [
+                { key: 'plastic_bottle', label: '🍾 ขวดพลาสติก', count: sum.plastic_bottle, cls: 'plastic_bottle' },
+                { key: 'recyclable', label: '♻️ ขยะรีไซเคิล', count: sum.recyclable, cls: 'recyclable' },
+                { key: 'general', label: '🗑️ ขยะทั่วไป', count: sum.general, cls: 'general' },
+                { key: 'hazardous', label: '☣️ ขยะอันตราย', count: sum.hazardous, cls: 'hazardous' }
+            ];
+            const denom = Math.max(sum.total, 1);
+            reportCategoryBars.innerHTML = cats.map(c => {
+                const pct = Math.round((c.count / denom) * 100);
+                return `
+                    <div class="report-bar-row">
+                        <div class="report-bar-head">
+                            <span>${c.label}</span>
+                            <strong>${c.count.toLocaleString('th-TH')} ชิ้น (${pct}%)</strong>
+                        </div>
+                        <div class="report-bar-track">
+                            <div class="report-bar-fill ${c.cls}" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Kiosk Comparison Table
+        if (reportKioskTableBody) {
+            const byKiosk = new Map();
+            cachedMonthlyDocs.filter(d => d.kiosk !== '__all__').forEach(d => {
+                const cur = byKiosk.get(d.kiosk) || { kiosk: d.kiosk, total: 0, plastic_bottle: 0, recyclable: 0, general: 0, hazardous: 0, co2: 0 };
+                cur.total += d.total;
+                cur.plastic_bottle += d.plastic_bottle;
+                cur.recyclable += d.recyclable;
+                cur.general += d.general;
+                cur.hazardous += d.hazardous;
+                cur.co2 += d.co2;
+                byKiosk.set(d.kiosk, cur);
+            });
+            const kList = Array.from(byKiosk.values()).sort((a, b) => b.total - a.total);
+            if (kList.length === 0) {
+                reportKioskTableBody.innerHTML = `<tr class="empty-row"><td colspan="7">ยังไม่มีข้อมูลแยกตามชื่อตู้ในเดือนนี้ (ตั้งชื่อตู้ได้ผ่านลิงก์ ?kiosk=ชื่อตู้)</td></tr>`;
+            } else {
+                reportKioskTableBody.innerHTML = kList.map(k => `
+                    <tr>
+                        <td><strong>${escapeHtml(k.kiosk)}</strong></td>
+                        <td><strong>${k.total}</strong></td>
+                        <td>${k.plastic_bottle}</td>
+                        <td>${k.recyclable}</td>
+                        <td>${k.general}</td>
+                        <td>${k.hazardous}</td>
+                        <td>${k.co2.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // Daily Breakdown Table
+        if (reportDailyTableBody) {
+            if (rows.length === 0) {
+                reportDailyTableBody.innerHTML = `<tr class="empty-row"><td colspan="7">ไม่มีรายการในเดือนที่เลือก</td></tr>`;
+            } else {
+                reportDailyTableBody.innerHTML = rows.map(r => `
+                    <tr>
+                        <td>${escapeHtml(r.day)}</td>
+                        <td><strong>${r.total}</strong></td>
+                        <td>${r.plastic_bottle}</td>
+                        <td>${r.recyclable}</td>
+                        <td>${r.general}</td>
+                        <td>${r.hazardous}</td>
+                        <td>${r.co2.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+    }
+
+    function openReportModal() {
+        if (!reportModalBackdrop) return;
+        if (reportMonthPicker && !reportMonthPicker.value) {
+            reportMonthPicker.value = currentYearMonth();
+        }
+        reportModalBackdrop.classList.remove('hidden');
+        fetchMonthlyReportData(reportMonthPicker ? reportMonthPicker.value : currentYearMonth());
+    }
+
+    function closeReportModal() {
+        if (reportModalBackdrop) reportModalBackdrop.classList.add('hidden');
+    }
+
+    if (openReportHeaderBtn) openReportHeaderBtn.addEventListener('click', openReportModal);
+    if (closeReportModalBtn) closeReportModalBtn.addEventListener('click', closeReportModal);
+    if (reportModalBackdrop) {
+        reportModalBackdrop.addEventListener('click', (e) => {
+            if (e.target === reportModalBackdrop) closeReportModal();
+        });
+    }
+    if (reportMonthPicker) {
+        reportMonthPicker.addEventListener('change', () => fetchMonthlyReportData(reportMonthPicker.value));
+    }
+    if (reportKioskFilter) {
+        reportKioskFilter.addEventListener('change', renderMonthlyReport);
+    }
+    if (refreshReportBtn) {
+        refreshReportBtn.addEventListener('click', () => fetchMonthlyReportData(reportMonthPicker ? reportMonthPicker.value : currentYearMonth()));
+    }
+    if (printReportBtn) {
+        printReportBtn.addEventListener('click', () => window.print());
+    }
+    if (exportMonthlyCsvBtn) {
+        exportMonthlyCsvBtn.addEventListener('click', () => {
+            if (lastRenderedDailyRows.length === 0) {
+                alert('ไม่มีข้อมูลในเดือนนี้สำหรับส่งออก');
+                return;
+            }
+            const ym = (reportMonthPicker && reportMonthPicker.value) || currentYearMonth();
+            const headers = ['Date,Total,PlasticBottle,Recyclable,General,Hazardous,CO2_kg'];
+            const lines = lastRenderedDailyRows.map(r =>
+                [r.day, r.total, r.plastic_bottle, r.recyclable, r.general, r.hazardous, r.co2.toFixed(2)].join(',')
+            );
+            const blob = new Blob(['\uFEFF' + [headers, ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nongtawiset_report_${ym}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    }
+
     // --- Start Application ---
+    loadSavedPriceBoard();
     updateScanModeUI();
     initApp();
+    listenToCloudPriceBoard();
 
 });
 

@@ -3314,6 +3314,304 @@ body {
     object-fit: cover;
 }
 
+/* --- Admin Price Editor & Executive Monthly Report Dashboard --- */
+.price-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.price-edit-btn {
+    font-size: 0.82rem;
+    color: #0f766e;
+    font-weight: 600;
+    padding: 0.25rem 0.55rem;
+    border-radius: 8px;
+    background: rgba(13, 148, 136, 0.1);
+}
+
+.price-edit-btn:hover {
+    background: rgba(13, 148, 136, 0.2);
+}
+
+.report-launch-btn {
+    border-color: rgba(13, 148, 136, 0.45);
+    color: #0f766e;
+}
+
+.admin-modal-card,
+.report-modal-card {
+    max-width: 900px !important;
+    width: 95vw !important;
+}
+
+.price-editor-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.price-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
+    max-height: 52vh;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+.price-edit-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+}
+
+.price-edit-row label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.price-editor-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.report-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    max-height: 76vh;
+    overflow-y: auto;
+}
+
+.report-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+}
+
+.report-filters,
+.report-export-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.report-filter-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.report-filter-item .form-input,
+.report-filter-item .form-select {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.86rem;
+}
+
+.report-status-note {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.report-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.85rem;
+}
+
+.report-kpi-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.report-kpi-card.total { border-top: 4px solid #0ea5e9; }
+.report-kpi-card.value { border-top: 4px solid #f59e0b; }
+.report-kpi-card.co2 { border-top: 4px solid #0d9488; }
+.report-kpi-card.trees { border-top: 4px solid #10b981; }
+
+.report-kpi-card .kpi-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.report-kpi-card .kpi-val {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+}
+
+.report-kpi-card .kpi-unit {
+    font-size: 0.76rem;
+    color: #64748b;
+}
+
+.report-section h3 {
+    margin: 0 0 0.6rem;
+    font-size: 0.98rem;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.report-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.report-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.report-bar-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    color: #334155;
+}
+
+.report-bar-track {
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.report-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.35s ease;
+}
+
+.report-bar-fill.plastic_bottle { background: #0d9488; }
+.report-bar-fill.recyclable { background: #10b981; }
+.report-bar-fill.general { background: #0ea5e9; }
+.report-bar-fill.hazardous { background: #f43f5e; }
+
+.report-print-header,
+.report-print-footer {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .report-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Official A4 Print / PDF Report Layout */
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #reportModalBackdrop,
+    #reportModalBackdrop * {
+        visibility: visible !important;
+    }
+    #reportModalBackdrop {
+        position: static !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+    #printableReportArea {
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .report-body {
+        max-height: none !important;
+        overflow: visible !important;
+        padding: 0.5rem 0 !important;
+    }
+    .report-print-header {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.5rem;
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 2px solid #0f766e;
+    }
+    .report-print-logos {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+    .report-print-logos img {
+        height: 54px;
+        width: auto;
+        object-fit: contain;
+    }
+    .report-print-logos img.round-logo {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .report-print-title h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #0f172a;
+    }
+    .report-print-title p {
+        margin: 0.2rem 0 0;
+        font-size: 0.9rem;
+        color: #334155;
+    }
+    .report-print-footer {
+        display: block !important;
+        margin-top: 1.25rem;
+        padding-top: 0.6rem;
+        border-top: 1px solid #cbd5e1;
+        text-align: center;
+        font-size: 0.8rem;
+        color: #475569;
+    }
+    .report-kpi-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+}
+
 @media (max-width: 640px) {
     .mascot-helper-card {
         padding: 0.85rem 1rem !important;

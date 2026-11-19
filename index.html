@@ -69,6 +69,10 @@
                     <i class="fa-solid fa-graduation-cap"></i> <span>🎓 เทรนสินค้าไทย</span>
                 </button>
 
+                <button class="btn btn-sm btn-outline report-launch-btn" id="openReportHeaderBtn" title="แดชบอร์ดสรุปผลรายเดือนและพิมพ์รายงาน">
+                    <i class="fa-solid fa-chart-column"></i> <span>📊 รายงานสรุป</span>
+                </button>
+
                 <button class="btn btn-primary btn-sm" id="toggleKioskBtn" title="สลับเป็นโหมดตู้ Kiosk เต็มจอ">
                     <i class="fa-solid fa-expand"></i> Kiosk Mode
                 </button>
@@ -270,64 +274,69 @@
                 <div class="card price-rates-card">
                     <div class="card-header">
                         <h2><i class="fa-solid fa-tags"></i> ราคาขยะรีไซเคิล</h2>
-                        <span class="price-date-pill">วันที่ 20 พฤศจิกายน 2569</span>
+                        <div class="price-header-actions">
+                            <span class="price-date-pill" id="priceDatePill">วันที่ 20 พฤศจิกายน 2569</span>
+                            <button type="button" class="btn-text price-edit-btn" id="openPriceEditorBtn" title="แก้ไขราคารับซื้อ (สำหรับเจ้าหน้าที่)">
+                                <i class="fa-solid fa-pen-to-square"></i> แก้ราคา
+                            </button>
+                        </div>
                     </div>
                     <p class="price-source">
                         ประกาศโดย เทศบาลตำบลแม่จัน · โทร <a href="tel:053771222">053-771222 ต่อ 114</a> ·
                         <a href="https://www.maechan.go.th" target="_blank" rel="noopener">maechan.go.th</a>
                     </p>
 
-                    <div class="price-categories-grid">
+                    <div class="price-categories-grid" id="priceCategoriesGrid">
                         <div class="price-cat-box plastic">
                             <div class="price-cat-title"><i class="fa-solid fa-bottle-water"></i> พลาสติก</div>
                             <ul class="price-list">
-                                <li><span>พลาสติกรวม</span> <strong>กก.ละ 3 บาท</strong></li>
-                                <li><span>ขวดน้ำ PET</span> <strong>กก.ละ 6 บาท</strong></li>
-                                <li><span>ขวดพลาสติกขุ่น (ขวดนม)</span> <strong>กก.ละ 7 บาท</strong></li>
-                                <li><span>ท่อ PVC, สายยาง</span> <strong>กก.ละ 2 บาท</strong></li>
+                                <li data-price-key="plastic_mixed"><span>พลาสติกรวม</span> <strong>กก.ละ 3 บาท</strong></li>
+                                <li data-price-key="plastic_pet"><span>ขวดน้ำ PET</span> <strong>กก.ละ 6 บาท</strong></li>
+                                <li data-price-key="plastic_hdpe"><span>ขวดพลาสติกขุ่น (ขวดนม)</span> <strong>กก.ละ 7 บาท</strong></li>
+                                <li data-price-key="plastic_pvc"><span>ท่อ PVC, สายยาง</span> <strong>กก.ละ 2 บาท</strong></li>
                             </ul>
                         </div>
 
                         <div class="price-cat-box paper">
                             <div class="price-cat-title"><i class="fa-solid fa-box-archive"></i> กระดาษ</div>
                             <ul class="price-list">
-                                <li><span>กระดาษขาว A4</span> <strong>กก.ละ 5 บาท</strong></li>
-                                <li><span>กระดาษลัง (สีน้ำตาล)</span> <strong>กก.ละ 3 บาท</strong></li>
-                                <li><span>กระดาษหนังสือพิมพ์</span> <strong>กก.ละ 4 บาท</strong></li>
-                                <li><span>กระดาษรวม / กระดาษสมุด / หนังสือ / สมุดเล่ม</span> <strong>กก.ละ 2 บาท</strong></li>
+                                <li data-price-key="paper_a4"><span>กระดาษขาว A4</span> <strong>กก.ละ 5 บาท</strong></li>
+                                <li data-price-key="paper_box"><span>กระดาษลัง (สีน้ำตาล)</span> <strong>กก.ละ 3 บาท</strong></li>
+                                <li data-price-key="paper_news"><span>กระดาษหนังสือพิมพ์</span> <strong>กก.ละ 4 บาท</strong></li>
+                                <li data-price-key="paper_mixed"><span>กระดาษรวม / กระดาษสมุด / หนังสือ / สมุดเล่ม</span> <strong>กก.ละ 2 บาท</strong></li>
                             </ul>
                         </div>
 
                         <div class="price-cat-box metal">
                             <div class="price-cat-title"><i class="fa-solid fa-cubes-stacked"></i> อลูมิเนียม & โลหะ</div>
                             <ul class="price-list">
-                                <li><span>กระป๋องเครื่องดื่ม (อลูมิเนียม)</span> <strong>กก.ละ 60 บาท</strong></li>
-                                <li><span>กระป๋องสังกะสี</span> <strong>กก.ละ 3 บาท</strong></li>
-                                <li><span>เหล็ก</span> <strong>กก.ละ 7 บาท</strong></li>
-                                <li><span>สายไฟรวม (ไม่ปอก)</span> <strong>กก.ละ 35 บาท</strong></li>
-                                <li><span>สแตนเลส</span> <strong>กก.ละ 20 บาท</strong></li>
-                                <li><span>ทองแดงเปลือย</span> <strong>กก.ละ 350 บาท</strong></li>
+                                <li data-price-key="metal_alu_can"><span>กระป๋องเครื่องดื่ม (อลูมิเนียม)</span> <strong>กก.ละ 60 บาท</strong></li>
+                                <li data-price-key="metal_tin_can"><span>กระป๋องสังกะสี</span> <strong>กก.ละ 3 บาท</strong></li>
+                                <li data-price-key="metal_iron"><span>เหล็ก</span> <strong>กก.ละ 7 บาท</strong></li>
+                                <li data-price-key="metal_wire"><span>สายไฟรวม (ไม่ปอก)</span> <strong>กก.ละ 35 บาท</strong></li>
+                                <li data-price-key="metal_stainless"><span>สแตนเลส</span> <strong>กก.ละ 20 บาท</strong></li>
+                                <li data-price-key="metal_copper"><span>ทองแดงเปลือย</span> <strong>กก.ละ 350 บาท</strong></li>
                             </ul>
                         </div>
 
                         <div class="price-cat-box other">
                             <div class="price-cat-title"><i class="fa-solid fa-gear"></i> อื่นๆ</div>
                             <ul class="price-list">
-                                <li><span>น้ำมันพืชที่ใช้แล้ว</span> <strong>กก.ละ 20 บาท</strong></li>
-                                <li><span>แผ่นซีดี</span> <strong>กก.ละ 8 บาท</strong></li>
-                                <li><span>จอคอม / ทีวี</span> <strong>เครื่องละ 20 บาท</strong></li>
-                                <li><span>ไฟเบอร์ (เครื่องใช้ไฟฟ้า)</span> <strong>กก.ละ 1 บาท</strong></li>
-                                <li><span>แบตเตอรี่รถยนต์ (เทน้ำ)</span> <strong>กก.ละ 20 บาท</strong></li>
+                                <li data-price-key="other_oil"><span>น้ำมันพืชที่ใช้แล้ว</span> <strong>กก.ละ 20 บาท</strong></li>
+                                <li data-price-key="other_cd"><span>แผ่นซีดี</span> <strong>กก.ละ 8 บาท</strong></li>
+                                <li data-price-key="other_tv"><span>จอคอม / ทีวี</span> <strong>เครื่องละ 20 บาท</strong></li>
+                                <li data-price-key="other_fiber"><span>ไฟเบอร์ (เครื่องใช้ไฟฟ้า)</span> <strong>กก.ละ 1 บาท</strong></li>
+                                <li data-price-key="other_battery"><span>แบตเตอรี่รถยนต์ (เทน้ำ)</span> <strong>กก.ละ 20 บาท</strong></li>
                             </ul>
                         </div>
 
                         <div class="price-cat-box glass">
                             <div class="price-cat-title"><i class="fa-solid fa-wine-bottle"></i> แก้ว</div>
                             <ul class="price-list">
-                                <li><span>ขวดช้าง</span> <strong>ลังละ 13 บาท</strong></li>
-                                <li><span>ขวดสิงห์</span> <strong>ลังละ 5 บาท</strong></li>
-                                <li><span>ขวดลีโอ</span> <strong>ลังละ 7 บาท</strong></li>
-                                <li><span>ขวดแก้วรวม</span> <strong>กก.ละ 0.8 บาท</strong></li>
+                                <li data-price-key="glass_chang"><span>ขวดช้าง</span> <strong>ลังละ 13 บาท</strong></li>
+                                <li data-price-key="glass_singha"><span>ขวดสิงห์</span> <strong>ลังละ 5 บาท</strong></li>
+                                <li data-price-key="glass_leo"><span>ขวดลีโอ</span> <strong>ลังละ 7 บาท</strong></li>
+                                <li data-price-key="glass_mixed"><span>ขวดแก้วรวม</span> <strong>กก.ละ 0.8 บาท</strong></li>
                             </ul>
                         </div>
                     </div>
@@ -830,6 +839,166 @@
                         <h4><i class="fa-solid fa-trash-can-arrow-up"></i> สินค้าที่ถูกลบ (กดกู้คืนได้)</h4>
                         <div class="trainer-hidden-list" id="trainerHiddenList"></div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Price Board Editor Modal (หน้าแก้ราคารับซื้อสำหรับเจ้าหน้าที่) -->
+    <div class="trainer-modal-backdrop hidden" id="priceEditorModalBackdrop">
+        <div class="trainer-modal-card admin-modal-card">
+            <div class="trainer-modal-header">
+                <div class="trainer-header-title">
+                    <div class="trainer-icon-badge"><i class="fa-solid fa-tags"></i></div>
+                    <div>
+                        <h2>แก้ไขตารางราคารับซื้อขยะรีไซเคิล</h2>
+                        <p>บันทึกแล้วจะซิงก์ราคาและวันที่ประกาศไปยังทุกเครื่อง/ตู้ Kiosk อัตโนมัติ</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="closePriceEditorBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="trainer-modal-body">
+                <form id="priceEditorForm" class="price-editor-form">
+                    <div class="form-group">
+                        <label for="priceDateInput"><i class="fa-solid fa-calendar-days"></i> วันที่ประกาศราคา</label>
+                        <input type="text" id="priceDateInput" class="form-input" placeholder="เช่น วันที่ 20 พฤศจิกายน 2569" required>
+                    </div>
+                    <div class="price-editor-grid" id="priceEditorFields"></div>
+                    <div class="price-editor-actions">
+                        <button type="submit" class="btn btn-primary" id="savePriceBoardBtn"><i class="fa-solid fa-cloud-arrow-up"></i> บันทึกราคา (ซิงก์ทุกตู้)</button>
+                        <button type="button" class="btn btn-outline" id="resetPriceBoardBtn"><i class="fa-solid fa-rotate-left"></i> คืนค่าราคาเริ่มต้น</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Executive Report Dashboard Modal (แดชบอร์ดสรุปผลรายเดือน + พิมพ์รายงาน PDF) -->
+    <div class="trainer-modal-backdrop hidden" id="reportModalBackdrop">
+        <div class="trainer-modal-card report-modal-card" id="printableReportArea">
+            <div class="trainer-modal-header no-print">
+                <div class="trainer-header-title">
+                    <div class="trainer-icon-badge"><i class="fa-solid fa-chart-column"></i></div>
+                    <div>
+                        <h2>แดชบอร์ดสรุปผลรายเดือน · โครงการขยะฮอมบุญ</h2>
+                        <p>ข้อมูลสถิติจากทุกจุดตั้งตู้ในระบบ พร้อมพิมพ์หรือบันทึกเป็น PDF ส่งรายงาน</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" id="closeReportModalBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Print-only Official Header -->
+            <div class="report-print-header">
+                <div class="report-print-logos">
+                    <img src="logos/logo-up.png" alt="มหาวิทยาลัยพะเยา">
+                    <img src="logos/logo-ict-up.png" alt="คณะเทคโนโลยีสารสนเทศและการสื่อสาร">
+                    <img src="logos/logo-maechan.jpg" alt="เทศบาลตำบลแม่จัน" class="round-logo">
+                </div>
+                <div class="report-print-title">
+                    <h2>รายงานสรุปผลการคัดแยกขยะอัจฉริยะ (น้องตาวิเศษ)</h2>
+                    <p>โครงการขยะฮอมบุญ สร้างสุขให้ชีวิต ดูแลยันเชิงตะกอน · เทศบาลตำบลแม่จัน จังหวัดเชียงราย</p>
+                    <p class="report-print-meta" id="reportPrintMeta">ประจำเดือน —</p>
+                </div>
+            </div>
+
+            <div class="trainer-modal-body report-body">
+                <!-- Filters & Export Controls -->
+                <div class="report-toolbar no-print">
+                    <div class="report-filters">
+                        <label class="report-filter-item">
+                            <span>เดือน:</span>
+                            <input type="month" id="reportMonthPicker" class="form-input">
+                        </label>
+                        <label class="report-filter-item">
+                            <span>จุดตั้งตู้:</span>
+                            <select id="reportKioskFilter" class="form-select">
+                                <option value="__all__">ทุกตู้รวมกัน</option>
+                            </select>
+                        </label>
+                        <button type="button" class="btn btn-sm btn-outline" id="refreshReportBtn"><i class="fa-solid fa-rotate"></i> โหลดข้อมูล</button>
+                    </div>
+                    <div class="report-export-actions">
+                        <button type="button" class="btn btn-sm btn-outline" id="exportMonthlyCsvBtn"><i class="fa-solid fa-file-csv"></i> ส่งออก CSV</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="printReportBtn"><i class="fa-solid fa-print"></i> พิมพ์ / บันทึก PDF</button>
+                    </div>
+                </div>
+
+                <p class="report-status-note" id="reportStatusNote">กำลังโหลดข้อมูลรายเดือนจาก Cloud Firestore...</p>
+
+                <!-- 4 Executive KPI Cards -->
+                <div class="report-kpi-grid">
+                    <div class="report-kpi-card total">
+                        <span class="kpi-label">ยอดคัดแยกขยะรวม</span>
+                        <strong class="kpi-val" id="repTotalCount">0</strong>
+                        <span class="kpi-unit">ชิ้น</span>
+                    </div>
+                    <div class="report-kpi-card value">
+                        <span class="kpi-label">เงินกองทุนฮอมบุญโดยประมาณ</span>
+                        <strong class="kpi-val" id="repEstValue">0.00</strong>
+                        <span class="kpi-unit">บาท</span>
+                    </div>
+                    <div class="report-kpi-card co2">
+                        <span class="kpi-label">ลดก๊าซเรือนกระจก</span>
+                        <strong class="kpi-val" id="repCo2Saved">0.00</strong>
+                        <span class="kpi-unit">kg CO₂e</span>
+                    </div>
+                    <div class="report-kpi-card trees">
+                        <span class="kpi-label">เทียบเท่าการปลูกต้นไม้</span>
+                        <strong class="kpi-val" id="repTreesEq">0.00</strong>
+                        <span class="kpi-unit">ต้น (เกณฑ์ อบก. 9 kg/ต้น/ปี)</span>
+                    </div>
+                </div>
+
+                <!-- 4-Bin Visual Breakdown Bars -->
+                <div class="report-section">
+                    <h3><i class="fa-solid fa-chart-bar"></i> สัดส่วนขยะแยกตาม 4 ประเภทถัง</h3>
+                    <div class="report-bars" id="reportCategoryBars"></div>
+                </div>
+
+                <!-- Kiosk Comparison Table -->
+                <div class="report-section" id="reportKioskSection">
+                    <h3><i class="fa-solid fa-trophy"></i> สรุปยอดแยกตามจุดตั้งตู้ (Kiosk)</h3>
+                    <div class="table-responsive">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>จุดตั้งตู้</th>
+                                    <th>รวม (ชิ้น)</th>
+                                    <th>ขวดพลาสติก</th>
+                                    <th>รีไซเคิล</th>
+                                    <th>ทั่วไป</th>
+                                    <th>อันตราย</th>
+                                    <th>ลด CO₂ (kg)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportKioskTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Daily Breakdown Table -->
+                <div class="report-section">
+                    <h3><i class="fa-solid fa-calendar-week"></i> สถิติรายวันในเดือนที่เลือก</h3>
+                    <div class="table-responsive">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>รวม (ชิ้น)</th>
+                                    <th>ขวดพลาสติก</th>
+                                    <th>รีไซเคิล</th>
+                                    <th>ทั่วไป</th>
+                                    <th>อันตราย</th>
+                                    <th>ลด CO₂ (kg)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportDailyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="report-print-footer">
+                    ได้รับการสนับสนุนงบประมาณจาก หน่วยขับเคลื่อนนวัตกรรมเพื่อสังคม (SID) พื้นที่ภาคเหนือตอนบน 2 สถาบันนวัตกรรมและถ่ายทอดเทคโนโลยี มหาวิทยาลัยพะเยา และ สำนักงานนวัตกรรมแห่งชาติ (องค์การมหาชน) NIA
                 </div>
             </div>
         </div>

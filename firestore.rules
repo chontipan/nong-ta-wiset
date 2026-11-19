@@ -91,6 +91,17 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Official recycling price board (editable by municipal staff from the app)
+    match /settings/price_board {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['dateLabel', 'items', 'updatedAt'])
+                    && isShortString(request.resource.data.dateLabel, 80)
+                    && request.resource.data.items is map
+                    && request.resource.data.items.size() <= 40
+                    && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
     // Everything else is closed
     match /{document=**} {
       allow read, write: if false;
