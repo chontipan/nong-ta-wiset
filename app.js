@@ -1033,8 +1033,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (match) {
                 const info = infoForVisualLabel(match.label);
                 const isBuiltinNote = match.label.startsWith('builtin:thb_');
+                const topCls = top ? top.class.toLowerCase() : '';
                 const need = isBuiltinNote
-                    ? (top ? 0.62 : 0.66)
+                    ? (topCls === 'book' || topCls === 'cell phone' ? 0.54 : (top ? 0.60 : 0.64))
                     : (top ? VISUAL_MATCH_SIM : VISUAL_ONLY_SIM);
                 if (info && match.sim >= need && match.margin >= VISUAL_MARGIN) {
                     candidate = { key: 'vm:' + match.label, score: match.sim, region, info, visual: true };
@@ -2446,6 +2447,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const cx = Math.max(0, (w - h) / 2);
                         const embCenter = await visualMemory.embed(img, [cx, 0, h, h]);
                         if (embCenter) visualMemory.add(`${note.id}#${i}_ctr`, note.id, embCenter, { group: 'money', boost: 0.03 });
+                        const rx = Math.max(0, w - h);
+                        const embRight = await visualMemory.embed(img, [rx, 0, h, h]);
+                        if (embRight) visualMemory.add(`${note.id}#${i}_right`, note.id, embRight, { group: 'money', boost: 0.03 });
                     }
                 } catch (e) {
                     console.warn('Skipped banknote ref:', note.images[i], e);
