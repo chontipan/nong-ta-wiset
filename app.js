@@ -1511,7 +1511,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const energySaved = totalEcoRecycled * 0.45;
 
         if (co2SavedValEl) co2SavedValEl.innerText = co2Saved.toFixed(2);
-        if (treeValEl) treeValEl.innerText = treesEquivalent.toFixed(1);
+        if (treeValEl) treeValEl.innerText = (treesEquivalent > 0 && treesEquivalent < 1)
+            ? treesEquivalent.toFixed(2)
+            : treesEquivalent.toFixed(1);
         if (energyValEl) energyValEl.innerText = energySaved.toFixed(2);
     }
 
