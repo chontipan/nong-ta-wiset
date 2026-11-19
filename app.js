@@ -245,10 +245,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastAutoCommitTime = 0;
     let isCountdownActive = false;
     let countdownInterval = null;
-    const STABILITY_THRESHOLD_MS = 1000; // Hold steady for 1.0s
+    const STABILITY_THRESHOLD_MS = 600; // Hold steady for 0.6s (fast & responsive)
 
-    const AUTO_COMMIT_COOLDOWN_MS = 3000; // 3s cooldown between auto-commits
-    const DETECT_INTERVAL_MS = 150; // Run the AI at most ~6-7 times/sec so the video stays smooth
+    const AUTO_COMMIT_COOLDOWN_MS = 2000; // 2s cooldown between auto-commits
+    const DETECT_INTERVAL_MS = 90; // Run AI ~10-11 times/sec for fast detection
     const BOX_HOLD_MS = 600; // Keep the last boxes on screen briefly when a frame misses, to stop blinking
     let lastDetectTime = 0;
     let lastValidDetectionTime = 0;
@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const VISUAL_MATCH_SIM = 0.68;     // cosine similarity needed when COCO also sees an object
     const VISUAL_ONLY_SIM = 0.75;      // stricter when COCO sees nothing (chip bags, cans, batteries...)
     const VISUAL_MARGIN = 0.02;        // must beat the next-best different label by this much
-    const VISUAL_INTERVAL_MS = 300;    // embed at most ~3 times/sec in the live loop
+    const VISUAL_INTERVAL_MS = 450;    // embed ~2 times/sec so GPU stays fast for COCO detection
     const MAX_FEEDBACK_EXAMPLES = 60; 
     // Your own waste model trained in Teachable Machine (see docs/train-your-model.md)
     const wasteModel = (typeof WasteModel !== 'undefined') ? new WasteModel() : null;
@@ -674,11 +674,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (e) { /* storage blocked: stay on the normal screen */ }
 
-        // 2. Load COCO-SSD Model (High-Accuracy MobileNet V2 with Lite Fallback)
+        // 2. Load COCO-SSD Model (Fast Lite on Mobile for 2-3x speed, High-Accuracy MobileNet V2 on Desktop)
+        const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         try {
-            loaderMessageEl.innerText = 'กำลังดาวน์โหลดโมเดล AI คุณภาพสูง (COCO-SSD MobileNet V2)...';
+            loaderMessageEl.innerText = isMobileDevice
+                ? 'กำลังดาวน์โหลดโมเดล AI ความเร็วสูงสำหรับมือถือ (MobileNet V2 Lite)...'
+                : 'กำลังดาวน์โหลดโมเดล AI คุณภาพสูง (COCO-SSD MobileNet V2)...';
             try {
-                model = await cocoSsd.load({ base: 'mobilenet_v2' });
+                model = await cocoSsd.load({ base: isMobileDevice ? 'lite_mobilenet_v2' : 'mobilenet_v2' });
             } catch (v2Err) {
                 console.warn('Fallback to lite_mobilenet_v2:', v2Err);
                 model = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
@@ -1090,7 +1093,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (visualMemory && visualMemory.isUsable()) {
+        // Skip heavy VisualMemory embed when COCO is already highly confident on an obvious class & no custom products exist
+        const obviousCoco = top && top.score >= 0.78 && ['bottle', 'cup', 'wine glass', 'scissors'].includes(top.class.toLowerCase()) && customThaiProducts.length === 0 && feedbackExamples.length === 0;
+        if (visualMemory && visualMemory.isUsable() && !obviousCoco) {
             const region = top ? top.bbox : centerRegion(w, h);
             const now = performance.now();
             let match = null;
@@ -1262,8 +1267,8 @@ document.addEventListener('DOMContentLoaded', () => {
             checkLowLight(webcamEl);
         }
 
-        const VOTE_MAX_FRAMES = 7;
-        const VOTE_MIN_FRAMES = 3;
+        const VOTE_MAX_FRAMES = 6;
+        const VOTE_MIN_FRAMES = 2;
         const nowP = performance.now();
         voteBuffer = voteBuffer.filter(v => nowP - v.t <= VOTE_WINDOW_MS);
         if (candidate) {
