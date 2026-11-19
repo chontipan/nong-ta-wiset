@@ -326,6 +326,92 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalMascotImg = document.getElementById('modalMascotImg');
     const kioskBannerMascot = document.getElementById('kioskBannerMascot');
 
+    const cameraFlashOverlay = document.getElementById('cameraFlashOverlay');
+    const scanModeToggleBtn = document.getElementById('scanModeToggleBtn');
+    const scanModeToggleText = document.getElementById('scanModeToggleText');
+    const shutterScanBtn = document.getElementById('shutterScanBtn');
+    const modalCapturedWrap = document.getElementById('modalCapturedWrap');
+    const modalCapturedImg = document.getElementById('modalCapturedImg');
+
+    // Default to 'snap' (press shutter) on mobile phones for 60fps smooth camera & crisp still shots; 'auto' on desktop/kiosk
+    const isPhoneScreen = /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    let scanMode = isPhoneScreen ? 'snap' : 'auto';
+
+    function triggerCameraFlash() {
+        if (!cameraFlashOverlay) return;
+        cameraFlashOverlay.classList.remove('flash');
+        void cameraFlashOverlay.offsetWidth;
+        cameraFlashOverlay.classList.add('flash');
+    }
+
+    function captureThumbnailDataUrl(source, region = null) {
+        try {
+            const sw = source.videoWidth || source.naturalWidth || source.width;
+            const sh = source.videoHeight || source.naturalHeight || source.height;
+            if (!sw || !sh) return null;
+            const c = document.createElement('canvas');
+            c.width = 240;
+            c.height = 240;
+            const g = c.getContext('2d');
+            let sx = 0, sy = 0, cw = sw, ch = sh;
+            if (region && region[2] > 10 && region[3] > 10) {
+                const pad = Math.max(region[2], region[3]) * 0.18;
+                const side = Math.min(Math.max(sw, sh), Math.max(region[2], region[3]) + pad * 2);
+                const cx = region[0] + region[2] / 2;
+                const cy = region[1] + region[3] / 2;
+                sx = Math.max(0, Math.min(sw - side, cx - side / 2));
+                sy = Math.max(0, Math.min(sh - side, cy - side / 2));
+                cw = Math.min(sw - sx, side);
+                ch = Math.min(sh - sy, side);
+            } else {
+                const side = Math.min(sw, sh);
+                sx = (sw - side) / 2;
+                sy = (sh - side) / 2;
+                cw = side;
+                ch = side;
+            }
+            g.drawImage(source, sx, sy, cw, ch, 0, 0, 240, 240);
+            return c.toDataURL('image/jpeg', 0.82);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function updateScanModeUI() {
+        const isSnap = scanMode === 'snap' && !isKioskMode;
+        if (scanModeToggleText) {
+            scanModeToggleText.innerText = isSnap ? 'โหมดถ่ายรูป' : 'สแกนอัตโนมัติ';
+        }
+        if (scanModeToggleBtn) {
+            const icon = scanModeToggleBtn.querySelector('i');
+            if (icon) icon.className = isSnap ? 'fa-solid fa-camera' : 'fa-solid fa-bolt';
+            scanModeToggleBtn.classList.toggle('snap-active', isSnap);
+        }
+        if (shutterScanBtn) {
+            shutterScanBtn.classList.toggle('prominent', isSnap);
+        }
+        if (liveResultText && liveChipKey === 'idle') {
+            liveResultText.innerText = isSnap
+                ? 'เล็งขยะให้อยู่กลางกรอบ แล้วกดปุ่ม 📸 ถ่ายรูป'
+                : LIVE_CHIP_IDLE;
+        }
+        if (isSnap) {
+            drawBoundingBoxes([]);
+            voteBuffer = [];
+            holdProgressBar.style.width = '0%';
+        }
+    }
+
+    if (scanModeToggleBtn) {
+        scanModeToggleBtn.addEventListener('click', () => {
+            scanMode = scanMode === 'snap' ? 'auto' : 'snap';
+            updateScanModeUI();
+        });
+    }
+    if (shutterScanBtn) {
+        shutterScanBtn.addEventListener('click', () => triggerManualSnapshot());
+    }
+
     const MASCOT_POSES = {
         plastic_bottle: 'logos/mascot-sorting.jpg',
         recyclable: 'logos/mascot-recyclable.jpg',
@@ -895,7 +981,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Real-time Detection Loop ---
     async function detectLoop() {
-        if (!isDetecting || !model || document.hidden) {
+        if (!isDetecting || !model || document.hidden || (scanMode === 'snap' && !isKioskMode)) {
             requestAnimationFrame(detectLoop);
             return;
         }
@@ -1496,6 +1582,17 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatsUI();
         updateMascotReaction(info);
 
+        // Show captured snapshot thumbnail in Result Modal when available
+        if (modalCapturedWrap && modalCapturedImg) {
+            const thumb = capture && capture.source ? captureThumbnailDataUrl(capture.source, capture.region) : null;
+            if (thumb) {
+                modalCapturedImg.src = thumb;
+                modalCapturedWrap.classList.remove('hidden');
+            } else {
+                modalCapturedWrap.classList.add('hidden');
+            }
+        }
+
         // Add history log entry
         const timeString = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         lastScanInfo = { info, score, time: timeString };
@@ -1730,21 +1827,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Manual Snapshot Scan Handler ---
+    // --- Manual Snapshot Scan Handler (Snap a crisp still frame and analyze) ---
+    let isSnapping = false;
     async function triggerManualSnapshot() {
-        if (!model || isCountdownActive) return; // Don't double-count while the result card is showing
+        if (!model || isCountdownActive || isSnapping) return;
 
         if (isCameraActive && webcamEl.readyState === 4) {
+            isSnapping = true;
+            if (shutterScanBtn) shutterScanBtn.classList.add('capturing');
+            triggerCameraFlash();
             try {
-                const { candidate } = await analyzeFrame(webcamEl);
+                // Freeze a sharp still frame onto an offscreen canvas before running AI
+                const vw = webcamEl.videoWidth || 640;
+                const vh = webcamEl.videoHeight || 480;
+                const snapCanvas = document.createElement('canvas');
+                snapCanvas.width = vw;
+                snapCanvas.height = vh;
+                snapCanvas.getContext('2d').drawImage(webcamEl, 0, 0, vw, vh);
+
+                if (liveResultText) liveResultText.innerText = 'กำลังวิเคราะห์ภาพ...';
+                syncCanvasSize();
+                const { predictions, candidate } = await analyzeFrame(snapCanvas, false);
+                drawBoundingBoxes(buildBoxes(predictions, candidate, canvasEl.width, canvasEl.height));
+
                 if (candidate) {
                     updatePredictionUI(candidate.info, candidate.score);
-                    commitWasteScan(candidate.info, candidate.score, { source: webcamEl, region: candidate.region });
+                    commitWasteScan(candidate.info, candidate.score, { source: snapCanvas, region: candidate.region });
                 } else {
-                    commitWasteScan(DEFAULT_GENERAL_WASTE, 0.50, { source: webcamEl, region: null });
+                    if (liveResultText) liveResultText.innerText = 'ไม่พบวัตถุชัด ลองขยับเข้าใกล้กล้องแล้วกดถ่ายใหม่';
+                    setTimeout(() => {
+                        if (liveResultText && scanMode === 'snap') {
+                            liveResultText.innerText = 'เล็งขยะให้อยู่กลางกรอบ แล้วกดปุ่ม 📸 ถ่ายรูป';
+                        }
+                    }, 2200);
                 }
             } catch (e) {
                 console.error('Snapshot error:', e);
+            } finally {
+                isSnapping = false;
+                if (shutterScanBtn) shutterScanBtn.classList.remove('capturing');
             }
         } else {
             // Default sample snapshot if camera is not active
@@ -2876,6 +2997,7 @@ document.addEventListener('DOMContentLoaded', () => {
     requestScreenWakeLock();
 
     // --- Start Application ---
+    updateScanModeUI();
     initApp();
 
 });

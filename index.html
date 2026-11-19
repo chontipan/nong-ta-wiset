@@ -136,10 +136,23 @@
                         <div class="laser-line"></div>
                     </div>
 
+                    <!-- Camera Flash Effect on Capture -->
+                    <div class="camera-flash-overlay" id="cameraFlashOverlay"></div>
+
+                    <!-- Scan Mode Toggle Pill (Snap Photo vs Auto-Detect) -->
+                    <button type="button" class="camera-mode-pill" id="scanModeToggleBtn" title="สลับโหมดกดถ่ายรูป / สแกนอัตโนมัติ">
+                        <i class="fa-solid fa-camera"></i> <span id="scanModeToggleText">โหมดถ่ายรูป</span>
+                    </button>
+
                     <!-- Live answer on the camera itself -->
                     <div class="live-result-chip idle" id="liveResultChip" aria-live="polite">
                         <span id="liveResultText">ยื่นขยะเข้ากลางกรอบ แล้วถือนิ่ง ๆ 1 วินาที</span>
                     </div>
+
+                    <!-- Big Shutter Button for Snap-to-Scan Mode -->
+                    <button type="button" class="camera-shutter-btn" id="shutterScanBtn" aria-label="ถ่ายรูปแยกขยะ" title="กดถ่ายรูปเพื่อแยกขยะ">
+                        <span class="shutter-inner"><i class="fa-solid fa-camera"></i></span>
+                    </button>
 
                     <!-- 1-Tap Front/Rear Camera Flip Button -->
                     <button type="button" class="camera-flip-btn" id="flipCameraBtn" title="สลับกล้องหน้า / กล้องหลัง" aria-label="สลับกล้องหน้าหรือกล้องหลัง">
@@ -622,8 +635,13 @@
             </div>
 
             <div class="modal-body-content">
-                <div class="modal-mascot-wrap">
-                    <img src="logos/mascot-sorting.jpg" alt="น้องตาวิเศษแยกขยะ" class="modal-mascot-img" id="modalMascotImg">
+                <div class="modal-visual-row">
+                    <div class="modal-captured-wrap hidden" id="modalCapturedWrap">
+                        <img src="" alt="ภาพขยะที่ถ่าย" class="modal-captured-img" id="modalCapturedImg">
+                    </div>
+                    <div class="modal-mascot-wrap">
+                        <img src="logos/mascot-sorting.jpg" alt="น้องตาวิเศษแยกขยะ" class="modal-mascot-img" id="modalMascotImg">
+                    </div>
                 </div>
                 <div class="modal-object-icon hidden" id="modalObjectIcon">
                     <i class="fa-solid fa-box"></i>
