@@ -1652,10 +1652,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (savedHistory) scanHistory = JSON.parse(savedHistory);
 
             const savedConf = localStorage.getItem('ecoscan_confidence');
-            if (savedConf) {
+            const confMigrated = localStorage.getItem('ecoscan_conf_v65');
+            if (savedConf && (confMigrated || Math.abs(parseFloat(savedConf) - 0.58) > 0.005)) {
                 const parsedConf = parseFloat(savedConf);
                 if (!isNaN(parsedConf)) setConfidenceThreshold(parsedConf);
             } else {
+                try { localStorage.setItem('ecoscan_conf_v65', '1'); } catch (e) { /* ignore */ }
                 setConfidenceThreshold(0.65);
             }
 
