@@ -45,7 +45,9 @@
                     <h1>น้องตาวิเศษ</h1>
                     <span class="tagline">แพลตฟอร์มขยะฮอมบุญ (ระบบแยกขยะอัจฉริยะ 4 หมวด: ขวดพลาสติก, รีไซเคิล, อันตราย, ทั่วไป)</span>
                 </div>
-
+                <button type="button" class="btn btn-icon mobile-menu-toggle" id="mobileMenuToggleBtn" aria-label="เปิดเมนูเครื่องมือ" aria-expanded="false">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
             </div>
 
             <div class="header-controls">
@@ -138,6 +140,11 @@
                     <div class="live-result-chip idle" id="liveResultChip" aria-live="polite">
                         <span id="liveResultText">ยื่นขยะเข้ากลางกรอบ แล้วถือนิ่ง ๆ 1 วินาที</span>
                     </div>
+
+                    <!-- 1-Tap Front/Rear Camera Flip Button -->
+                    <button type="button" class="camera-flip-btn" id="flipCameraBtn" title="สลับกล้องหน้า / กล้องหลัง" aria-label="สลับกล้องหน้าหรือกล้องหลัง">
+                        <i class="fa-solid fa-camera-rotate"></i>
+                    </button>
 
                     <!-- Loading / Error Mask -->
                     <div class="camera-loader" id="cameraLoader">

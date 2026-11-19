@@ -683,7 +683,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Webcam Handler with Device ID & Safe Race-Condition Check ---
-    async function startWebcam(deviceId = null) {
+    let currentFacingMode = 'environment';
+
+    async function startWebcam(deviceId = null, facingOverride = null) {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             throw new Error('เบราว์เซอร์ไม่รองรับกล้อง Webcam หรือไม่ได้รันบนเซิร์ฟเวอร์ย่อย');
         }
@@ -693,11 +695,15 @@ document.addEventListener('DOMContentLoaded', () => {
             webcamStream.getTracks().forEach(track => track.stop());
         }
 
-        const targetId = deviceId || selectedDeviceId;
+        const targetId = facingOverride ? null : (deviceId || selectedDeviceId);
+        if (facingOverride) {
+            selectedDeviceId = null;
+            currentFacingMode = facingOverride;
+        }
 
         const videoConstraints = targetId
             ? { deviceId: { exact: targetId }, width: { ideal: 640 }, height: { ideal: 480 } }
-            : { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'environment' };
+            : { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: { ideal: currentFacingMode } };
 
         webcamStream = await navigator.mediaDevices.getUserMedia({
             video: videoConstraints,
@@ -2639,6 +2645,88 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('appinstalled', () => {
         if (installAppBtn) installAppBtn.classList.add('hidden');
     });
+
+    // --- Mobile UX Enhancements (Menu Drawer, 1-Tap Flip Camera, iOS Audio Unlock, Battery Saver & Wake Lock) ---
+    const mobileMenuToggleBtn = document.getElementById('mobileMenuToggleBtn');
+    const headerControlsEl = document.querySelector('.header-controls');
+    if (mobileMenuToggleBtn && headerControlsEl) {
+        mobileMenuToggleBtn.addEventListener('click', () => {
+            const isOpen = headerControlsEl.classList.toggle('mobile-open');
+            mobileMenuToggleBtn.setAttribute('aria-expanded', String(isOpen));
+            const icon = mobileMenuToggleBtn.querySelector('i');
+            if (icon) icon.className = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+        });
+    }
+
+    const flipCameraBtn = document.getElementById('flipCameraBtn');
+    if (flipCameraBtn) {
+        flipCameraBtn.addEventListener('click', async () => {
+            try {
+                flipCameraBtn.classList.add('spinning');
+                const devices = (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices)
+                    ? (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput')
+                    : [];
+                if (devices.length >= 2 && selectedDeviceId) {
+                    const curIdx = devices.findIndex(d => d.deviceId === selectedDeviceId);
+                    const nextDevice = devices[(curIdx + 1) % devices.length];
+                    await startWebcam(nextDevice.deviceId);
+                } else {
+                    const nextFacing = currentFacingMode === 'environment' ? 'user' : 'environment';
+                    await startWebcam(null, nextFacing);
+                }
+                isCameraActive = true;
+            } catch (err) {
+                console.warn('Flip camera warning:', err);
+            } finally {
+                setTimeout(() => flipCameraBtn.classList.remove('spinning'), 350);
+            }
+        });
+    }
+
+    // Unlock AudioContext & SpeechSynthesis on first user tap (required by iOS Safari)
+    let mobileAudioUnlocked = false;
+    function unlockMobileAudio() {
+        if (mobileAudioUnlocked) return;
+        mobileAudioUnlocked = true;
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+                const ctx = new AudioCtx();
+                if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+            }
+            if ('speechSynthesis' in window) {
+                const silent = new SpeechSynthesisUtterance('');
+                silent.volume = 0;
+                window.speechSynthesis.speak(silent);
+            }
+        } catch (e) { /* ignore */ }
+    }
+    window.addEventListener('touchstart', unlockMobileAudio, { once: true, passive: true });
+    window.addEventListener('click', unlockMobileAudio, { once: true, passive: true });
+
+    // Battery Saver (pause AI when app/tab is in background) + Screen Wake Lock
+    let wakeLockSentinel = null;
+    async function requestScreenWakeLock() {
+        if (!('wakeLock' in navigator) || document.hidden) return;
+        try {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+        } catch (e) { /* permission or battery saver denied; safe to ignore */ }
+    }
+    let wasDetectingBeforeHide = false;
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            wasDetectingBeforeHide = isDetecting;
+            isDetecting = false;
+            if (wakeLockSentinel) {
+                wakeLockSentinel.release().catch(() => {});
+                wakeLockSentinel = null;
+            }
+        } else {
+            if (wasDetectingBeforeHide && model) isDetecting = true;
+            requestScreenWakeLock();
+        }
+    });
+    requestScreenWakeLock();
 
     // --- Start Application ---
     initApp();
