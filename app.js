@@ -572,21 +572,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function speakThaiText(text) {
-        if (isSoundMuted || !('speechSynthesis' in window)) return;
+    const audioUnlockBanner = document.getElementById('audioUnlockBanner');
+    let cachedThaiVoice = null;
+    let speechUnlocked = false;
+    let pendingSpeechText = '';
+
+    function refreshThaiVoice() {
+        if (!('speechSynthesis' in window)) return;
+        const voices = window.speechSynthesis.getVoices() || [];
+        cachedThaiVoice = voices.find(v => /^th(-|_|$)/i.test(v.lang)) || null;
+    }
+    if ('speechSynthesis' in window) {
+        refreshThaiVoice();
+        window.speechSynthesis.onvoiceschanged = refreshThaiVoice;
+    }
+
+    function showAudioUnlockBanner() {
+        if (audioUnlockBanner && !isSoundMuted && !speechUnlocked) {
+            audioUnlockBanner.classList.remove('hidden');
+        }
+    }
+
+    function hideAudioUnlockBanner() {
+        if (audioUnlockBanner) audioUnlockBanner.classList.add('hidden');
+    }
+
+    function speakThaiText(text, { isAuto = false } = {}) {
+        if (isSoundMuted || !('speechSynthesis' in window) || !text) return;
         try {
+            if (!cachedThaiVoice) refreshThaiVoice();
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'th-TH';
-            // Some browsers ignore lang and read Thai with an English voice; pick a Thai voice when there is one
-            const thaiVoice = window.speechSynthesis.getVoices().find(v => /^th(-|_|$)/i.test(v.lang));
-            if (thaiVoice) utterance.voice = thaiVoice;
+            if (cachedThaiVoice) utterance.voice = cachedThaiVoice;
             utterance.rate = 1.0;
             utterance.pitch = 1.0;
+            utterance.onstart = () => {
+                speechUnlocked = true;
+                pendingSpeechText = '';
+                hideAudioUnlockBanner();
+            };
+            utterance.onerror = (ev) => {
+                if (ev && ev.error === 'not-allowed') {
+                    pendingSpeechText = text;
+                    showAudioUnlockBanner();
+                }
+            };
             window.speechSynthesis.speak(utterance);
+
+            // Safari/iOS sometimes silently drops autoplay speech without firing onerror
+            if (isAuto && !speechUnlocked) {
+                setTimeout(() => {
+                    if (!speechUnlocked && !window.speechSynthesis.speaking) {
+                        pendingSpeechText = text;
+                        showAudioUnlockBanner();
+                    }
+                }, 600);
+            }
         } catch (e) {
             console.error('Speech synthesis error:', e);
         }
+    }
+
+    function tryAutoWelcomeSpeech() {
+        if (isSoundMuted) return;
+        const greeting = currentDialect === 'khammuang'
+            ? 'สวัสดีเจ้า น้องตาวิเศษพร้อมฮอมบุญแยกขยะแล้วเจ้า ยื่นขยะมาหน้ากล้องได้เลยเน้อเจ้า'
+            : 'สวัสดีครับ น้องตาวิเศษพร้อมแยกขยะแล้วครับ ยื่นขยะมาหน้ากล้องได้เลยนะครับ';
+        speakThaiText(greeting, { isAuto: true });
     }
 
 
@@ -632,6 +685,9 @@ document.addEventListener('DOMContentLoaded', () => {
             cameraLoaderEl.classList.add('hidden');
             isDetecting = true;
             requestAnimationFrame(detectLoop);
+
+            // Greet user immediately (falls back to tap-to-enable pill if browser blocks autoplay)
+            tryAutoWelcomeSpeech();
 
             // Extra models load in the background; scanning already works without them
             initVisualMemory();
@@ -2683,26 +2739,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Unlock AudioContext & SpeechSynthesis on first user tap (required by iOS Safari)
-    let mobileAudioUnlocked = false;
-    function unlockMobileAudio() {
-        if (mobileAudioUnlocked) return;
-        mobileAudioUnlocked = true;
+    // Unlock AudioContext & SpeechSynthesis on first user tap (required by iOS Safari & Chrome autoplay)
+    function unlockAudioOnGesture(e) {
+        if (speechUnlocked) return;
+        speechUnlocked = true;
+        hideAudioUnlockBanner();
         try {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            if (AudioCtx) {
-                const ctx = new AudioCtx();
-                if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+            getAudioContext();
+            const target = e && e.target;
+            const clickedSpeechControl = target && target.closest && target.closest('.sample-btn, #toggleDialectBtn, #toggleSoundBtn');
+            if (!clickedSpeechControl && !isSoundMuted) {
+                const msg = pendingSpeechText || (currentDialect === 'khammuang'
+                    ? 'สวัสดีเจ้า น้องตาวิเศษพร้อมฮอมบุญแยกขยะแล้วเจ้า'
+                    : 'สวัสดีครับ น้องตาวิเศษพร้อมแยกขยะแล้วครับ');
+                pendingSpeechText = '';
+                speakThaiText(msg);
             }
-            if ('speechSynthesis' in window) {
-                const silent = new SpeechSynthesisUtterance('');
-                silent.volume = 0;
-                window.speechSynthesis.speak(silent);
-            }
-        } catch (e) { /* ignore */ }
+        } catch (err) { /* ignore */ }
     }
-    window.addEventListener('touchstart', unlockMobileAudio, { once: true, passive: true });
-    window.addEventListener('click', unlockMobileAudio, { once: true, passive: true });
+    if (audioUnlockBanner) {
+        audioUnlockBanner.addEventListener('click', (e) => {
+            e.stopPropagation();
+            unlockAudioOnGesture(e);
+        });
+    }
+    window.addEventListener('touchstart', unlockAudioOnGesture, { once: true, passive: true });
+    window.addEventListener('click', unlockAudioOnGesture, { once: true, passive: true });
 
     // Battery Saver (pause AI when app/tab is in background) + Screen Wake Lock
     let wakeLockSentinel = null;
