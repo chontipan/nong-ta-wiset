@@ -78,23 +78,42 @@
             this.examples = this.examples.filter(e => e.id !== id);
         }
 
-        // Nearest taught photo by cosine similarity (1-NN works best with only a few photos per item).
-        // margin = how far ahead it is of the closest photo that belongs to a *different* bin.
+        // Top-3 weighted cosine similarity per label (reduces single-photo noise when multiple angles exist).
+        // margin = how far ahead the winning label is of the closest photo from a *different* bin.
         classify(emb) {
             if (!emb || this.examples.length === 0) return null;
-            let best = null;
+            const byLabel = new Map();
+            const scored = [];
             for (const e of this.examples) {
                 const sim = dot(emb, e.emb);
                 const score = sim + e.boost;
-                if (!best || score > best.score) best = { e, sim, score };
+                scored.push({ e, sim, score });
+                let arr = byLabel.get(e.label);
+                if (!arr) { arr = []; byLabel.set(e.label, arr); }
+                arr.push({ e, sim, score });
             }
+
+            let best = null;
+            for (const [label, arr] of byLabel.entries()) {
+                arr.sort((a, b) => b.score - a.score);
+                const top1 = arr[0];
+                const topK = arr.slice(0, 3);
+                const avgScore = topK.reduce((s, x) => s + x.score, 0) / topK.length;
+                const avgSim = topK.reduce((s, x) => s + x.sim, 0) / topK.length;
+                const blendedScore = arr.length > 1 ? (top1.score * 0.7 + avgScore * 0.3) : top1.score;
+                const blendedSim = arr.length > 1 ? (top1.sim * 0.7 + avgSim * 0.3) : top1.sim;
+                if (!best || blendedScore > best.score) {
+                    best = { label, group: top1.e.group, sim: blendedSim, score: blendedScore };
+                }
+            }
+
             let rival = -Infinity;
-            for (const e of this.examples) {
-                if (e.group === best.e.group) continue;
-                rival = Math.max(rival, dot(emb, e.emb) + e.boost);
+            for (const item of scored) {
+                if (item.e.group === best.group) continue;
+                rival = Math.max(rival, item.score);
             }
             const margin = rival === -Infinity ? 1 : best.score - rival;
-            return { label: best.e.label, sim: best.sim, margin };
+            return { label: best.label, sim: best.sim, margin };
         }
     }
 

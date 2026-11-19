@@ -116,7 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // the camera from "scanning" a chair or the TV behind the person as general waste
     const IGNORED_CLASSES = [
         'person', 'dog', 'cat', 'bird', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe',
-        'chair', 'couch', 'bed', 'dining table', 'toilet', 'bench', 'tv', 'refrigerator', 'oven', 'sink',
+        'chair', 'couch', 'bed', 'dining table', 'toilet', 'bench', 'tv', 'refrigerator', 'oven', 'sink', 'microwave',
+        'clock', 'tie', 'handbag', 'backpack', 'suitcase', 'umbrella',
         'car', 'bus', 'truck', 'train', 'airplane', 'boat', 'motorcycle', 'bicycle',
         'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'kite'
     ];
@@ -1030,6 +1031,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return predictions
             .filter(p => {
                 if (!isValidBox(p)) return false;
+                // Center Scan Zone (ROI): ignore peripheral background objects near frame edges unless very confident
+                const midX = p.bbox[0] + p.bbox[2] / 2;
+                const midY = p.bbox[1] + p.bbox[3] / 2;
+                const inCenterZone = midX >= w * 0.14 && midX <= w * 0.86 && midY >= h * 0.10 && midY <= h * 0.90;
+                if (!inCenterZone && p.score < 0.85) return false;
                 // Drop tiny boxes at the edge of the frame (< 1.2% of the image) unless very confident
                 const area = p.bbox[2] * p.bbox[3];
                 if (area < w * h * 0.012 && p.score < currentConfidenceThreshold + 0.12) return false;
@@ -1211,12 +1217,49 @@ document.addEventListener('DOMContentLoaded', () => {
         setLiveChip(null);
     }
 
+    let lastMotionBox = null;
+    let isLowLight = false;
+    let lastLightCheckTime = 0;
+    const lightSampleCanvas = document.createElement('canvas');
+    lightSampleCanvas.width = 32;
+    lightSampleCanvas.height = 24;
+    const lightSampleCtx = lightSampleCanvas.getContext('2d', { willReadFrequently: true });
+
+    function checkLowLight(source) {
+        const now = performance.now();
+        if (now - lastLightCheckTime < 1500 || !lightSampleCtx) return;
+        lastLightCheckTime = now;
+        try {
+            lightSampleCtx.drawImage(source, 0, 0, 32, 24);
+            const data = lightSampleCtx.getImageData(0, 0, 32, 24).data;
+            let sum = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            }
+            const avgLuma = sum / (32 * 24);
+            const dark = avgLuma < 48;
+            if (dark !== isLowLight) {
+                isLowLight = dark;
+                if (liveChipKey === 'idle' && liveResultText) {
+                    liveResultText.innerText = isLowLight
+                        ? '💡 แสงน้อย ลองขยับเข้าหาแสงเพื่อให้ AI แม่นขึ้น'
+                        : LIVE_CHIP_IDLE;
+                }
+            }
+        } catch (e) { /* ignore cross-origin or video-not-ready */ }
+    }
+
     function processCandidate(candidate) {
         if (isCountdownActive) {
             voteBuffer = [];
+            lastMotionBox = null;
             currentStableClass = null;
             holdProgressBar.style.width = '0%';
             return;
+        }
+
+        if (isCameraActive && webcamEl.readyState === 4) {
+            checkLowLight(webcamEl);
         }
 
         const VOTE_MAX_FRAMES = 7;
@@ -1224,9 +1267,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const nowP = performance.now();
         voteBuffer = voteBuffer.filter(v => nowP - v.t <= VOTE_WINDOW_MS);
         if (candidate) {
-            voteBuffer.push({ key: candidate.key, score: candidate.score, t: nowP, candidate });
-            if (voteBuffer.length > VOTE_MAX_FRAMES) {
-                voteBuffer = voteBuffer.slice(-VOTE_MAX_FRAMES);
+            // Motion Stability Gate: skip blurry frames while hand/item is moving rapidly across frame
+            let isMovingFast = false;
+            if (candidate.region && canvasEl.width > 0 && canvasEl.height > 0) {
+                const cx = candidate.region[0] + candidate.region[2] / 2;
+                const cy = candidate.region[1] + candidate.region[3] / 2;
+                if (lastMotionBox && (nowP - lastMotionBox.t) < 450) {
+                    const moveDist = Math.hypot(cx - lastMotionBox.cx, cy - lastMotionBox.cy);
+                    const diag = Math.hypot(canvasEl.width, canvasEl.height) || 800;
+                    if (moveDist > diag * 0.12) isMovingFast = true;
+                }
+                lastMotionBox = { cx, cy, t: nowP };
+            }
+            if (!isMovingFast) {
+                voteBuffer.push({ key: candidate.key, score: candidate.score, t: nowP, candidate });
+                if (voteBuffer.length > VOTE_MAX_FRAMES) {
+                    voteBuffer = voteBuffer.slice(-VOTE_MAX_FRAMES);
+                }
             }
             lastLiveRegion = { region: candidate.region, t: nowP };
         }
