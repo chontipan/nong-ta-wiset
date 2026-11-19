@@ -3625,6 +3625,114 @@ body {
     }
 }
 
+/* --- UN SDGs Badges (Official UN Color Palette) --- */
+.sdg-section {
+    width: 100%;
+    padding-top: 0.9rem;
+    border-top: 1px dashed rgba(15, 23, 42, 0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.sdg-section-title {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.sdg-badges-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.55rem;
+}
+
+.sdg-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem 0.4rem 0.45rem;
+    border-radius: 10px;
+    color: #ffffff;
+    text-align: left;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.12);
+    transition: transform 0.18s ease;
+}
+
+.sdg-badge:hover {
+    transform: translateY(-2px);
+}
+
+.sdg-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.22);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.sdg-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.sdg-info strong {
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+}
+
+.sdg-info span {
+    font-size: 0.72rem;
+    opacity: 0.95;
+}
+
+.sdg-3  { background: #4C9F38; }
+.sdg-11 { background: #FD9D24; }
+.sdg-12 { background: #BF8B2E; }
+.sdg-13 { background: #3F7E44; }
+.sdg-17 { background: #19486A; }
+
+.report-sdg-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 0.85rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.report-sdg-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #334155;
+    margin-right: 0.2rem;
+}
+
+.sdg-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
 @media (max-width: 640px) {
     .mascot-helper-card {
         padding: 0.85rem 1rem !important;
