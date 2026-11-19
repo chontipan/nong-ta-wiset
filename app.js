@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isCameraActive = false;
     let isKioskMode = false;
     let selectedDeviceId = null;
-    let currentConfidenceThreshold = 0.58; // 58% optimal confidence threshold for high accuracy
+    let currentConfidenceThreshold = 0.65; // 65% optimal confidence threshold to reduce background false positives
     // Escape text before putting it into innerHTML (names and history can come from the shared cloud database)
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -1636,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const parsedConf = parseFloat(savedConf);
                 if (!isNaN(parsedConf)) setConfidenceThreshold(parsedConf);
             } else {
-                setConfidenceThreshold(0.58);
+                setConfidenceThreshold(0.65);
             }
 
 

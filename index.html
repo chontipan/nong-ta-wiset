@@ -107,14 +107,14 @@
                     </div>
 
                     <!-- Confidence Threshold Control -->
-                    <div class="confidence-control-box" title="ปรับระดับความมั่นใจ AI ขั้นต่ำในการจำแนก (แนะนำ 55% - 68%)">
+                    <div class="confidence-control-box" title="ปรับระดับความมั่นใจ AI ขั้นต่ำในการจำแนก (แนะนำ 65% - 72%)">
                         <i class="fa-solid fa-sliders"></i>
-                        <span class="confidence-label">ความมั่นใจ: <strong id="confidenceVal">58%</strong></span>
-                        <input type="range" id="confidenceSlider" min="40" max="85" value="58" step="1" class="confidence-slider">
+                        <span class="confidence-label">ความมั่นใจ: <strong id="confidenceVal">65%</strong></span>
+                        <input type="range" id="confidenceSlider" min="40" max="85" value="65" step="1" class="confidence-slider">
                         <div class="confidence-presets">
-                            <button type="button" class="conf-btn" data-conf="0.50" title="เน้นตรวจจับรวดเร็ว">50% ไว</button>
-                            <button type="button" class="conf-btn active" data-conf="0.58" title="สมดุลแนะนำ">58% แนะนำ</button>
-                            <button type="button" class="conf-btn" data-conf="0.68" title="เน้นความแม่นยำสูง กรองสิ่งของที่ไม่เกี่ยวข้อง">68% แม่นยำ</button>
+                            <button type="button" class="conf-btn" data-conf="0.55" title="เน้นตรวจจับรวดเร็ว">55% ไว</button>
+                            <button type="button" class="conf-btn active" data-conf="0.65" title="สมดุลแนะนำ ลดจับพื้นหลัง">65% แนะนำ</button>
+                            <button type="button" class="conf-btn" data-conf="0.72" title="เน้นความแม่นยำสูง กรองสิ่งของที่ไม่เกี่ยวข้อง">72% แม่นยำ</button>
                         </div>
                     </div>
 
@@ -547,9 +547,9 @@
                 <div class="kiosk-confidence-selector" title="ระดับความมั่นใจ AI ขั้นต่ำ">
                     <i class="fa-solid fa-sliders"></i>
                     <select id="kioskConfidenceSelect" class="kiosk-camera-dropdown">
-                        <option value="0.50">50% (ตอบสนองไว)</option>
-                        <option value="0.58" selected>58% (สมดุลแนะนำ)</option>
-                        <option value="0.68">68% (แม่นยำสูง)</option>
+                        <option value="0.55">55% (ตอบสนองไว)</option>
+                        <option value="0.65" selected>65% (สมดุลแนะนำ)</option>
+                        <option value="0.72">72% (แม่นยำสูง)</option>
                     </select>
                 </div>
                 <div class="kiosk-stat-pill">
