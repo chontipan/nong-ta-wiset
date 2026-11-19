@@ -144,16 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 db.enablePersistence({ synchronizeTabs: true })
                     .catch(err => console.warn('Offline storage for Firestore not available:', err.code || err));
 
-                if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = `waste-5b576 (Connected) · ตู้ ${KIOSK_ID}`;
+                if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = `เชื่อมต่อแล้ว · ตู้ ${KIOSK_ID}`;
                 if (firebaseStatusEl) firebaseStatusEl.classList.add('online');
 
                 listenToCloudHistory();
             } catch (err) {
                 console.warn('Firebase init warning:', err);
-                if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = 'waste-5b576 (Offline)';
+                if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = 'ออฟไลน์';
             }
         } else {
-            if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = 'waste-5b576 (Local)';
+            if (firebaseStatusTextEl) firebaseStatusTextEl.innerText = 'โหมดในเครื่อง';
         }
     }
 
