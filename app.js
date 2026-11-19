@@ -892,6 +892,35 @@ document.addEventListener('DOMContentLoaded', () => {
         money: { type: 'money', thName: '💵 ธนบัตรไทย (AI จำจากที่สอน)', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด ไม่ควรทิ้ง!', estValue: 0, desc: 'นี่คือ เงิน ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' }
     };
 
+    // Built-in Thai Banknote visual references (Series 17: 20, 50, 100, 500, 1,000 THB, front & back)
+    const BUILTIN_BANKNOTES = [
+        {
+            id: 'builtin:thb_20',
+            info: { type: 'money', thName: '💵 ธนบัตร 20 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 20 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 20 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
+            images: ['logos/banknotes/thb-20-front.jpg', 'logos/banknotes/thb-20-back.jpg']
+        },
+        {
+            id: 'builtin:thb_50',
+            info: { type: 'money', thName: '💵 ธนบัตร 50 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 50 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 50 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
+            images: ['logos/banknotes/thb-50-front.jpg', 'logos/banknotes/thb-50-back.jpg']
+        },
+        {
+            id: 'builtin:thb_100',
+            info: { type: 'money', thName: '💵 ธนบัตร 100 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 100 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 100 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
+            images: ['logos/banknotes/thb-100-front.jpg', 'logos/banknotes/thb-100-back.jpg']
+        },
+        {
+            id: 'builtin:thb_500',
+            info: { type: 'money', thName: '💵 ธนบัตร 500 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 500 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 500 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
+            images: ['logos/banknotes/thb-500-front.jpg', 'logos/banknotes/thb-500-back.jpg']
+        },
+        {
+            id: 'builtin:thb_1000',
+            info: { type: 'money', thName: '💵 ธนบัตร 1,000 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 1,000 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 1,000 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
+            images: ['logos/banknotes/thb-1000-front.jpg', 'logos/banknotes/thb-1000-back.jpg']
+        }
+    ];
+
     function infoForCocoClass(cocoClass) {
         const itemKey = cocoClass.toLowerCase();
         // Old-style trained products (no photo) still match by shape. Products with photos are
@@ -914,6 +943,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function infoForVisualLabel(label) {
         if (label.startsWith('bin:')) return TAUGHT_BIN_INFO[label.slice(4)] || null;
+        if (label.startsWith('builtin:')) {
+            const b = BUILTIN_BANKNOTES.find(item => item.id === label);
+            return b ? b.info : null;
+        }
         const c = customThaiProducts.find(p => p.id === label);
         return c ? customInfo(c) : null;
     }
@@ -2388,11 +2421,27 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAiStatus();
     }
 
+    async function loadBuiltinBanknotesToMemory() {
+        if (!visualMemory || !visualMemory.ready) return;
+        for (const note of BUILTIN_BANKNOTES) {
+            for (let i = 0; i < note.images.length; i++) {
+                try {
+                    const emb = await visualMemory.embedDataUrl(note.images[i]);
+                    if (emb) visualMemory.add(`${note.id}#${i}`, note.id, emb, { group: 'money', boost: 0.03 });
+                } catch (e) {
+                    console.warn('Skipped banknote ref:', note.images[i], e);
+                }
+            }
+        }
+        updateAiStatus();
+    }
+
     async function initVisualMemory() {
         if (!visualMemory) return;
         try {
             aiStatusTextEl.innerText = 'AI พร้อม · กำลังโหลดภาพจำ...';
             await visualMemory.load();
+            await queueMemory(() => loadBuiltinBanknotesToMemory());
             for (const prod of customThaiProducts) await queueMemory(() => addProductToMemory(prod));
             for (const ex of feedbackExamples) await queueMemory(() => addFeedbackToMemory(ex));
         } catch (e) {
