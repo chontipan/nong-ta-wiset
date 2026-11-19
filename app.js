@@ -1708,13 +1708,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!stats.hazardous) stats.hazardous = 0;
             if (savedHistory) scanHistory = JSON.parse(savedHistory);
 
-            const savedConf = localStorage.getItem('ecoscan_confidence');
-            const confMigrated = localStorage.getItem('ecoscan_conf_v65');
-            if (savedConf && (confMigrated || Math.abs(parseFloat(savedConf) - 0.58) > 0.005)) {
+            const savedConf = localStorage.getItem('ecoscan_confidence_v2');
+            if (savedConf) {
                 const parsedConf = parseFloat(savedConf);
                 if (!isNaN(parsedConf)) setConfidenceThreshold(parsedConf);
             } else {
-                try { localStorage.setItem('ecoscan_conf_v65', '1'); } catch (e) { /* ignore */ }
                 setConfidenceThreshold(0.65);
             }
 
@@ -1998,7 +1996,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.toggle('active', Math.abs(bVal - currentConfidenceThreshold) < 0.03);
             });
         }
-        localStorage.setItem('ecoscan_confidence', currentConfidenceThreshold.toString());
+        localStorage.setItem('ecoscan_confidence_v2', currentConfidenceThreshold.toString());
     }
 
     if (confidenceSlider) {
