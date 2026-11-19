@@ -348,12 +348,12 @@
             <!-- Right Panel: Live Prediction Result & Analytics -->
             <section class="dashboard-sidebar">
                 <!-- Mascot Guide Card -->
-                <div class="card mascot-helper-card" id="mascotHelperCard">
-                    <div class="mascot-figure">
+                <div class="card mascot-helper-card" id="mascotHelperCard" title="แตะที่น้องพญานาคเพื่อคุยเล่นหรือดูเกร็ดความรู้แยกขยะ">
+                    <div class="mascot-figure" id="mascotTapTarget" role="button" tabindex="0" aria-label="แตะน้องพญานาคเพื่อคุยเล่น">
                         <img src="logos/mascot-sorting.jpg" alt="น้องตาวิเศษกำลังแยกขยะ" class="mascot-sorting-img" id="mascotSortingImg">
                     </div>
                     <div class="mascot-speech">
-                        <span class="mascot-badge"><i class="fa-solid fa-sparkles"></i> น้องตาวิเศษ · ผู้ช่วยแยกขยะฮอมบุญ</span>
+                        <span class="mascot-badge"><i class="fa-solid fa-sparkles"></i> น้องตาวิเศษ · จิ้มตัวน้องคุยเล่นได้ 🐾</span>
                         <p class="mascot-greeting" id="mascotGreetingText">“สวัสดี! ยื่นขยะมาหน้ากล้อง ให้น้องช่วยบอกถังนะ ♻️”</p>
                     </div>
                 </div>
@@ -1050,6 +1050,18 @@
                     ได้รับการสนับสนุนงบประมาณจาก หน่วยขับเคลื่อนนวัตกรรมเพื่อสังคม (SID) พื้นที่ภาคเหนือตอนบน 2 สถาบันนวัตกรรมและถ่ายทอดเทคโนโลยี มหาวิทยาลัยพะเยา และ สำนักงานนวัตกรรมแห่งชาติ (องค์การมหาชน) NIA
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Cute Confetti Particle Layer -->
+    <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+
+    <!-- Every-5-Items Milestone Celebration Popup -->
+    <div class="milestone-toast hidden" id="milestoneCelebrationToast" role="status" aria-live="polite">
+        <img src="logos/mascot-celebrate.jpg" alt="น้องพญานาคฉลอง" class="milestone-mascot-img">
+        <div class="milestone-text">
+            <strong id="milestoneTitle">🎊 เย้! แยกขยะครบ 5 ชิ้นแล้ว!</strong>
+            <p id="milestoneSub">สุดยอดนักฮอมบุญ ช่วยโลกและชุมชนแม่จันได้เยอะเลย ✨</p>
         </div>
     </div>
 

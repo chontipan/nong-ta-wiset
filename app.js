@@ -1582,6 +1582,16 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatsUI();
         updateMascotReaction(info);
 
+        // Cute confetti on eco/money scans + celebration every 5 items!
+        if (info.type === 'money') {
+            spawnCuteConfetti('money');
+        } else if (info.type === 'plastic_bottle' || info.type === 'recyclable') {
+            spawnCuteConfetti('eco');
+        }
+        if (stats.total > 0 && stats.total % 5 === 0) {
+            showMilestoneCelebration(stats.total);
+        }
+
         // Show captured snapshot thumbnail in Result Modal when available (with auto-snap flash)
         if (modalCapturedWrap && modalCapturedImg) {
             const thumb = capture && capture.source ? captureThumbnailDataUrl(capture.source, capture.region) : null;
@@ -3385,6 +3395,110 @@ document.addEventListener('DOMContentLoaded', () => {
             a.download = `nongtawiset_report_${ym}.csv`;
             a.click();
             URL.revokeObjectURL(url);
+        });
+    }
+
+    // --- Cute Confetti, Interactive Pet Mascot & Every-5-Items Celebration ---
+    const confettiLayer = document.getElementById('confettiLayer');
+    const mascotTapTarget = document.getElementById('mascotTapTarget');
+    const milestoneToast = document.getElementById('milestoneCelebrationToast');
+    const milestoneTitle = document.getElementById('milestoneTitle');
+    const milestoneSub = document.getElementById('milestoneSub');
+    let milestoneTimer = null;
+
+    function spawnCuteConfetti(kind = 'eco') {
+        if (!confettiLayer) return;
+        const palettes = {
+            eco: ['✨', '🍃', '🌼', '♻️', '🌿', '💚'],
+            money: ['✨', '💵', '⭐', '💛', '✨'],
+            celebrate: ['🎊', '🎉', '✨', '🍃', '🌼', '⭐', '💚']
+        };
+        const icons = palettes[kind] || palettes.eco;
+        const count = kind === 'celebrate' ? 28 : 16;
+
+        for (let i = 0; i < count; i++) {
+            const el = document.createElement('span');
+            el.className = 'confetti-piece';
+            el.textContent = icons[Math.floor(Math.random() * icons.length)];
+            el.style.left = `${Math.random() * 96 + 2}vw`;
+            el.style.fontSize = `${1.05 + Math.random() * 0.8}rem`;
+            const dur = 1.6 + Math.random() * 1.1;
+            const delay = Math.random() * 0.35;
+            el.style.animationDuration = `${dur}s`;
+            el.style.animationDelay = `${delay}s`;
+            el.style.setProperty('--drift', `${(Math.random() - 0.5) * 140}px`);
+            el.style.setProperty('--spin', `${(Math.random() > 0.5 ? 1 : -1) * (180 + Math.random() * 360)}deg`);
+            confettiLayer.appendChild(el);
+            setTimeout(() => el.remove(), (dur + delay) * 1000 + 150);
+        }
+    }
+
+    function showMilestoneCelebration(totalCount) {
+        if (!milestoneToast) return;
+        const isKhammuang = currentDialect === 'khammuang';
+        if (milestoneTitle) {
+            milestoneTitle.innerText = isKhammuang
+                ? `🎊 เย้! ฮอมบุญครบ ${totalCount} ชิ้นแล้วเน้อ!`
+                : `🎊 เย้! แยกขยะครบ ${totalCount} ชิ้นแล้ว!`;
+        }
+        if (milestoneSub) {
+            milestoneSub.innerText = isKhammuang
+                ? 'สุดยอดนักฮอมบุญ ช่วยโลกและเมืองแม่จันได้จ๊าดนัก ✨'
+                : 'สุดยอดนักแยกขยะ ช่วยโลกและชุมชนแม่จันได้เยอะเลย ✨';
+        }
+        milestoneToast.classList.remove('hidden');
+        spawnCuteConfetti('celebrate');
+        if (milestoneTimer) clearTimeout(milestoneTimer);
+        milestoneTimer = setTimeout(() => milestoneToast.classList.add('hidden'), 4200);
+    }
+
+    if (milestoneToast) {
+        milestoneToast.addEventListener('click', () => {
+            milestoneToast.classList.add('hidden');
+            if (milestoneTimer) clearTimeout(milestoneTimer);
+        });
+    }
+
+    const MASCOT_TIPS_CENTRAL = [
+        'รู้ไหม? ขวดน้ำ PET 10 ขวด รีไซเคิลทำเสื้อยืดได้ 1 ตัวเลยนะ! 👕',
+        'เทน้ำให้หมดแล้วบีบขวดก่อนทิ้ง ช่วยประหยัดพื้นที่ถังได้ถึง 3 เท่า! 🍾',
+        'กระป๋องอลูมิเนียม 1 ใบ รีไซเคิลประหยัดไฟเปิดทีวีได้นาน 3 ชั่วโมง! ⚡',
+        'แยกขยะวันละชิ้น โลกยิ้มได้ทุกวัน กองทุนฮอมบุญก็โตขึ้นด้วย! 🌿',
+        'ถ่านไฟฉายและหลอดไฟ อย่าทิ้งรวมกับขยะทั่วไปนะ แยกใส่ถังแดงปลอดภัยกว่า! ☣️',
+        'เย้! ขอบคุณที่มาช่วยกันดูแลเมืองแม่จันให้สะอาดน่าอยู่! ✨'
+    ];
+    const MASCOT_TIPS_KHAMMUANG = [
+        'ฮู้ก่อ? ขวดน้ำ 10 ขวด เอารีไซเคิลแป๋งเสื้อยืดได้ 1 ตัวเลยเน้อ! 👕',
+        'เทน้ำหื้อหมดแล้วบีบขวดก่อนทิ้ง จ่วยลดพื้นที่ถังได้ตั้ง 3 เต้าเน้อ! 🍾',
+        'กระป๋องอลูมิเนียม 1 ใบ รีไซเคิลประหยัดไฟเปิดทีวีได้ตั้ง 3 ชั่วโมง! ⚡',
+        'แยกขยะวันละชิ้น โลกยิ้มได้กู้วัน กองทุนฮอมบุญก็ใหญ่ขึ้นตวย! 🌿',
+        'ถ่านไฟฉายอย่าทิ้งปนขยะทั่วไปเน้อ แยกใส่ถังสีแดงปลอดภัยกว่า! ☣️',
+        'ยินดีจ๊าดนัก ที่มาจ่วยกันฮักษาเมืองแม่จันหื้อสะอาดงามตา! ✨'
+    ];
+    let mascotTipIdx = 0;
+
+    function triggerMascotPet() {
+        if (mascotSortingImg) {
+            mascotSortingImg.classList.remove('mascot-boing');
+            void mascotSortingImg.offsetWidth;
+            mascotSortingImg.classList.add('mascot-boing');
+        }
+        const tips = currentDialect === 'khammuang' ? MASCOT_TIPS_KHAMMUANG : MASCOT_TIPS_CENTRAL;
+        const tip = tips[mascotTipIdx % tips.length];
+        mascotTipIdx += 1;
+        if (mascotGreetingText) mascotGreetingText.innerText = `“${tip}”`;
+        spawnCuteConfetti('eco');
+        playChime('recyclable');
+        speakThaiText(tip.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, ''));
+    }
+
+    if (mascotTapTarget) {
+        mascotTapTarget.addEventListener('click', triggerMascotPet);
+        mascotTapTarget.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                triggerMascotPet();
+            }
         });
     }
 
