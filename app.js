@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
         estimatedValue: 0.0
     };
     let scanHistory = [];
-    let currentDialect = 'khammuang'; // 'khammuang' (คำเมืองล้านนา) or 'central' (ภาษากลาง)
+    let currentDialect = 'central'; // 'central' (ภาษากลาง) or 'khammuang' (คำเมืองล้านนา)
 
     // --- DOM Element References ---
     const webcamEl = document.getElementById('webcam');
