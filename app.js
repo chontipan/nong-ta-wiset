@@ -1032,7 +1032,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (match) {
                 const info = infoForVisualLabel(match.label);
-                const need = top ? VISUAL_MATCH_SIM : VISUAL_ONLY_SIM;
+                const isBuiltinNote = match.label.startsWith('builtin:thb_');
+                const need = isBuiltinNote
+                    ? (top ? 0.62 : 0.66)
+                    : (top ? VISUAL_MATCH_SIM : VISUAL_ONLY_SIM);
                 if (info && match.sim >= need && match.margin >= VISUAL_MARGIN) {
                     candidate = { key: 'vm:' + match.label, score: match.sim, region, info, visual: true };
                 }
@@ -2428,8 +2431,22 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const note of BUILTIN_BANKNOTES) {
             for (let i = 0; i < note.images.length; i++) {
                 try {
-                    const emb = await visualMemory.embedDataUrl(note.images[i]);
-                    if (emb) visualMemory.add(`${note.id}#${i}`, note.id, emb, { group: 'money', boost: 0.03 });
+                    const img = await new Promise((res, rej) => {
+                        const el = new Image();
+                        el.onload = () => res(el);
+                        el.onerror = rej;
+                        el.src = note.images[i];
+                    });
+                    const w = img.naturalWidth || img.width;
+                    const h = img.naturalHeight || img.height;
+                    // Embed full banknote + clean center square crop (avoids edge-stretch distortion on 2:1 notes)
+                    const embFull = await visualMemory.embed(img);
+                    if (embFull) visualMemory.add(`${note.id}#${i}_full`, note.id, embFull, { group: 'money', boost: 0.03 });
+                    if (w > h * 1.3) {
+                        const cx = Math.max(0, (w - h) / 2);
+                        const embCenter = await visualMemory.embed(img, [cx, 0, h, h]);
+                        if (embCenter) visualMemory.add(`${note.id}#${i}_ctr`, note.id, embCenter, { group: 'money', boost: 0.03 });
+                    }
                 } catch (e) {
                     console.warn('Skipped banknote ref:', note.images[i], e);
                 }
