@@ -809,7 +809,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (e) { /* storage blocked: stay on the normal screen */ }
 
-        // 2. Load COCO-SSD Model (Fast Lite on Mobile for 2-3x speed, High-Accuracy MobileNet V2 on Desktop)
+        // 2. Optimize TensorFlow.js WebGL backend (packed float16 textures for ~20-30% faster inference)
+        try {
+            if (typeof tf !== 'undefined' && tf.env) {
+                tf.env().set('WEBGL_PACK', true);
+                tf.env().set('WEBGL_FORCE_F16_TEXTURES', true);
+            }
+        } catch (tfOptErr) { /* fallback cleanly on older GPUs */ }
+
+        // 2b. Load COCO-SSD Model (Fast Lite on Mobile for 2-3x speed, High-Accuracy MobileNet V2 on Desktop)
         const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         try {
             loaderMessageEl.innerText = isMobileDevice
@@ -1243,14 +1251,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (match) {
-                const info = infoForVisualLabel(match.label);
-                const isBuiltinNote = match.label.startsWith('builtin:thb_');
-                const topCls = top ? top.class.toLowerCase() : '';
-                const need = isBuiltinNote
-                    ? (topCls === 'book' || topCls === 'cell phone' ? 0.54 : (top ? 0.60 : 0.64))
-                    : (top ? VISUAL_MATCH_SIM : VISUAL_ONLY_SIM);
-                if (info && match.sim >= need && match.margin >= VISUAL_MARGIN) {
-                    candidate = { key: 'vm:' + match.label, score: match.sim, region, info, visual: true };
+                if (match.label === 'bg:empty' && match.sim >= 0.78) {
+                    // Camera is looking at the calibrated empty background: drop weak false positives
+                    if (candidate && candidate.score < 0.80) candidate = null;
+                } else {
+                    const info = infoForVisualLabel(match.label);
+                    const isBuiltinNote = match.label.startsWith('builtin:thb_');
+                    const topCls = top ? top.class.toLowerCase() : '';
+                    const need = isBuiltinNote
+                        ? (topCls === 'book' || topCls === 'cell phone' ? 0.54 : (top ? 0.60 : 0.64))
+                        : (top ? VISUAL_MATCH_SIM : VISUAL_ONLY_SIM);
+                    if (info && match.sim >= need && match.margin >= VISUAL_MARGIN) {
+                        candidate = { key: 'vm:' + match.label, score: match.sim, region, info, visual: true };
+                    }
                 }
             }
         }
@@ -2746,16 +2759,77 @@ document.addEventListener('DOMContentLoaded', () => {
         visualMemory.removeLabel(prod.id);
         const imgs = productImages(prod);
         for (let i = 0; i < imgs.length; i++) {
-            visualMemory.add(`${prod.id}#${i}`, prod.id, await visualMemory.embedDataUrl(imgs[i]), { group: prod.bin });
+            const embs = visualMemory.embedDataUrlAugmented
+                ? await visualMemory.embedDataUrlAugmented(imgs[i])
+                : [await visualMemory.embedDataUrl(imgs[i])];
+            embs.forEach((emb, k) => {
+                visualMemory.add(`${prod.id}#${i}_${k}`, prod.id, emb, { group: prod.bin });
+            });
         }
         updateAiStatus();
     }
 
     async function addFeedbackToMemory(ex) {
         if (!visualMemory || !visualMemory.ready) return;
-        // A person's correction outranks a near-identical taught photo
-        visualMemory.add(ex.id, ex.label, await visualMemory.embedDataUrl(ex.image), { group: ex.type, boost: 0.06 });
+        // A person's correction outranks a near-identical taught photo (augmented x3 for angle/scale robustness)
+        const embs = visualMemory.embedDataUrlAugmented
+            ? await visualMemory.embedDataUrlAugmented(ex.image)
+            : [await visualMemory.embedDataUrl(ex.image)];
+        embs.forEach((emb, k) => {
+            visualMemory.add(`${ex.id}_${k}`, ex.label, emb, { group: ex.type, boost: 0.06 });
+        });
         updateAiStatus();
+    }
+
+    // --- Background Calibration ("จำพื้นหลังเปล่า") to suppress false positives ---
+    const calibrateBgBtn = document.getElementById('calibrateBgBtn');
+    async function loadSavedBackgroundRefs() {
+        if (!visualMemory || !visualMemory.ready) return;
+        try {
+            const saved = JSON.parse(localStorage.getItem('ecoscan_bg_refs') || '[]');
+            visualMemory.removeLabel('bg:empty');
+            for (let i = 0; i < saved.length; i++) {
+                const emb = await visualMemory.embedDataUrl(saved[i]);
+                if (emb) visualMemory.add(`bg:empty#${i}`, 'bg:empty', emb, { group: 'none', boost: 0.02 });
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    if (calibrateBgBtn) {
+        calibrateBgBtn.addEventListener('click', async () => {
+            if (!isCameraActive || webcamEl.readyState !== 4) {
+                alert('กรุณาเปิดกล้องก่อนจำพื้นหลังเปล่า');
+                return;
+            }
+            if (!visualMemory || !visualMemory.ready) {
+                alert('กำลังโหลดระบบภาพจำ AI กรุณารอสักครู่แล้วลองใหม่');
+                return;
+            }
+            calibrateBgBtn.disabled = true;
+            const origHtml = calibrateBgBtn.innerHTML;
+            calibrateBgBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังจำพื้นหลัง...';
+            try {
+                const bgUrls = [];
+                visualMemory.removeLabel('bg:empty');
+                for (let i = 0; i < 3; i++) {
+                    const url = captureThumbnailDataUrl(webcamEl, null);
+                    if (url) {
+                        bgUrls.push(url);
+                        const emb = await visualMemory.embedDataUrl(url);
+                        if (emb) visualMemory.add(`bg:empty#${i}`, 'bg:empty', emb, { group: 'none', boost: 0.02 });
+                    }
+                    if (i < 2) await new Promise(r => setTimeout(r, 180));
+                }
+                try { localStorage.setItem('ecoscan_bg_refs', JSON.stringify(bgUrls)); } catch (e) { /* ignore */ }
+                updateAiStatus();
+                alert('✅ จำพื้นหลังเปล่าเรียบร้อย! ระบบจะลดการทายมั่วจากฉากหลังนี้โดยอัตโนมัติ');
+            } catch (err) {
+                console.warn('Background calibration error:', err);
+            } finally {
+                calibrateBgBtn.disabled = false;
+                calibrateBgBtn.innerHTML = origHtml;
+            }
+        });
     }
 
     async function loadBuiltinBanknotesToMemory() {
@@ -2795,6 +2869,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             aiStatusTextEl.innerText = 'AI พร้อม · กำลังโหลดภาพจำ...';
             await visualMemory.load();
+            await queueMemory(() => loadSavedBackgroundRefs());
             await queueMemory(() => loadBuiltinBanknotesToMemory());
             for (const prod of customThaiProducts) await queueMemory(() => addProductToMemory(prod));
             for (const ex of feedbackExamples) await queueMemory(() => addFeedbackToMemory(ex));

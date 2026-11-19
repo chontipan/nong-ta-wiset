@@ -63,6 +63,52 @@
             return this.embed(img);
         }
 
+        // Auto Data Augmentation: generates 3 normalized embeddings (original + horizontal flip + 80% zoom crop)
+        // in one batched pass, so teaching 1 photo gives multi-angle & multi-scale accuracy.
+        async embedAugmented(source, region = null) {
+            if (!this.ready) return [];
+            const out = tf.tidy(() => {
+                const pixels = tf.browser.fromPixels(source);
+                const [h, w] = pixels.shape;
+                const box = squareBox(region || [0, 0, w, h], w, h, region ? 0.12 : 0);
+                const bw = box.x2 - box.x1;
+                const bh = box.y2 - box.y1;
+                const zoomInsetX = bw * 0.10;
+                const zoomInsetY = bh * 0.10;
+                const batch = pixels.expandDims(0).toFloat();
+                const cropOrig = tf.image.cropAndResize(
+                    batch,
+                    [[box.y1 / h, box.x1 / w, box.y2 / h, box.x2 / w]],
+                    [0],
+                    [INPUT_SIZE, INPUT_SIZE]
+                );
+                const cropFlip = tf.image.flipLeftRight(cropOrig);
+                const cropZoom = tf.image.cropAndResize(
+                    batch,
+                    [[(box.y1 + zoomInsetY) / h, (box.x1 + zoomInsetX) / w, (box.y2 - zoomInsetY) / h, (box.x2 - zoomInsetX) / w]],
+                    [0],
+                    [INPUT_SIZE, INPUT_SIZE]
+                );
+                const stacked = tf.concat([cropOrig, cropFlip, cropZoom], 0).div(127.5).sub(1);
+                const embs = this.model.predict(stacked);
+                const norms = embs.norm('euclidean', 1, true).add(1e-8);
+                return embs.div(norms);
+            });
+            const dim = out.shape[1];
+            const flat = await out.data();
+            out.dispose();
+            return [
+                new Float32Array(flat.slice(0, dim)),
+                new Float32Array(flat.slice(dim, dim * 2)),
+                new Float32Array(flat.slice(dim * 2, dim * 3))
+            ];
+        }
+
+        async embedDataUrlAugmented(dataUrl) {
+            const img = await loadImage(dataUrl);
+            return this.embedAugmented(img);
+        }
+
         // group: which bin the example belongs to (labels in the same bin never conflict)
         // boost: small similarity bonus, used for corrections people made with the "ไม่ถูก" button
         add(id, label, emb, { group = label, boost = 0 } = {}) {
