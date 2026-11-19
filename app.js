@@ -332,12 +332,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const shutterScanBtn = document.getElementById('shutterScanBtn');
     const modalCapturedWrap = document.getElementById('modalCapturedWrap');
     const modalCapturedImg = document.getElementById('modalCapturedImg');
+    const cameraHoldFill = document.getElementById('cameraHoldFill');
+    const viewfinderContainerEl = document.querySelector('.viewfinder-container');
+    const kioskViewfinderEl = document.querySelector('.kiosk-viewfinder');
 
     // Default to 'snap' (press shutter) on mobile phones for 60fps smooth camera & crisp still shots; 'auto' on desktop/kiosk
     const isPhoneScreen = /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
     let scanMode = isPhoneScreen ? 'snap' : 'auto';
 
+    function playShutterSound() {
+        if (isSoundMuted) return;
+        try {
+            const ctxAudio = getAudioContext();
+            const now = ctxAudio.currentTime;
+            // Crisp mechanical shutter click (high-pass noise burst + quick resonant snap)
+            const bufLen = Math.floor(ctxAudio.sampleRate * 0.045);
+            const buf = ctxAudio.createBuffer(1, bufLen, ctxAudio.sampleRate);
+            const ch = buf.getChannelData(0);
+            for (let i = 0; i < bufLen; i++) {
+                ch[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufLen * 0.22));
+            }
+            const noise = ctxAudio.createBufferSource();
+            noise.buffer = buf;
+            const filter = ctxAudio.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(2200, now);
+            const gain = ctxAudio.createGain();
+            gain.gain.setValueAtTime(0.35, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.045);
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctxAudio.destination);
+            noise.start(now);
+        } catch (e) { /* ignore */ }
+    }
+
+    function setViewfinderGlow(type = null) {
+        const classes = ['glow-plastic_bottle', 'glow-recyclable', 'glow-general', 'glow-hazardous', 'glow-money'];
+        [viewfinderContainerEl, kioskViewfinderEl].forEach(el => {
+            if (!el) return;
+            el.classList.remove(...classes);
+            if (type) el.classList.add(`glow-${type}`);
+        });
+    }
+
+    function setHoldProgress(pct, type = null) {
+        const clamped = Math.max(0, Math.min(100, pct));
+        if (holdProgressBar) holdProgressBar.style.width = `${clamped}%`;
+        if (cameraHoldFill) {
+            cameraHoldFill.style.width = `${clamped}%`;
+            cameraHoldFill.className = type ? `camera-hold-fill ${type}` : 'camera-hold-fill';
+        }
+    }
+
     function triggerCameraFlash() {
+        playShutterSound();
         if (!cameraFlashOverlay) return;
         cameraFlashOverlay.classList.remove('flash');
         void cameraFlashOverlay.offsetWidth;
@@ -1304,7 +1353,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Vote over recent frames & Hold-Steady trigger ---
     function resetHold() {
         currentStableClass = null;
-        holdProgressBar.style.width = '0%';
+        setHoldProgress(0);
         setLiveChip(null);
     }
 
@@ -1417,7 +1466,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentStableClass === winKey) {
             const timeHeld = now - stableStartTime;
             const progressPct = Math.min((timeHeld / STABILITY_THRESHOLD_MS) * 100, 100);
-            holdProgressBar.style.width = `${progressPct}%`;
+            setHoldProgress(progressPct, winner.info.type);
 
             // Commit only when held steady AND backed by a clear multi-frame majority (at least 3 agreeing frames & >=60% share)
             if (
@@ -1429,12 +1478,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 commitWasteScan(winner.info, avgScore, { source: webcamEl, region: winner.region });
                 lastAutoCommitTime = now;
                 voteBuffer = [];
-                holdProgressBar.style.width = '0%';
+                setHoldProgress(0);
             }
         } else {
             currentStableClass = winKey;
             stableStartTime = now;
-            holdProgressBar.style.width = '0%';
+            setHoldProgress(0, winner.info.type);
         }
     }
 
@@ -1452,9 +1501,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!info) {
             liveResultChip.className = 'live-result-chip idle';
             liveResultText.innerText = LIVE_CHIP_IDLE;
+            setViewfinderGlow(null);
             return;
         }
         liveResultChip.className = `live-result-chip ${info.type}`;
+        setViewfinderGlow(info.type);
         liveResultText.innerText = info.type === 'money'
             ? `${info.thName} · ไม่ควรทิ้ง!`
             : `${info.thName} → ${info.bin}`;

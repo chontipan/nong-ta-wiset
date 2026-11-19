@@ -3835,6 +3835,67 @@ body {
     100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
+/* --- During-Scan UX: Color Glow Frame & Inline Hold Progress Bar --- */
+.viewfinder-container,
+.kiosk-viewfinder {
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.viewfinder-container.glow-plastic_bottle,
+.kiosk-viewfinder.glow-plastic_bottle {
+    border-color: #0d9488 !important;
+    box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.35), 0 0 28px rgba(13, 148, 136, 0.45) !important;
+}
+
+.viewfinder-container.glow-recyclable,
+.kiosk-viewfinder.glow-recyclable {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.35), 0 0 28px rgba(16, 185, 129, 0.45) !important;
+}
+
+.viewfinder-container.glow-general,
+.kiosk-viewfinder.glow-general {
+    border-color: #0ea5e9 !important;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.35), 0 0 28px rgba(14, 165, 233, 0.45) !important;
+}
+
+.viewfinder-container.glow-hazardous,
+.kiosk-viewfinder.glow-hazardous {
+    border-color: #f43f5e !important;
+    box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.4), 0 0 30px rgba(244, 63, 94, 0.5) !important;
+}
+
+.viewfinder-container.glow-money,
+.kiosk-viewfinder.glow-money {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.45), 0 0 32px rgba(245, 158, 11, 0.55) !important;
+}
+
+.camera-hold-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6px;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 7;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.camera-hold-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0d9488, #10b981);
+    transition: width 0.08s linear, background-color 0.2s ease;
+}
+
+.camera-hold-fill.plastic_bottle { background: #0d9488; }
+.camera-hold-fill.recyclable     { background: #10b981; }
+.camera-hold-fill.general        { background: #0ea5e9; }
+.camera-hold-fill.hazardous      { background: #f43f5e; }
+.camera-hold-fill.money          { background: #f59e0b; }
+
 @media (max-width: 640px) {
     .mascot-helper-card {
         padding: 0.85rem 1rem !important;
