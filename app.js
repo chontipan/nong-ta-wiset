@@ -1582,10 +1582,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatsUI();
         updateMascotReaction(info);
 
-        // Show captured snapshot thumbnail in Result Modal when available
+        // Show captured snapshot thumbnail in Result Modal when available (with auto-snap flash)
         if (modalCapturedWrap && modalCapturedImg) {
             const thumb = capture && capture.source ? captureThumbnailDataUrl(capture.source, capture.region) : null;
             if (thumb) {
+                if (!isSnapping && capture.source === webcamEl) triggerCameraFlash();
                 modalCapturedImg.src = thumb;
                 modalCapturedWrap.classList.remove('hidden');
             } else {
