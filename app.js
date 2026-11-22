@@ -967,8 +967,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     async function analyzeFrame(source, cropCenter = false) {
-        const result = await model.predict(source, cropCenter);
-        if (result.score < currentConfidenceThreshold || result.margin < 0.15) return null;
+        const minimumMargin = 0.15;
+        const result = await model.predict(source, cropCenter, currentConfidenceThreshold, minimumMargin);
+        if (result.score < currentConfidenceThreshold || result.margin < minimumMargin) return null;
         return { key: result.label, score: result.score, info: MATERIAL_INFO[result.label] };
     }
 

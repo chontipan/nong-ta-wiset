@@ -32,13 +32,13 @@ window.RecycleNet = class RecycleNet {
         }
     }
 
-    predict(source, cropCenter = false) {
-        const task = this.queue.then(() => this.run(source, cropCenter));
+    predict(source, cropCenter = false, confidenceThreshold = 0.65, minimumMargin = 0.15) {
+        const task = this.queue.then(() => this.run(source, cropCenter, confidenceThreshold, minimumMargin));
         this.queue = task.catch(() => {});
         return task;
     }
 
-    async run(source, cropCenter) {
+    async run(source, cropCenter, confidenceThreshold, minimumMargin) {
         const size = 224;
         const plane = size * size;
         const width = source.videoWidth || source.width;
@@ -58,12 +58,28 @@ window.RecycleNet = class RecycleNet {
             }
         }
         const input = new ort.Tensor('float32', data, [1, 3, size, size]);
-        const { logits } = await this.session.run({ image: input });
+        const { logits, material_log_odds: materialLogOdds } = await this.session.run({ image: input });
         const labels = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash'];
         const max = Math.max(...logits.data);
         const scores = Array.from(logits.data, value => Math.exp(value - max));
         const sum = scores.reduce((total, value) => total + value, 0);
-        const [best, second] = labels.map((_, i) => i).sort((a, b) => scores[b] - scores[a]);
+        const rank = () => labels.map((_, i) => i).sort((a, b) => scores[b] - scores[a]);
+        let [best, second] = rank();
+        const glass = 1;
+        const plastic = 4;
+        const pairIsOnTop = (best === glass && second === plastic) || (best === plastic && second === glass);
+        const uncertain = scores[best] / sum < confidenceThreshold
+            || (scores[best] - scores[second]) / sum < minimumMargin;
+        const helperOdds = materialLogOdds?.data[0];
+        if (pairIsOnTop && uncertain && Number.isFinite(helperOdds)) {
+            // Split only the existing probability mass of the two materials.
+            const pairMass = scores[glass] + scores[plastic];
+            const blendedOdds = (logits.data[plastic] - logits.data[glass] + helperOdds) / 2;
+            const plasticShare = 1 / (1 + Math.exp(-blendedOdds));
+            scores[plastic] = pairMass * plasticShare;
+            scores[glass] = pairMass * (1 - plasticShare);
+            [best, second] = rank();
+        }
         return { label: labels[best], score: scores[best] / sum, margin: (scores[best] - scores[second]) / sum };
     }
 };
