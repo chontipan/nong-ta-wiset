@@ -238,3 +238,33 @@ test('battery scan asks for a bin and reads a known battery code locally', async
         await page.context().close();
     }
 });
+
+test('foam helper changes only confident foam scan suggestions and preserves battery warnings', async () => {
+    const { page } = await openPage(BASE);
+    try {
+        await page.waitForFunction(() => document.getElementById('aiStatusText')?.innerText.includes('พร้อม'));
+        await page.waitForFunction(() => document.getElementById('webcam').readyState === 4);
+        const dialog = page.locator('#scanConfirm');
+        const picker = page.locator('#scanConfirmBin');
+        for (const [foamScore, batteryWarning, score, expected] of [
+            [0.899, false, 0.95, 'recyclable'],
+            [0.90, false, 0.95, 'general'],
+            [0.99, false, 0.55, ''],
+            [0.99, true, 0.95, '']
+        ]) {
+            await page.evaluate(([foamScore, batteryWarning, score]) => {
+                RecycleNet.prototype.predict = async () => ({
+                    label: 'plastic', score, margin: 0.3, foamScore, batteryWarning
+                });
+            }, [foamScore, batteryWarning, score]);
+            await page.locator('#snapshotBtn').click();
+            await dialog.waitFor({ state: 'visible' });
+            assert.equal(await picker.inputValue(), expected);
+            if (batteryWarning) assert.match(await page.locator('#scanConfirmPrediction').innerText(), /อาจเป็นถ่าน/);
+            await dialog.locator('button[value=cancel]').click();
+            await dialog.waitFor({ state: 'hidden' });
+        }
+    } finally {
+        await page.context().close();
+    }
+});
