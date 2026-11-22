@@ -973,6 +973,9 @@ document.addEventListener('DOMContentLoaded', () => {
             margin = score - result.outsidePairScore;
         }
         if (score < currentConfidenceThreshold || margin < minimumMargin) return null;
+        if (checkBattery && info.type === 'recyclable' && result.foamScore >= 0.90) {
+            return { key: 'general', score: result.foamScore, info: CORRECTION_INFO.general };
+        }
         return { key: info.type, score, info };
     }
 

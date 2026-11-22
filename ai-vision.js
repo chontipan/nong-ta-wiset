@@ -58,7 +58,7 @@ window.RecycleNet = class RecycleNet {
             }
         }
         const input = new ort.Tensor('float32', data, [1, 3, size, size]);
-        const { logits, material_log_odds: materialLogOdds, battery_score: batteryScore, coin_score: coinScore } = await this.session.run({ image: input });
+        const { logits, material_log_odds: materialLogOdds, battery_score: batteryScore, coin_score: coinScore, foam_score: foamScore } = await this.session.run({ image: input });
         const labels = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash'];
         const max = Math.max(...logits.data);
         const scores = Array.from(logits.data, value => Math.exp(value - max));
@@ -84,6 +84,7 @@ window.RecycleNet = class RecycleNet {
             [best, second] = rank();
         }
         return { label: labels[best], score: scores[best] / sum, margin: (scores[best] - scores[second]) / sum, ...recyclePair,
+            foamScore: foamScore?.data[0],
             batteryWarning: batteryScore?.data[0] >= 0.66 || coinScore?.data[0] >= 0.85 };
     }
 };
