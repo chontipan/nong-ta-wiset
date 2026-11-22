@@ -1480,28 +1480,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function submitPrediction(candidate, source) {
-        if (!candidate) {
-            if (liveResultText) liveResultText.innerText = 'ยังไม่แน่ใจ ลองจัดขยะชิ้นเดียวให้อยู่กลางกรอบแล้วสแกนใหม่';
-            if (isKioskMode && kioskBinDesc) kioskBinDesc.innerText = 'ยังไม่แน่ใจ ลองจัดขยะชิ้นเดียวให้อยู่กลางกรอบแล้วสแกนใหม่';
-            return;
-        }
-        const { info, score } = candidate;
-        updatePredictionUI(info, score);
+        const info = candidate?.info;
+        const score = candidate?.score ?? null;
+        if (info) updatePredictionUI(info, score);
         const dialog = document.getElementById('scanConfirm');
         const select = document.getElementById('scanConfirmBin');
-        document.getElementById('scanConfirmPrediction').textContent =
-            `AI คาดว่าเป็น ${info.thName} (${Math.round(score * 100)}%)`;
-        select.value = info.type;
+        const save = dialog.querySelector('button[value="save"]');
+        document.getElementById('scanConfirmPrediction').textContent = info
+            ? `AI คาดว่าเป็น ${info.thName} (${Math.round(score * 100)}%)`
+            : 'AI ยังไม่แน่ใจ เลือกถังเองได้ หรือยกเลิกเพื่อสแกนใหม่';
+        select.value = info?.type ?? '';
+        save.disabled = !select.value;
         dialog.returnValue = '';
         dialog.addEventListener('close', () => {
-            if (dialog.returnValue !== 'save') return;
-            const chosen = select.value === info.type ? info : CORRECTION_INFO[select.value];
+            if (dialog.returnValue !== 'save' || !select.value) return;
+            const chosen = select.value === info?.type ? info : CORRECTION_INFO[select.value];
             const chosenScore = chosen === info ? score : null;
             updatePredictionUI(chosen, chosenScore);
             commitWasteScan(chosen, chosenScore, { source });
         }, { once: true });
         dialog.showModal();
     }
+
+    const scanConfirmBin = document.getElementById('scanConfirmBin');
+    scanConfirmBin.addEventListener('change', () => {
+        document.querySelector('#scanConfirm button[value="save"]').disabled = !scanConfirmBin.value;
+    });
 
     // --- Sample Test Buttons Click Handler (Event Delegation for Static & Dynamic Custom Buttons) ---
     const sampleObjectsContainer = document.querySelector('.sample-objects-container');
