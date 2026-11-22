@@ -13,6 +13,27 @@
 
 [โมเดล RecycleNet และ MIT license](https://huggingface.co/LeoYan/recyclenet-mobilenetv3) · [ONNX Runtime Web](https://onnxruntime.ai/docs/tutorials/web/)
 
+## โครงสร้างระบบ
+
+```mermaid
+flowchart LR
+    Camera["กล้องโหมดปกติหรือโหมดตู้"] --> Vision["ครอปภาพและรัน RecycleNet Small ด้วย ONNX / WASM"]
+    Vision --> Choice["แนะนำถังและให้ผู้ใช้ยืนยัน"]
+    Choice --> Local["ประวัติในเครื่อง"]
+    Choice --> Firestore["Firestore: รายการสแกนและสถิติรายวัน"]
+    Cache["Service Worker และแคช"] --> Vision
+```
+
+| ส่วน | ไฟล์ที่เกี่ยวข้อง | หน้าที่ |
+| --- | --- | --- |
+| หน้าเว็บและโหมดตู้ | [index.html](index.html), [styles.css](styles.css), [app.js](app.js) | เปิดกล้อง แสดงกรอบสแกน รับผลจากโมเดล และให้ผู้ใช้ยืนยันถังทั่วไป รีไซเคิล หรืออันตรายก่อนบันทึก |
+| การประมวลผลภาพ | [ai-vision.js](ai-vision.js), [โมเดล ONNX](models/recyclenet-small.onnx), [ONNX Runtime Web](vendor/ort/) | เตรียมภาพและทำนายในเบราว์เซอร์ เมื่อความมั่นใจต่ำ ผู้ใช้เลือกถังเองได้ |
+| ออฟไลน์และแคช | [sw.js](sw.js), [manifest.webmanifest](manifest.webmanifest) | เปิดหน้าเว็บโดยลองเครือข่ายก่อนและใช้สำเนาที่บันทึกไว้เมื่อจำเป็น ส่วนโมเดลและตัวรัน WASM ใช้ไฟล์ในแคชก่อน |
+| ข้อมูลและสถิติ | [app.js](app.js), [firestore.rules](firestore.rules) | บันทึกข้อมูลการสแกนใน `scans` และยอดรายวันรวมกับยอดแยกตู้ใน `stats` ภาพจากกล้องอยู่ในเบราว์เซอร์ |
+| เว็บจริงและการตรวจสอบ | [firebase.json](firebase.json), [GitHub Actions](.github/workflows/firebase-deploy.yml), [ชุดทดสอบ](tests/) | ให้บริการผ่าน Firebase Hosting และตรวจการเปิดเว็บกับกฎ Firestore ใน CI |
+
+ตัวตรวจถ่านกระดุมและ OCR สำหรับรหัสอย่าง CR2032 หรือ CR2025 อยู่ระหว่างการทดลองนอกเว็บจริง การเลือกถังอันตรายในเว็บปัจจุบันอาศัยการยืนยันของผู้ใช้
+
 ## 🚀 การติดตั้งและรันในเครื่อง (Local Setup)
 
 ```bash
