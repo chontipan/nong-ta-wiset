@@ -41,7 +41,7 @@
                 </div>
                 <div class="brand-text">
                     <h1>น้องตาวิเศษ</h1>
-                    <span class="tagline">แพลตฟอร์มขยะฮอมบุญ (ระบบแยกขยะอัจฉริยะ 4 หมวด: ขวดพลาสติก, รีไซเคิล, อันตราย, ทั่วไป)</span>
+                    <span class="tagline">แพลตฟอร์มขยะฮอมบุญ (ระบบแยกขยะ 3 ถัง: ทั่วไป รีไซเคิล และอันตราย)</span>
                 </div>
                 <button type="button" class="btn btn-icon mobile-menu-toggle" id="mobileMenuToggleBtn" aria-label="เปิดเมนูเครื่องมือ" aria-expanded="false">
                     <i class="fa-solid fa-bars"></i>
@@ -173,7 +173,7 @@
                 <!-- Sample Test Objects Bar (Thai Products & Packaging - 4 Bins) -->
                 <div class="sample-objects-container">
                     <div class="sample-header-row">
-                        <span class="sample-title"><i class="fa-solid fa-basket-shopping"></i> 🇹🇭 สินค้าและบรรจุภัณฑ์ไทย (คลิกทดลองจำแนกลง 4 ถัง):</span>
+                        <span class="sample-title"><i class="fa-solid fa-basket-shopping"></i> 🇹🇭 สินค้าและบรรจุภัณฑ์ไทย (คลิกทดลองจำแนกลง 3 ถัง):</span>
                     </div>
                         </div>
                     </div>
@@ -183,9 +183,9 @@
                         <i class="fa-solid fa-flask"></i> ปุ่มทดลองจำแนกโดยไม่ใช้กล้อง (แตะเพื่อเปิด)
                     </summary>
 
-                    <!-- Group 1: Plastic Bottles (ถังขวดพลาสติก) -->
+                    <!-- Group 1: Plastic Bottles (ขยะรีไซเคิล) -->
                     <div class="sample-group">
-                        <span class="sample-group-label plastic"><i class="fa-solid fa-bottle-water"></i> ถังขวดพลาสติก (PET / HDPE):</span>
+                        <span class="sample-group-label plastic"><i class="fa-solid fa-bottle-water"></i> ขวดพลาสติก (ถังรีไซเคิล):</span>
                         <div class="sample-buttons">
                             <button class="btn btn-sm btn-outline sample-btn plastic-bottle-btn" data-item="singha_bottle">🍾 น้ำดื่มสิงห์ / คริสตัล (PET)</button>
                             <button class="btn btn-sm btn-outline sample-btn plastic-bottle-btn" data-item="oishi_bottle">🧃 ชาเขียวโออิชิ / อิชิตัน (PET)</button>
@@ -237,13 +237,6 @@
                         </div>
                     </div>
 
-                    <!-- Money / Banknote (แจ้งเตือนพิเศษ) -->
-                    <div class="sample-group">
-                        <span class="sample-group-label money"><i class="fa-solid fa-money-bill-wave"></i> แจ้งเตือนพิเศษ:</span>
-                        <div class="sample-buttons">
-                            <button class="btn btn-sm btn-outline sample-btn money-btn" data-item="banknote">💵 ธนบัตร (เงินบาทไทย ⚠️ ไม่ควรทิ้ง)</button>
-                        </div>
-                    </div>
                     </details>
                 </div>
 
@@ -382,14 +375,6 @@
                             <div class="stat-info">
                                 <span class="stat-value" id="totalCount">0</span>
                                 <span class="stat-label">ขยะรวม (ชิ้น)</span>
-                            </div>
-                        </div>
-
-                        <div class="stat-box plastic-bottle">
-                            <div class="stat-icon"><i class="fa-solid fa-bottle-water"></i></div>
-                            <div class="stat-info">
-                                <span class="stat-value" id="plasticBottleCount">0</span>
-                                <span class="stat-label">ขวดพลาสติก</span>
                             </div>
                         </div>
 
@@ -669,8 +654,8 @@
                     <i class="fa-solid fa-box"></i>
                 </div>
                 <h3 class="modal-object-name" id="modalObjectName">ขวดน้ำพลาสติก</h3>
-                <div class="modal-category-pill plastic_bottle" id="modalCategoryPill">ถังขวดพลาสติก</div>
-                <p class="modal-desc" id="modalDesc">ทิ้งลงถังขวดพลาสติก</p>
+                <div class="modal-category-pill recyclable" id="modalCategoryPill">ขยะรีไซเคิล</div>
+                <p class="modal-desc" id="modalDesc">ทิ้งลงขยะรีไซเคิล</p>
                 <span class="item-price-pill hidden" id="modalPricePill"><i class="fa-solid fa-coins"></i> <span id="modalPriceText"></span></span>
 
                 <!-- ถูก/ผิด: corrections are remembered by the AI -->
@@ -685,11 +670,9 @@
                     <div class="feedback-bins hidden" id="feedbackBins">
                         <span class="feedback-question">เลือกถังที่ถูกต้องเพื่อแก้ประวัติในเครื่องนี้</span>
                         <div class="feedback-bin-grid">
-                            <button type="button" class="feedback-bin plastic_bottle" data-bin="plastic_bottle">🍾 ขวดพลาสติก</button>
                             <button type="button" class="feedback-bin recyclable" data-bin="recyclable">♻️ รีไซเคิล</button>
                             <button type="button" class="feedback-bin hazardous" data-bin="hazardous">☣️ อันตราย</button>
                             <button type="button" class="feedback-bin general" data-bin="general">🗑️ ทั่วไป</button>
-                            <button type="button" class="feedback-bin money" data-bin="money">💵 ธนบัตร/เงินสด (ห้ามทิ้ง!)</button>
                         </div>
                     </div>
                     <p class="feedback-thanks hidden" id="feedbackThanks"></p>
@@ -709,15 +692,13 @@
         <form method="dialog">
             <h2 id="scanConfirmTitle">ตรวจสอบก่อนบันทึก</h2>
             <p id="scanConfirmPrediction"></p>
-            <p>ถ้าในกรอบไม่มีขยะ ให้กดยกเลิก</p>
+            <p>ถ้าเป็นถ่านไฟฉาย แบตเตอรี่ หรือขยะอันตราย ให้เลือกถังอันตรายเอง ถ้าไม่มีขยะในกรอบ ให้กดยกเลิก</p>
             <label for="scanConfirmBin">เลือกประเภทที่ถูกต้อง</label>
             <select id="scanConfirmBin" class="form-input">
                 <option value="" disabled>เลือกถัง</option>
                 <option value="recyclable">ขยะรีไซเคิล</option>
-                <option value="plastic_bottle">ขวดพลาสติก PET / HDPE</option>
                 <option value="hazardous">ขยะอันตราย</option>
                 <option value="general">ขยะทั่วไป</option>
-                <option value="money">ธนบัตร (ไม่ควรทิ้ง)</option>
             </select>
             <p><button class="btn btn-secondary" value="cancel">ยกเลิก</button>
             <button class="btn btn-primary" value="save">บันทึกผล</button></p>
@@ -844,7 +825,6 @@
                                 <tr>
                                     <th>จุดตั้งตู้</th>
                                     <th>รวม (ชิ้น)</th>
-                                    <th>ขวดพลาสติก</th>
                                     <th>รีไซเคิล</th>
                                     <th>ทั่วไป</th>
                                     <th>อันตราย</th>
@@ -865,7 +845,6 @@
                                 <tr>
                                     <th>วันที่</th>
                                     <th>รวม (ชิ้น)</th>
-                                    <th>ขวดพลาสติก</th>
                                     <th>รีไซเคิล</th>
                                     <th>ทั่วไป</th>
                                     <th>อันตราย</th>

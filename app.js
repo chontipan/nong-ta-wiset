@@ -7,16 +7,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Dictionary & Waste Classification Rules (4 Bins) ---
     const WASTE_MAPPING = {
-        // Dedicated Plastic Bottle Bin (ถังขวดพลาสติก - PET / HDPE)
-        'bottle': { type: 'plastic_bottle', thName: '🍾 ขวดน้ำพลาสติก (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.12, desc: 'พลาสติก PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        'singha_bottle': { type: 'plastic_bottle', thName: '🍾 น้ำดื่มสิงห์ / คริสตัล (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.12, desc: 'ขวดน้ำดื่ม PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากพลาสติกออก และบีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        'oishi_bottle': { type: 'plastic_bottle', thName: '🧃 ชาเขียวโออิชิ / อิชิตัน (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.15, desc: 'ขวดชาเขียว PET ใส เทน้ำออกให้หมด ล้างน้ำเปล่า บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        'coke_pepsi_bottle': { type: 'plastic_bottle', thName: '🥤 โค้ก / เป๊ปซี่ / เอส (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.20, desc: 'ขวดน้ำอัดลมพลาสติก PET ใส ล้างคราบหวานออก บีบให้แบนทิ้งลงถังขวดพลาสติก' },
-        'cvitt_yanhee_bottle': { type: 'plastic_bottle', thName: '🍋 ซี-วิตต์ / น้ำยันฮี (PET)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.09, desc: 'ขวดวิตามินพลาสติก PET ล้างสะอาด ดึงฉลากออก บีบแบนส่งรีไซเคิล' },
-        'hdpe_bottle': { type: 'plastic_bottle', thName: '🥛 ขวดน้ำพลาสติกขุ่น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.21, desc: 'พลาสติก HDPE ขุ่น (เบอร์ 2) เช่น ขวดนม/ขวดน้ำยาล้างจาน ล้างทำความสะอาดทิ้งลงถังขวดพลาสติก' },
-        'meiji_milk_bottle': { type: 'plastic_bottle', thName: '🥛 นมพาสเจอร์ไรส์เมจิ / โฟร์โมสต์ (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.21, desc: 'ขวดนมพลาสติก HDPE สีขาวขุ่น ล้างคราบนมให้สะอาดหมดจดเพื่อป้องกันกลิ่นบูด แล้วทิ้งลงถังขวดพลาสติก' },
-        'sunlight_bottle': { type: 'plastic_bottle', thName: '🧴 ซันไลต์ / บรีสเอกเซล (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.35, desc: 'ขวดน้ำยาล้างจาน/น้ำยาซักผ้า HDPE ล้างคราบฟองน้ำยาออกให้หมดก่อนทิ้งถังขวดพลาสติก' },
-        'betagen_bottle': { type: 'plastic_bottle', thName: '🍼 นมเปรี้ยวบีทาเก้น (HDPE)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.07, desc: 'ขวดนมเปรี้ยวพลาสติก HDPE ล้างคราบนมเปรี้ยวออกให้เกลี้ยงก่อนทิ้งลงถังขวดพลาสติก' },
+        // Plastic bottle examples (PET / HDPE) go in recycling
+        'bottle': { type: 'recyclable', thName: '🍾 ขวดน้ำพลาสติก (PET)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.12, desc: 'พลาสติก PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังรีไซเคิล' },
+        'singha_bottle': { type: 'recyclable', thName: '🍾 น้ำดื่มสิงห์ / คริสตัล (PET)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.12, desc: 'ขวดน้ำดื่ม PET ใส (เบอร์ 1) ล้างทำความสะอาด ดึงฉลากพลาสติกออก และบีบให้แบนก่อนทิ้งลงถังรีไซเคิล' },
+        'oishi_bottle': { type: 'recyclable', thName: '🧃 ชาเขียวโออิชิ / อิชิตัน (PET)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.15, desc: 'ขวดชาเขียว PET ใส เทน้ำออกให้หมด ล้างน้ำเปล่า บีบให้แบนก่อนทิ้งลงถังรีไซเคิล' },
+        'coke_pepsi_bottle': { type: 'recyclable', thName: '🥤 โค้ก / เป๊ปซี่ / เอส (PET)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.20, desc: 'ขวดน้ำอัดลมพลาสติก PET ใส ล้างคราบหวานออก บีบให้แบนทิ้งลงถังรีไซเคิล' },
+        'cvitt_yanhee_bottle': { type: 'recyclable', thName: '🍋 ซี-วิตต์ / น้ำยันฮี (PET)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 6 บาท (ขวดน้ำ PET)', estValue: 0.09, desc: 'ขวดวิตามินพลาสติก PET ล้างสะอาด ดึงฉลากออก บีบแบนส่งรีไซเคิล' },
+        'hdpe_bottle': { type: 'recyclable', thName: '🥛 ขวดน้ำพลาสติกขุ่น (HDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.21, desc: 'พลาสติก HDPE ขุ่น (เบอร์ 2) เช่น ขวดนม/ขวดน้ำยาล้างจาน ล้างทำความสะอาดทิ้งลงถังรีไซเคิล' },
+        'meiji_milk_bottle': { type: 'recyclable', thName: '🥛 นมพาสเจอร์ไรส์เมจิ / โฟร์โมสต์ (HDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.21, desc: 'ขวดนมพลาสติก HDPE สีขาวขุ่น ล้างคราบนมให้สะอาดหมดจดเพื่อป้องกันกลิ่นบูด แล้วทิ้งลงถังรีไซเคิล' },
+        'sunlight_bottle': { type: 'recyclable', thName: '🧴 ซันไลต์ / บรีสเอกเซล (HDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.35, desc: 'ขวดน้ำยาล้างจาน/น้ำยาซักผ้า HDPE ล้างคราบฟองน้ำยาออกให้หมดก่อนทิ้งถังรีไซเคิล' },
+        'betagen_bottle': { type: 'recyclable', thName: '🍼 นมเปรี้ยวบีทาเก้น (HDPE)', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 7 บาท (ขวดพลาสติกขุ่น)', estValue: 0.07, desc: 'ขวดนมเปรี้ยวพลาสติก HDPE ล้างคราบนมเปรี้ยวออกให้เกลี้ยงก่อนทิ้งลงถังรีไซเคิล' },
 
         // Recyclable Items & Thai Products (ขยะรีไซเคิล - แก้ว, โลหะ, UHT, กระดาษ, พลาสติกสะอาด)
         'pp_pe_ps': { type: 'recyclable', thName: '🥣 พลาสติก PP, PE, PS', bin: 'ขยะรีไซเคิล', price: 'กก.ละ 3 บาท (พลาสติกรวม)', estValue: 0.06, desc: 'พลาสติก PP/PE/PS (เบอร์ 5 และ 6) กล่องอาหารพลาสติก ล้างคราบอาหารก่อนส่งรีไซเคิล' },
@@ -184,11 +184,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const inc = firebase.firestore.FieldValue.increment;
             const counts = {
                 total: inc(1),
-                plastic_bottle: inc(info.type === 'plastic_bottle' ? 1 : 0),
                 recyclable: inc(info.type === 'recyclable' ? 1 : 0),
                 general: inc(info.type === 'general' ? 1 : 0),
                 hazardous: inc(info.type === 'hazardous' ? 1 : 0),
-                co2: inc(info.type === 'plastic_bottle' ? 0.18 : (info.type === 'recyclable' ? 0.15 : 0)),
+                co2: inc(info.type === 'recyclable' ? 0.15 : 0),
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                 day
             };
@@ -452,8 +451,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '“อุ๊ย! นี่คือเงินนะ อย่าทิ้ง เก็บไว้ให้ดีนะ 💵”';
         } else if (info.type === 'plastic_bottle') {
             msg = isKhammuang
-                ? `“เก่งขนาด! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังขวดพลาสติกเน้อ 🍾”`
-                : `“เยี่ยมเลย! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังขวดพลาสติกนะ 🍾”`;
+                ? `“เก่งขนาด! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังรีไซเคิลเน้อ 🍾”`
+                : `“เยี่ยมเลย! ${info.thName} เทน้ำ บีบขวด ทิ้งลงถังรีไซเคิลนะ 🍾”`;
         } else if (info.type === 'recyclable') {
             msg = isKhammuang
                 ? `“ฮอมบุญตวยกัน! ${info.thName} ทิ้งลงถังรีไซเคิล ขายได้เงินเข้ากองทุนเน้อ ♻️”`
@@ -505,7 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Stats Elements
     const totalCountEl = document.getElementById('totalCount');
-    const plasticBottleCountEl = document.getElementById('plasticBottleCount');
     const recyclableCountEl = document.getElementById('recyclableCount');
     const generalCountEl = document.getElementById('generalCount');
     const hazardousCountEl = document.getElementById('hazardousCount');
@@ -951,11 +949,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const CORRECTION_INFO = {
-        plastic_bottle: WASTE_MAPPING.bottle,
         recyclable: { type: 'recyclable', thName: 'ขยะรีไซเคิล', bin: 'ขยะรีไซเคิล', desc: 'แยกตามวัสดุและทำความสะอาดก่อนทิ้ง' },
         general: DEFAULT_GENERAL_WASTE,
         hazardous: { type: 'hazardous', thName: 'ขยะอันตราย', bin: 'ขยะอันตราย', desc: 'แยกทิ้งที่จุดรับขยะอันตราย' },
-        money: WASTE_MAPPING.banknote
     };
     const MATERIAL_INFO = {
         cardboard: { ...CORRECTION_INFO.recyclable, thName: '📦 กระดาษลัง' },
@@ -969,8 +965,14 @@ document.addEventListener('DOMContentLoaded', () => {
     async function analyzeFrame(source, cropCenter = false) {
         const minimumMargin = 0.15;
         const result = await model.predict(source, cropCenter, currentConfidenceThreshold, minimumMargin);
-        if (result.score < currentConfidenceThreshold || result.margin < minimumMargin) return null;
-        return { key: result.label, score: result.score, info: MATERIAL_INFO[result.label] };
+        const info = MATERIAL_INFO[result.label];
+        let { score, margin } = result;
+        if (info.type === 'recyclable' && result.recyclablePairScore !== undefined) {
+            score = result.recyclablePairScore;
+            margin = score - result.outsidePairScore;
+        }
+        if (score < currentConfidenceThreshold || margin < minimumMargin) return null;
+        return { key: info.type, score, info };
     }
 
     // --- Vote over recent frames & Hold-Steady trigger ---
@@ -1283,7 +1285,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (info.type === 'plastic_bottle') {
             if (currentDialect === 'khammuang') {
-                speakThaiText(`${info.thName} เอาทิ้งลงถังขวดพลาสติกเน้อ ฮอมบุญตวยกัน`);
+                speakThaiText(`${info.thName} เอาทิ้งลงถังรีไซเคิลเน้อ ฮอมบุญตวยกัน`);
             } else {
                 speakThaiText(`${info.thName} ทิ้งลง${info.bin}`);
             }
@@ -1372,8 +1374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Update Statistics UI ---
     function updateStatsUI() {
         totalCountEl.innerText = stats.total;
-        if (plasticBottleCountEl) plasticBottleCountEl.innerText = stats.plastic_bottle || 0;
-        recyclableCountEl.innerText = stats.recyclable;
+        recyclableCountEl.innerText = (stats.recyclable || 0) + (stats.plastic_bottle || 0);
         generalCountEl.innerText = stats.general;
         hazardousCountEl.innerText = stats.hazardous || 0;
         if (totalValueCountEl) totalValueCountEl.innerText = (stats.estimatedValue || 0).toFixed(2);
@@ -1493,7 +1494,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const select = document.getElementById('scanConfirmBin');
         const save = dialog.querySelector('button[value="save"]');
         document.getElementById('scanConfirmPrediction').textContent = info
-            ? `AI คาดว่าเป็น ${info.thName} (${Math.round(score * 100)}%)`
+            ? `AI แนะนำ ${info.bin} (${Math.round(score * 100)}%)`
             : 'AI ยังไม่แน่ใจ เลือกถังเองได้ หรือยกเลิกเพื่อสแกนใหม่';
         select.value = info?.type ?? '';
         save.disabled = !select.value;
@@ -2236,11 +2237,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (repCo2Saved) repCo2Saved.innerText = sum.co2.toFixed(2);
         if (repTreesEq) repTreesEq.innerText = (trees > 0 && trees < 1) ? trees.toFixed(2) : trees.toFixed(1);
 
-        // 4-Bin Horizontal Bars
+        // Three-bin bars, including bottles recorded by older versions.
         if (reportCategoryBars) {
             const cats = [
-                { key: 'plastic_bottle', label: '🍾 ขวดพลาสติก', count: sum.plastic_bottle, cls: 'plastic_bottle' },
-                { key: 'recyclable', label: '♻️ ขยะรีไซเคิล', count: sum.recyclable, cls: 'recyclable' },
+                { key: 'recyclable', label: '♻️ ขยะรีไซเคิล', count: sum.recyclable + sum.plastic_bottle, cls: 'recyclable' },
                 { key: 'general', label: '🗑️ ขยะทั่วไป', count: sum.general, cls: 'general' },
                 { key: 'hazardous', label: '☣️ ขยะอันตราย', count: sum.hazardous, cls: 'hazardous' }
             ];
@@ -2276,14 +2276,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const kList = Array.from(byKiosk.values()).sort((a, b) => b.total - a.total);
             if (kList.length === 0) {
-                reportKioskTableBody.innerHTML = `<tr class="empty-row"><td colspan="7">ยังไม่มีข้อมูลแยกตามชื่อตู้ในเดือนนี้ (ตั้งชื่อตู้ได้ผ่านลิงก์ ?kiosk=ชื่อตู้)</td></tr>`;
+                reportKioskTableBody.innerHTML = `<tr class="empty-row"><td colspan="6">ยังไม่มีข้อมูลแยกตามชื่อตู้ในเดือนนี้ (ตั้งชื่อตู้ได้ผ่านลิงก์ ?kiosk=ชื่อตู้)</td></tr>`;
             } else {
                 reportKioskTableBody.innerHTML = kList.map(k => `
                     <tr>
                         <td><strong>${escapeHtml(k.kiosk)}</strong></td>
                         <td><strong>${k.total}</strong></td>
-                        <td>${k.plastic_bottle}</td>
-                        <td>${k.recyclable}</td>
+                        <td>${k.recyclable + k.plastic_bottle}</td>
                         <td>${k.general}</td>
                         <td>${k.hazardous}</td>
                         <td>${k.co2.toFixed(2)}</td>
@@ -2295,14 +2294,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Daily Breakdown Table
         if (reportDailyTableBody) {
             if (rows.length === 0) {
-                reportDailyTableBody.innerHTML = `<tr class="empty-row"><td colspan="7">ไม่มีรายการในเดือนที่เลือก</td></tr>`;
+                reportDailyTableBody.innerHTML = `<tr class="empty-row"><td colspan="6">ไม่มีรายการในเดือนที่เลือก</td></tr>`;
             } else {
                 reportDailyTableBody.innerHTML = rows.map(r => `
                     <tr>
                         <td>${escapeHtml(r.day)}</td>
                         <td><strong>${r.total}</strong></td>
-                        <td>${r.plastic_bottle}</td>
-                        <td>${r.recyclable}</td>
+                        <td>${r.recyclable + r.plastic_bottle}</td>
                         <td>${r.general}</td>
                         <td>${r.hazardous}</td>
                         <td>${r.co2.toFixed(2)}</td>
@@ -2351,9 +2349,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             const ym = (reportMonthPicker && reportMonthPicker.value) || currentYearMonth();
-            const headers = ['Date,Total,PlasticBottle,Recyclable,General,Hazardous,CO2_kg'];
+            const headers = ['Date,Total,Recyclable,General,Hazardous,CO2_kg'];
             const lines = lastRenderedDailyRows.map(r =>
-                [r.day, r.total, r.plastic_bottle, r.recyclable, r.general, r.hazardous, r.co2.toFixed(2)].join(',')
+                [r.day, r.total, r.plastic_bottle + r.recyclable, r.general, r.hazardous, r.co2.toFixed(2)].join(',')
             );
             const blob = new Blob(['\uFEFF' + [headers, ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
             const url = URL.createObjectURL(blob);
