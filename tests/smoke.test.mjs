@@ -116,3 +116,22 @@ test('camera scan records only the bin confirmed by the user', async () => {
     assert.deepEqual(errors, []);
     await page.context().close();
 });
+
+test('uncertain scan lets the user choose a bin without rescanning', async () => {
+    const { page, errors } = await openPage(BASE);
+    await page.waitForFunction(() => document.getElementById('aiStatusText').innerText.includes('พร้อม')
+        && document.getElementById('webcam').readyState === 4);
+    await page.evaluate(() => {
+        RecycleNet.prototype.predict = async () => ({ label: 'plastic', score: 0.5, margin: 0.1 });
+    });
+    await page.locator('#snapshotBtn').click();
+    const save = page.locator('#scanConfirm button[value=save]');
+    await save.waitFor({ state: 'visible' });
+    assert.equal(await save.isDisabled(), true);
+    await page.locator('#scanConfirmBin').selectOption('plastic_bottle');
+    await save.click();
+    await page.locator('#resultModalBackdrop:not(.hidden)').waitFor({ state: 'visible' });
+    assert.match(await page.locator('#modalCategoryPill').innerText(), /ถังขวดพลาสติก/);
+    assert.deepEqual(errors, []);
+    await page.context().close();
+});
