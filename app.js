@@ -2468,6 +2468,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Match the square crop to a centered, contained video in both layouts.
+    for (const video of [webcamEl, kioskWebcam]) {
+        const frame = video.parentElement.querySelector('.scan-overlay');
+        const updateCropFrame = () => {
+            const { videoWidth, videoHeight } = video;
+            const { width, height } = video.getBoundingClientRect();
+            const visible = videoWidth > 0 && videoHeight > 0 && width > 0 && height > 0;
+            frame.classList.toggle('crop-ready', visible);
+            if (!visible) return;
+            const [, , side] = RecycleNet.centerCrop(videoWidth, videoHeight);
+            const scale = Math.min(width / videoWidth, height / videoHeight);
+            frame.style.setProperty('--scan-crop-size', `${side * scale}px`);
+        };
+        new ResizeObserver(updateCropFrame).observe(video);
+        for (const event of ['loadedmetadata', 'resize', 'emptied']) {
+            video.addEventListener(event, updateCropFrame);
+        }
+    }
+
     // --- Start Application ---
     loadSavedPriceBoard();
     updateScanModeUI();

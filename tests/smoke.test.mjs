@@ -150,3 +150,30 @@ test('stalled model download leaves the loading state while the camera stays liv
     assert.deepEqual(errors, []);
     await page.context().close();
 });
+
+test('scan borders match the centered video crop in both layouts', async () => {
+    const { page, errors } = await openPage(BASE);
+    async function check(videoId) {
+        await page.waitForFunction(id => {
+            const video = document.getElementById(id);
+            const frame = video.parentElement.querySelector('.scan-overlay');
+            const v = video.getBoundingClientRect();
+            const r = frame.getBoundingClientRect();
+            const scale = Math.min(v.width / video.videoWidth, v.height / video.videoHeight);
+            const side = Math.min(video.videoWidth, video.videoHeight) * scale;
+            return v.width > 0 && frame.classList.contains('crop-ready')
+                && Math.abs(r.width - side) < 1 && Math.abs(r.height - side) < 1
+                && Math.abs(r.x + r.width / 2 - v.x - v.width / 2) < 1
+                && Math.abs(r.y + r.height / 2 - v.y - v.height / 2) < 1
+                && getComputedStyle(video).objectFit === 'contain';
+        }, videoId, { timeout: 5000 });
+    }
+    await check('webcam');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await check('webcam');
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.locator('#toggleKioskBtn').click({ timeout: 5000 });
+    await check('kioskWebcam');
+    assert.deepEqual(errors, []);
+    await page.context().close();
+});

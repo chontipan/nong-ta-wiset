@@ -38,14 +38,18 @@ window.RecycleNet = class RecycleNet {
         return task;
     }
 
+    static centerCrop(width, height) {
+        const side = Math.min(width, height);
+        return [(width - side) / 2, (height - side) / 2, side, side];
+    }
+
     async run(source, cropCenter) {
         const size = 224;
         const plane = size * size;
         const width = source.videoWidth || source.width;
         const height = source.videoHeight || source.height;
-        const side = Math.min(width, height);
         const region = cropCenter
-            ? [(width - side) / 2, (height - side) / 2, side, side]
+            ? RecycleNet.centerCrop(width, height)
             : [0, 0, width, height];
         this.context.drawImage(source, ...region, 0, 0, size, size);
         const rgba = this.context.getImageData(0, 0, size, size).data;
