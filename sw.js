@@ -2,19 +2,25 @@
    Keeps the app, AI libraries and AI models on the device so a kiosk keeps
    working when the internet drops. Bump CACHE_VERSION when the cache rules change. */
 
-const CACHE_VERSION = 'v29';
+const CACHE_VERSION = 'v30';
 const APP_CACHE = `app-${CACHE_VERSION}`;
 const LIB_CACHE = `libs-${CACHE_VERSION}`;
+
+// AI assets are replaced together when CACHE_VERSION changes.
+const AI_ASSETS = [
+    'vendor/ort/ort.wasm.min.js',
+    'vendor/ort/ort-wasm-simd-threaded.mjs',
+    'vendor/ort/ort-wasm-simd-threaded.wasm',
+    'models/recyclenet-small.onnx'
+];
+const AI_ASSET_PATHS = new Set(AI_ASSETS.map(asset => new URL(asset, self.location.href).pathname));
 
 const APP_SHELL = [
     './',
     'index.html',
     'app.js',
     'ai-vision.js',
-    'vendor/ort/ort.wasm.min.js',
-    'vendor/ort/ort-wasm-simd-threaded.mjs',
-    'vendor/ort/ort-wasm-simd-threaded.wasm',
-    'models/recyclenet-small.onnx',
+    ...AI_ASSETS,
     'styles.css',
     'manifest.webmanifest',
     'icons/icon-192.png',
@@ -63,7 +69,10 @@ self.addEventListener('fetch', (event) => {
 
     // App files: try the network first so a new deploy shows up, fall back to the saved copy offline
     if (url.origin === self.location.origin) {
-        event.respondWith(networkFirst(req, APP_CACHE));
+        const response = AI_ASSET_PATHS.has(url.pathname)
+            ? cacheFirst(req, APP_CACHE)
+            : networkFirst(req, APP_CACHE);
+        event.respondWith(response);
         return;
     }
 
