@@ -150,3 +150,34 @@ test('stalled model download leaves the loading state while the camera stays liv
     assert.deepEqual(errors, []);
     await page.context().close();
 });
+
+test('material helper only changes predictions when glass and plastic are the uncertain top pair', async () => {
+    const { page, errors } = await openPage(BASE);
+    const { uncertainPair, confidentGlass, plasticThird, otherPair, lowerThreshold } = await page.evaluate(async () => {
+        const engine = new RecycleNet();
+        const image = document.createElement('canvas');
+        image.width = image.height = 224;
+        async function score(probabilities, confidence = 0.65) {
+            engine.session = { run: async () => ({
+                logits: { data: Float32Array.from(probabilities, Math.log) },
+                material_log_odds: { data: [8] }
+            }) };
+            return engine.predict(image, true, confidence, 0.15);
+        }
+        return {
+            uncertainPair: await score([.03, .58, .02, .02, .32, .03]),
+            confidentGlass: await score([.03, .81, .02, .02, .09, .03]),
+            plasticThird: await score([.13, .68, .02, .02, .12, .03]),
+            otherPair: await score([.47, .02, .02, .43, .03, .03]),
+            lowerThreshold: await score([.03, .58, .02, .02, .32, .03], .5)
+        };
+    });
+    assert.equal(uncertainPair.label, 'plastic');
+    assert.ok(uncertainPair.score > .65 && uncertainPair.margin > .15);
+    assert.equal(confidentGlass.label, 'glass');
+    assert.equal(plasticThird.label, 'glass');
+    assert.equal(otherPair.label, 'cardboard');
+    assert.equal(lowerThreshold.label, 'glass');
+    assert.deepEqual(errors, []);
+    await page.context().close();
+});
