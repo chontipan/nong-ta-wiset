@@ -204,3 +204,37 @@ test('glass and plastic can suggest one recycling bin while hazardous stays sele
     assert.deepEqual(errors, []);
     await page.context().close();
 });
+
+test('battery scan asks for a bin and reads a known battery code locally', async () => {
+    const { page } = await openPage(BASE);
+    try {
+        await page.waitForFunction(() => document.getElementById('aiStatusText')?.innerText.includes('พร้อม'));
+        await page.waitForFunction(() => document.getElementById('webcam').readyState === 4);
+        const code = await page.evaluate(async () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, 512, 512);
+            ctx.fillStyle = 'black';
+            ctx.font = '78px sans-serif';
+            ctx.fillText('CR2032', 85, 270);
+            return window.readBatteryCode(canvas, AbortSignal.timeout(20000));
+        });
+        assert.equal(code, 'CR2032');
+        await page.evaluate(() => {
+            RecycleNet.prototype.predict = async () => ({
+                label: 'metal', score: 0.9, margin: 0.7, batteryWarning: true
+            });
+        });
+        await page.locator('#snapshotBtn').click();
+        const dialog = page.locator('#scanConfirm');
+        await dialog.waitFor({ state: 'visible' });
+        assert.match(await page.locator('#scanConfirmPrediction').innerText(), /อาจเป็นถ่าน/);
+        assert.equal(await page.locator('#scanConfirmBin').inputValue(), '');
+        assert.equal(await dialog.locator('button[value=save]').isDisabled(), true);
+        await dialog.locator('button[value=cancel]').click();
+    } finally {
+        await page.context().close();
+    }
+});

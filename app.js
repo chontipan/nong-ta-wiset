@@ -962,9 +962,10 @@ document.addEventListener('DOMContentLoaded', () => {
         trash: DEFAULT_GENERAL_WASTE
     };
 
-    async function analyzeFrame(source, cropCenter = false) {
+    async function analyzeFrame(source, cropCenter = false, checkBattery = false) {
         const minimumMargin = 0.15;
         const result = await model.predict(source, cropCenter, currentConfidenceThreshold, minimumMargin);
+        if (checkBattery && result.batteryWarning) return { batteryWarning: true };
         const info = MATERIAL_INFO[result.label];
         let { score, margin } = result;
         if (info.type === 'recyclable' && result.recyclablePairScore !== undefined) {
@@ -1473,7 +1474,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 snapCanvas.getContext('2d').drawImage(webcamEl, 0, 0, vw, vh);
 
                 if (liveResultText) liveResultText.innerText = 'กำลังวิเคราะห์ภาพ...';
-                const candidate = await analyzeFrame(snapCanvas, true);
+                const candidate = await analyzeFrame(snapCanvas, true, true);
                 submitPrediction(candidate, snapCanvas);
             } catch (e) {
                 console.error('Snapshot error:', e);
@@ -1487,19 +1488,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function submitPrediction(candidate, source) {
-        const info = candidate?.info;
-        const score = candidate?.score ?? null;
+        let info = candidate?.info;
+        let score = candidate?.score ?? null;
         if (info) updatePredictionUI(info, score);
         const dialog = document.getElementById('scanConfirm');
         const select = document.getElementById('scanConfirmBin');
         const save = dialog.querySelector('button[value="save"]');
-        document.getElementById('scanConfirmPrediction').textContent = info
+        const prediction = document.getElementById('scanConfirmPrediction');
+        const ocr = new AbortController();
+        let userSelected = false;
+        const rememberSelection = () => { userSelected = true; };
+
+        function showBatteryWarning(code) {
+            prediction.textContent = code
+                ? `พบรหัสถ่าน ${code} กรุณาตรวจชิ้นงานและเลือกถังก่อนบันทึก`
+                : 'อาจเป็นถ่านหรือแบตเตอรี่ กรุณาตรวจชิ้นงานและเลือกถังก่อนบันทึก';
+            info = null;
+            score = null;
+            if (!userSelected) select.value = '';
+            save.disabled = !select.value;
+        }
+
+        prediction.textContent = info
             ? `AI แนะนำ ${info.bin} (${Math.round(score * 100)}%)`
             : 'AI ยังไม่แน่ใจ เลือกถังเองได้ หรือยกเลิกเพื่อสแกนใหม่';
         select.value = info?.type ?? '';
         save.disabled = !select.value;
+        if (candidate?.batteryWarning) showBatteryWarning();
         dialog.returnValue = '';
+        select.addEventListener('change', rememberSelection);
         dialog.addEventListener('close', () => {
+            ocr.abort();
+            select.removeEventListener('change', rememberSelection);
             if (dialog.returnValue !== 'save' || !select.value) return;
             const chosen = select.value === info?.type ? info : CORRECTION_INFO[select.value];
             const chosenScore = chosen === info ? score : null;
@@ -1507,6 +1527,11 @@ document.addEventListener('DOMContentLoaded', () => {
             commitWasteScan(chosen, chosenScore, { source });
         }, { once: true });
         dialog.showModal();
+        if (!window.readBatteryCode) return;
+        const timeout = setTimeout(() => ocr.abort(), 8000);
+        window.readBatteryCode(source, ocr.signal).then(code => {
+            if (code && dialog.open && !ocr.signal.aborted) showBatteryWarning(code);
+        }).finally(() => clearTimeout(timeout));
     }
 
     const scanConfirmBin = document.getElementById('scanConfirmBin');
