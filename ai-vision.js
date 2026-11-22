@@ -10,10 +10,26 @@ window.RecycleNet = class RecycleNet {
     async load() {
         ort.env.wasm.numThreads = 1;
         ort.env.wasm.wasmPaths = new URL('vendor/ort/', document.baseURI).href;
-        this.session = await ort.InferenceSession.create(
-            new URL('models/recyclenet-small.onnx', document.baseURI).href,
-            { executionProviders: ['wasm'] }
-        );
+        const modelUrl = new URL('models/recyclenet-small.onnx', document.baseURI);
+        const deadline = AbortSignal.timeout(12000);
+        let onTimeout;
+        const timeout = new Promise((_, reject) => {
+            onTimeout = () => reject(new Error('RecycleNet initialization timed out'));
+            deadline.addEventListener('abort', onTimeout, { once: true });
+        });
+        const initialize = async () => {
+            const response = await fetch(modelUrl, { signal: deadline });
+            if (!response.ok) throw new Error(`RecycleNet download failed (HTTP ${response.status})`);
+            const bytes = await response.arrayBuffer();
+            const session = await ort.InferenceSession.create(bytes, { executionProviders: ['wasm'] });
+            if (deadline.aborted) await session.release();
+            return session;
+        };
+        try {
+            this.session = await Promise.race([initialize(), timeout]);
+        } finally {
+            deadline.removeEventListener('abort', onTimeout);
+        }
     }
 
     predict(source, cropCenter = false) {

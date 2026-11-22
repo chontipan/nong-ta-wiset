@@ -740,10 +740,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (modelErr) {
             console.error('Model load error:', modelErr);
-            loaderMessageEl.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถโหลดโมเดล AI ได้</span><br><small>กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต ระบบจะลองใหม่เองใน 1 นาที</small>`;
+            loaderMessageEl.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถโหลดโมเดล AI ได้</span><br><small>กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต ระบบจะลองใหม่เองใน 15 วินาที</small>`;
             aiStatusTextEl.innerText = 'ข้อผิดพลาด AI';
             // An unattended kiosk shouldn't stay broken: try again once the internet is likely back
-            setTimeout(() => location.reload(), 60 * 1000);
+            setTimeout(() => {
+                if (isKioskMode) {
+                    try { sessionStorage.setItem('ecoscan_resume_kiosk', '1'); } catch (e) { /* storage blocked */ }
+                }
+                location.reload();
+            }, 15000);
         }
     }
 

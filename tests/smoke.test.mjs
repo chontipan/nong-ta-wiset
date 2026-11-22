@@ -34,7 +34,7 @@ after(async () => {
     server?.kill();
 });
 
-async function openPage(url) {
+async function openPage(url, configureContext) {
     const context = await browser.newContext({ serviceWorkers: 'block' });
     await context.grantPermissions(['camera'], { origin: BASE });
     const page = await context.newPage();
@@ -58,6 +58,7 @@ async function openPage(url) {
         await page.route(/fonts\.googleapis|fonts\.gstatic|cdnjs\.cloudflare/, r => r.fulfill({ body: '' }));
     }
 
+    await configureContext?.(context);
     await page.goto(url);
     return { page, errors };
 }
@@ -132,6 +133,20 @@ test('uncertain scan lets the user choose a bin without rescanning', async () =>
     await save.click();
     await page.locator('#resultModalBackdrop:not(.hidden)').waitFor({ state: 'visible' });
     assert.match(await page.locator('#modalCategoryPill').innerText(), /ถังขวดพลาสติก/);
+    assert.deepEqual(errors, []);
+    await page.context().close();
+});
+
+test('stalled model download leaves the loading state while the camera stays live', async () => {
+    const { page, errors } = await openPage(BASE, async context => {
+        await context.addInitScript(() => {
+            const nativeTimeout = AbortSignal.timeout.bind(AbortSignal);
+            AbortSignal.timeout = ms => nativeTimeout(ms === 12000 ? 250 : ms);
+        });
+        await context.route('**/models/recyclenet-small.onnx', () => {});
+    });
+    await page.waitForFunction(() => document.getElementById('aiStatusText').innerText.includes('ข้อผิดพลาด'));
+    assert.equal(await page.locator('#webcam').evaluate(v => v.srcObject.active), true);
     assert.deepEqual(errors, []);
     await page.context().close();
 });
