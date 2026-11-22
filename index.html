@@ -25,9 +25,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
 
-    <!-- TensorFlow.js and COCO-SSD Model -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+    <script src="vendor/ort/ort.wasm.min.js" defer></script>
 
     <!-- Firebase App & Firestore JS SDK (v10 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -65,9 +63,6 @@
                     <i class="fa-solid fa-comments"></i> <span id="dialectLabel">🇹🇭 เสียงภาษากลาง</span>
                 </button>
 
-                <button class="btn btn-sm btn-trainer-launch" id="openTrainerHeaderBtn" title="สตูดิโอฝึกสอน AI เพิ่มสินค้าไทย">
-                    <i class="fa-solid fa-graduation-cap"></i> <span>🎓 เทรนสินค้าไทย</span>
-                </button>
 
                 <button class="btn btn-sm btn-outline report-launch-btn" id="openReportHeaderBtn" title="แดชบอร์ดสรุปผลรายเดือนและพิมพ์รายงาน">
                     <i class="fa-solid fa-chart-column"></i> <span>📊 รายงานสรุป</span>
@@ -123,13 +118,12 @@
                     </div>
 
                     <div class="mode-badge" id="scanModeBadge">
-                        <i class="fa-solid fa-bolt"></i> สแกนอัตโนมัติ
+                        <i class="fa-solid fa-bolt"></i> ดูผลสด
                     </div>
                 </div>
 
                 <div class="viewfinder-container">
                     <video id="webcam" autoplay playsinline muted></video>
-                    <canvas id="detectionCanvas"></canvas>
 
                     <!-- Scanning Reticle Overlay -->
                     <div class="scan-overlay">
@@ -144,13 +138,13 @@
                     <div class="camera-flash-overlay" id="cameraFlashOverlay"></div>
 
                     <!-- Scan Mode Toggle Pill (Snap Photo vs Auto-Detect) -->
-                    <button type="button" class="camera-mode-pill" id="scanModeToggleBtn" title="สลับโหมดกดถ่ายรูป / สแกนอัตโนมัติ">
+                    <button type="button" class="camera-mode-pill" id="scanModeToggleBtn" title="สลับโหมดกดถ่ายรูป / ดูผลสด">
                         <i class="fa-solid fa-camera"></i> <span id="scanModeToggleText">โหมดถ่ายรูป</span>
                     </button>
 
                     <!-- Live answer on the camera itself -->
                     <div class="live-result-chip idle" id="liveResultChip" aria-live="polite">
-                        <span id="liveResultText">ยื่นขยะเข้ากลางกรอบ แล้วถือนิ่ง ๆ 1 วินาที</span>
+                        <span id="liveResultText">ยื่นขยะชิ้นเดียวเข้ากลางกรอบ แล้วกดสแกนเพื่อยืนยัน</span>
                     </div>
 
                     <!-- Big Shutter Button for Snap-to-Scan Mode -->
@@ -163,11 +157,6 @@
                         <i class="fa-solid fa-camera-rotate"></i>
                     </button>
 
-                    <!-- Inline Hold-Steady Progress Bar right on the Camera Frame -->
-                    <div class="camera-hold-track" aria-hidden="true">
-                        <div class="camera-hold-fill" id="cameraHoldFill"></div>
-                    </div>
-
                     <!-- Loading / Error Mask -->
                     <div class="camera-loader" id="cameraLoader">
                         <div class="spinner"></div>
@@ -179,32 +168,14 @@
                     <button class="btn btn-primary" id="snapshotBtn">
                         <i class="fa-solid fa-expand"></i> สแกนเลย <span class="kbd-hint">(Spacebar)</span>
                     </button>
-                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                    <button class="btn btn-secondary" id="uploadBtn">
-                        <i class="fa-solid fa-file-arrow-up"></i> อัปโหลดรูปภาพ
-                    </button>
-                    <button type="button" class="btn btn-outline" id="calibrateBgBtn" title="จำภาพพื้นหลังหน้ากล้องตอนไม่มีขยะ เพื่อลดการทายมั่ว">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> จำพื้นหลังเปล่า
-                    </button>
                 </div>
 
                 <!-- Sample Test Objects Bar (Thai Products & Packaging - 4 Bins) -->
                 <div class="sample-objects-container">
                     <div class="sample-header-row">
                         <span class="sample-title"><i class="fa-solid fa-basket-shopping"></i> 🇹🇭 สินค้าและบรรจุภัณฑ์ไทย (คลิกทดลองจำแนกลง 4 ถัง):</span>
-                        <div class="sample-header-actions">
-                            <button class="btn btn-sm btn-trainer-launch" id="openTrainerBtn" title="เปิดสตูดิโอฝึกสอน AI เพิ่มสินค้าไทย">
-                                <i class="fa-solid fa-graduation-cap"></i> + เทรนเพิ่มสินค้าไทย
-                            </button>
-                        </div>
                     </div>
-
-                    <!-- Custom Trained Thai Products (Dynamically rendered via JS) -->
-                    <div id="customTrainedSection" class="custom-trained-section hidden">
-                        <div class="custom-section-header">
-                            <span class="custom-trained-title"><i class="fa-solid fa-sparkles"></i> สินค้าไทยที่คุณฝึกสอนไว้ (<span id="customProductCountBadge">0</span> รายการ):</span>
                         </div>
-                        <div id="customTrainedButtons" class="sample-buttons custom-buttons-row"></div>
                     </div>
 
                     <details class="sample-details">
@@ -388,11 +359,6 @@
 
 
                         <!-- Stability Progress Bar for Auto Scan -->
-                        <div class="hold-progress-container" id="holdProgressContainer">
-                            <div class="hold-progress-bar" id="holdProgressBar"></div>
-                            <span class="hold-text"><i class="fa-solid fa-hand-pointer"></i> ถือนิ่ง 1 วินาที เพื่อบันทึกประวัติ</span>
-                        </div>
-
 
                         <!-- Countdown for Next Scan -->
                         <div class="next-scan-countdown hidden" id="nextScanCountdown">
@@ -400,8 +366,11 @@
                         </div>
 
                         <div class="accuracy-pill" id="accuracyPill">ยังไม่มีผู้ใช้ยืนยันผล</div>
+                        </div>
 
-                    </div>
+
+                        <!-- Stability Progress Bar for Auto Scan -->
+
                 </div>
 
                 <!-- Real-time Stats & Eco Metrics -->
@@ -608,6 +577,7 @@
             </div>
 
             <div class="kiosk-controls">
+                <button type="button" class="btn btn-primary" id="kioskScanBtn">สแกนขยะ</button>
                 <div class="kiosk-camera-selector">
                     <i class="fa-solid fa-camera"></i>
                     <select id="kioskCameraSelect" class="kiosk-camera-dropdown">
@@ -637,7 +607,6 @@
             <!-- Large Viewfinder in Kiosk -->
             <div class="kiosk-viewfinder">
                 <video id="kioskWebcam" autoplay playsinline muted></video>
-                <canvas id="kioskCanvas"></canvas>
 
                 <div class="scan-overlay">
                     <div class="reticle-corner top-left"></div>
@@ -664,7 +633,7 @@
                 <div class="kiosk-banner-text">
                     <span class="kiosk-object-name" id="kioskObjectName">พร้อมสแกนขยะ</span>
                     <h1 class="kiosk-bin-title" id="kioskBinTitle">นำขยะมายื่นหน้ากล้อง</h1>
-                    <p class="kiosk-bin-desc" id="kioskBinDesc">ส่องขยะค้างไว้ 1 วินาที เพื่อจำแนกถังขยะที่ถูกต้อง</p>
+                    <p class="kiosk-bin-desc" id="kioskBinDesc">วางขยะชิ้นเดียวกลางกรอบ แล้วกดสแกนขยะ</p>
                 </div>
                 <img src="logos/mascot-sorting.jpg" alt="มาสคอตบอกประเภทถังขยะ" class="kiosk-banner-mascot" id="kioskBannerMascot">
 
@@ -718,7 +687,7 @@
                         </div>
                     </div>
                     <div class="feedback-bins hidden" id="feedbackBins">
-                        <span class="feedback-question">ควรทิ้งถังไหน? AI จะจำภาพนี้ไว้</span>
+                        <span class="feedback-question">เลือกถังที่ถูกต้องเพื่อแก้ประวัติในเครื่องนี้</span>
                         <div class="feedback-bin-grid">
                             <button type="button" class="feedback-bin plastic_bottle" data-bin="plastic_bottle">🍾 ขวดพลาสติก</button>
                             <button type="button" class="feedback-bin recyclable" data-bin="recyclable">♻️ รีไซเคิล</button>
@@ -740,157 +709,23 @@
         </div>
     </div>
 
-    <!-- AI Trainer Studio Modal Dialog (สตูดิโอฝึกสอน AI เพิ่มสินค้าไทย) -->
-    <div class="trainer-modal-backdrop hidden" id="trainerModalBackdrop">
-        <div class="trainer-modal-card" id="trainerModalCard">
-            <button class="modal-close-btn" id="closeTrainerModalBtn" title="ปิดหน้าต่าง">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="trainer-modal-header">
-                <div class="trainer-header-icon">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                </div>
-                <div class="trainer-header-titles">
-                    <h2>สตูดิโอฝึกสอน AI เพิ่มสินค้าไทย</h2>
-                    <p>สอนโมเดล AI ให้รู้จักสินค้าและบรรจุภัณฑ์แบรนด์ไทย เพื่อจำแนกลง 4 ถังขยะได้อย่างแม่นยำ</p>
-                </div>
-            </div>
-
-            <div class="trainer-modal-body">
-                <!-- Your own waste model trained in Teachable Machine -->
-                <details class="model-settings">
-                    <summary><i class="fa-solid fa-brain"></i> โมเดลแยกขยะของคุณเอง (Teachable Machine) · แม่นที่สุด</summary>
-                    <p class="model-help">
-                        เทรนโมเดลจากรูปขยะจริงที่หน้าถังของคุณใน
-                        <a href="https://teachablemachine.withgoogle.com/train/image" target="_blank" rel="noopener">Teachable Machine</a>
-                        ตั้งชื่อหมวดขึ้นต้นด้วยถัง เช่น <code>recyclable: กระป๋อง</code>, <code>ขยะอันตราย: ถ่านไฟฉาย</code>, <code>background</code>
-                        แล้วกด Export → Upload → คัดลอกลิงก์มาวางที่นี่
-                        (<a href="https://github.com/chontipan/nong-ta-wiset/blob/main/docs/train-your-model.md" target="_blank" rel="noopener">อ่านคู่มือ</a>)
-                    </p>
-                    <div class="model-url-row">
-                        <input type="url" id="modelUrlInput" class="form-input" placeholder="https://teachablemachine.withgoogle.com/models/xxxxxxx/">
-                        <button type="button" class="btn btn-sm btn-primary" id="loadModelBtn">ใช้โมเดลนี้</button>
-                        <button type="button" class="btn btn-sm btn-secondary" id="clearModelBtn">เลิกใช้</button>
-                    </div>
-                    <p class="model-status" id="modelStatusText">ยังไม่ได้ใส่โมเดลของคุณ (ใช้ AI พื้นฐาน + ภาพจำ)</p>
-                </details>
-
-                <!-- Training Form -->
-                <form id="trainerForm" class="trainer-form">
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label for="trainProductName"><i class="fa-solid fa-tag"></i> 1. ชื่อสินค้า / บรรจุภัณฑ์ไทย *</label>
-                            <input type="text" id="trainProductName" class="form-input" placeholder="เช่น น้ำดื่มสิงห์ 600ml, ซองมาม่าต้มยำกุ้ง, ขวด C-Vitt เลมอน, กล่องข้าว 7-Eleven" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="trainProductBin"><i class="fa-solid fa-trash-can-arrow-up"></i> 2. ถังขยะเป้าหมาย (4 ถัง) *</label>
-                            <select id="trainProductBin" class="form-select" required>
-                                <option value="plastic_bottle">🍾 ถังขวดพลาสติก (PET / HDPE)</option>
-                                <option value="recyclable">♻️ ถังขยะรีไซเคิล (แก้ว / โลหะ / กระดาษ / พลาสติกสะอาด)</option>
-                                <option value="hazardous">☣️ ถังขยะอันตราย (ถ่าน / สเปรย์ / E-Waste / ของมีคม)</option>
-                                <option value="general">🗑️ ถังขยะทั่วไป (ซองฟอยล์ / บะหมี่ / ปนเปื้อนคราบมัน / เปลือกผลไม้)</option>
-                                <option value="money">💵 ธนบัตรไทย / เงินสด (แจ้งเตือนห้ามทิ้ง!)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="trainProductShape"><i class="fa-solid fa-shapes"></i> 3. วิธีให้ AI จำ *</label>
-                            <select id="trainProductShape" class="form-select" required>
-                                <option value="any" selected>🤖 จำจากรูปถ่าย (แนะนำ · แม่นที่สุด)</option>
-                                <option value="bottle">🍾 ทรงขวด (Bottle) - น้ำดื่ม, ชาเขียว, น้ำยาซักผ้า, ซอส, ขวดแก้ว</option>
-                                <option value="cup">🥤 ทรงแก้ว/ถ้วย (Cup) - แก้วกาแฟ, ชานม, แก้วพลาสติก</option>
-                                <option value="bowl">🥣 ทรงชาม/ถ้วยบะหมี่ (Bowl) - มาม่าคัพ, ชามอาหาร</option>
-                                <option value="box">📦 ทรงกล่อง/พัสดุ/UHT (Box) - กล่องพัสดุ, กล่องนม UHT, กล่องลัง</option>
-                                <option value="book">📚 สมุด/เอกสาร/แบน (Book/Paper) - หนังสือ, ซองกระดาษ</option>
-                                <option value="cell phone">📱 อุปกรณ์มือถือ/อิเล็กทรอนิกส์ (Cell Phone) - มือถือ, พาวเวอร์แบงก์</option>
-                                <option value="scissors">✂️ กรรไกร/ของมีคม (Scissors) - มีด, กรรไกร, คัตเตอร์</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="trainProductPrice"><i class="fa-solid fa-coins"></i> 4. ราคาประเมินรับซื้อ</label>
-                            <input type="text" id="trainProductPrice" list="priceOptions" class="form-input" placeholder="เช่น กก.ละ 6.00 บาท, กก.ละ 3.00 บาท หรือ ไม่สามารถรับซื้อได้" value="กก.ละ 6 บาท (ขวดน้ำ PET)">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="trainProductEstValue"><i class="fa-solid fa-calculator"></i> 5. มูลค่าประเมินต่อชิ้น (บาท)</label>
-                            <input type="number" step="0.05" min="0" id="trainProductEstValue" class="form-input" placeholder="0.12" value="0.12">
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label for="trainProductAdvice"><i class="fa-solid fa-circle-info"></i> 6. คำแนะนำการคัดแยก & วิธีทิ้ง *</label>
-                            <textarea id="trainProductAdvice" class="form-textarea" rows="2" placeholder="เช่น ล้างทำความสะอาด ดึงฉลากพลาสติกออก บีบให้แบนก่อนทิ้งลงถัง" required></textarea>
-                        </div>
-
-                        <div class="form-group full-width snapshot-section">
-                            <label><i class="fa-solid fa-camera"></i> 7. รูปสินค้า (ถ่ายได้สูงสุด 5 มุม ยิ่งหลายมุม AI ยิ่งจำแม่น)</label>
-                            <div class="snapshot-controls">
-                                <button type="button" class="btn btn-sm btn-outline" id="trainerSnapBtn">
-                                    <i class="fa-solid fa-camera-retro"></i> ถ่ายรูปจากกล้อง (ถือสินค้าไว้กลางจอ)
-                                </button>
-                                <input type="file" id="trainerImageUpload" accept="image/*" style="display: none;">
-                                <button type="button" class="btn btn-sm btn-outline" id="trainerUploadBtn">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> เลือกรูปภาพจากเครื่อง
-                                </button>
-                            </div>
-                            <div class="snapshot-preview-box" id="trainerSnapshotPreviewBox">
-                                <img id="trainerPreviewImg" class="trainer-preview-img hidden" alt="Product Reference Preview">
-                                <span id="trainerPreviewPlaceholder" class="trainer-placeholder-text">
-                                    <i class="fa-solid fa-image"></i> ยังไม่มีรูปสินค้า
-                                </span>
-                            </div>
-                            <div class="trainer-thumbs" id="trainerThumbs"></div>
-                        </div>
-                    </div>
-
-                    <div class="trainer-form-actions">
-                        <button type="submit" class="btn btn-primary btn-save-training" id="saveTrainingBtn">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> บันทึกการฝึกสอน AI (Save & Train)
-                        </button>
-                        <button type="button" class="btn btn-secondary" id="resetTrainerFormBtn">
-                            <i class="fa-solid fa-arrow-rotate-left"></i> ล้างแบบฟอร์ม
-                        </button>
-                    </div>
-                    <datalist id="priceOptions">
-                        <option value="กก.ละ 6 บาท (ขวดน้ำ PET)"></option>
-                        <option value="กก.ละ 7 บาท (ขวดพลาสติกขุ่น)"></option>
-                        <option value="กก.ละ 3 บาท (พลาสติกรวม)"></option>
-                        <option value="กก.ละ 2 บาท (ท่อ PVC, สายยาง)"></option>
-                        <option value="กก.ละ 5 บาท (กระดาษขาว A4)"></option>
-                        <option value="กก.ละ 3 บาท (กระดาษลัง)"></option>
-                        <option value="กก.ละ 4 บาท (กระดาษหนังสือพิมพ์)"></option>
-                        <option value="กก.ละ 2 บาท (กระดาษรวม)"></option>
-                        <option value="กก.ละ 60 บาท (กระป๋องอลูมิเนียม)"></option>
-                        <option value="กก.ละ 3 บาท (กระป๋องสังกะสี)"></option>
-                        <option value="กก.ละ 7 บาท (เหล็ก)"></option>
-                        <option value="กก.ละ 20 บาท (สแตนเลส)"></option>
-                        <option value="กก.ละ 0.8 บาท (ขวดแก้วรวม)"></option>
-                        <option value="กก.ละ 1 บาท (ไฟเบอร์ เครื่องใช้ไฟฟ้า)"></option>
-                        <option value="ไม่อยู่ในรายการรับซื้อ"></option>
-                    </datalist>
-                </form>
-
-                <!-- Trained Products Table / List -->
-                <div class="trainer-list-section">
-                    <div class="trainer-list-header">
-                        <h3><i class="fa-solid fa-boxes-stacked"></i> สินค้าไทยที่ได้รับการฝึกสอนแล้ว (<span id="trainerTotalCount">0</span>)</h3>
-                        <button class="btn btn-sm btn-outline" id="clearAllCustomBtn" title="ล้างสินค้าที่เทรนเองทั้งหมด">
-                            <i class="fa-solid fa-trash"></i> ล้างทั้งหมด
-                        </button>
-                    </div>
-                    <div class="trainer-products-container" id="trainerProductsContainer">
-                        <!-- Rendered by JS -->
-                    </div>
-                    <div class="trainer-hidden-section hidden" id="trainerHiddenSection">
-                        <h4><i class="fa-solid fa-trash-can-arrow-up"></i> สินค้าที่ถูกลบ (กดกู้คืนได้)</h4>
-                        <div class="trainer-hidden-list" id="trainerHiddenList"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <dialog id="scanConfirm" aria-labelledby="scanConfirmTitle">
+        <form method="dialog">
+            <h2 id="scanConfirmTitle">ตรวจสอบก่อนบันทึก</h2>
+            <p id="scanConfirmPrediction"></p>
+            <p>ถ้าในกรอบไม่มีขยะ ให้กดยกเลิก</p>
+            <label for="scanConfirmBin">เลือกประเภทที่ถูกต้อง</label>
+            <select id="scanConfirmBin" class="form-input">
+                <option value="recyclable">ขยะรีไซเคิล</option>
+                <option value="plastic_bottle">ขวดพลาสติก PET / HDPE</option>
+                <option value="hazardous">ขยะอันตราย</option>
+                <option value="general">ขยะทั่วไป</option>
+                <option value="money">ธนบัตร (ไม่ควรทิ้ง)</option>
+            </select>
+            <p><button class="btn btn-secondary" value="cancel">ยกเลิก</button>
+            <button class="btn btn-primary" value="save">บันทึกผล</button></p>
+        </form>
+    </dialog>
 
     <!-- Admin Price Board Editor Modal (หน้าแก้ราคารับซื้อสำหรับเจ้าหน้าที่) -->
     <div class="trainer-modal-backdrop hidden" id="priceEditorModalBackdrop">
@@ -1080,8 +915,8 @@
     </button>
 
     <!-- Application Script -->
-    <script src="ai-vision.js"></script>
-    <script src="app.js"></script>
+    <script src="ai-vision.js" defer></script>
+    <script src="app.js" defer></script>
 </body>
 
 </html>
