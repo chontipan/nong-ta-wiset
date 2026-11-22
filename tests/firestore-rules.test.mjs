@@ -35,12 +35,6 @@ const counts = (extra = {}) => ({
     lastUpdated: serverTimestamp(), ...extra
 });
 
-const product = (id, extra = {}) => ({
-    id, name: 'น้ำดื่มตราช้าง', bin: 'plastic_bottle', binName: 'ถังขวดพลาสติก', shape: 'any',
-    price: 'กก.ละ 6 บาท', estValue: 0.12, advice: 'บีบให้แบน', image: null, images: [],
-    timestamp: '2026-10-30T10:00:00.000Z', ...extra
-});
-
 // --- scans ---
 test('scans: a normal scan with day and kiosk can be saved', async () => {
     await assertSucceeds(addDoc(collection(db, 'scans'), scan({ day: '2026-10-30', kiosk: 'ตลาดแม่จัน' })));
@@ -86,28 +80,10 @@ test('stats: jumps, decreases and mismatched ids are refused', async () => {
     await assertFails(deleteDoc(doc(db, 'stats', '2026-10-30')));
 });
 
-// --- trained products ---
-test('products: can be added, but not deleted or rewritten', async () => {
-    const ref = doc(db, 'custom_thai_products', 'p1');
-    await assertSucceeds(setDoc(ref, product('p1')));
-    await assertFails(deleteDoc(ref));
-    await assertFails(updateDoc(ref, { name: 'ของปลอม' }));
-    await assertFails(setDoc(ref, product('p1', { name: 'ของปลอม' })));
-});
-
-test('products: can be hidden and restored', async () => {
-    const ref = doc(db, 'custom_thai_products', 'p1');
-    await assertSucceeds(setDoc(ref, product('p1')));
-    await assertSucceeds(updateDoc(ref, { hidden: true, hiddenAt: serverTimestamp() }));
-    await assertSucceeds(updateDoc(ref, { hidden: false, hiddenAt: serverTimestamp() }));
-    await assertFails(updateDoc(ref, { hidden: 'yes', hiddenAt: serverTimestamp() }));
-    await assertFails(updateDoc(ref, { hidden: true }));
-    await assertFails(updateDoc(ref, { hidden: true, hiddenAt: serverTimestamp(), name: 'x' }));
-});
-
-test('products: id must match and new products cannot start hidden', async () => {
-    await assertFails(setDoc(doc(db, 'custom_thai_products', 'p2'), product('p1')));
-    await assertFails(setDoc(doc(db, 'custom_thai_products', 'p3'), product('p3', { hidden: true })));
+test('retired training collection rejects client reads and image writes', async () => {
+    const ref = doc(db, 'custom_thai_products', 'legacy');
+    await assertFails(getDoc(ref));
+    await assertFails(setDoc(ref, { image: 'data:image/jpeg;base64,example' }));
 });
 
 test('everything else is closed', async () => {

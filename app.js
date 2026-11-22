@@ -1,6 +1,6 @@
 /* ==========================================================================
    EcoScan AI - Application Engine
-   TensorFlow.js COCO-SSD Waste Sorting (4 Bins: Plastic Bottle, Recyclable, Hazardous, General)
+   ONNX Runtime Web Waste Sorting (4 Bins: Plastic Bottle, Recyclable, Hazardous, General)
    Web Audio & Speech Synthesis
    ========================================================================== */
 
@@ -111,17 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         })[ch]);
     }
-
-    // People, animals and room/street things are never the item being thrown away; ignoring them stops
-    // the camera from "scanning" a chair or the TV behind the person as general waste
-    const IGNORED_CLASSES = [
-        'person', 'dog', 'cat', 'bird', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe',
-        'chair', 'couch', 'bed', 'dining table', 'toilet', 'bench', 'tv', 'refrigerator', 'oven', 'sink', 'microwave',
-        'clock', 'tie', 'handbag', 'backpack', 'suitcase', 'umbrella',
-        'car', 'bus', 'truck', 'train', 'airplane', 'boat', 'motorcycle', 'bicycle',
-        'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'kite'
-    ];
-
 
     // --- Firebase Integration (Project ID: waste-5b576) ---
     const firebaseConfig = {
@@ -240,41 +229,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Stability Auto Scan & Countdown State
-    let currentStableClass = null;
-    let stableStartTime = 0;
-    let lastAutoCommitTime = 0;
     let isCountdownActive = false;
     let countdownInterval = null;
-    const STABILITY_THRESHOLD_MS = 600; // Hold steady for 0.6s (fast & responsive)
 
-    const AUTO_COMMIT_COOLDOWN_MS = 2000; // 2s cooldown between auto-commits
-    const DETECT_INTERVAL_MS = 90; // Run AI ~10-11 times/sec for fast detection
-    const BOX_HOLD_MS = 600; // Keep the last boxes on screen briefly when a frame misses, to stop blinking
+    const DETECT_INTERVAL_MS = 250; // Limit CPU use during live preview
     let lastDetectTime = 0;
-    let lastValidDetectionTime = 0;
     let lastPredictionUIKey = '';
 
-    // --- Accuracy helpers ---
-    // COCO-SSD drops anything under 0.5 by default, which made the confidence slider below 50% do nothing.
-    // Ask for weaker boxes too and apply the user's threshold ourselves.
-    const DETECT_MIN_SCORE = 0.30;
-    const DETECT_MAX_BOXES = 10;
-    // Visual memory (ภาพจำ): match camera crops against photos people taught the app
-    const visualMemory = (typeof VisualMemory !== 'undefined') ? new VisualMemory() : null;
-    const VISUAL_MATCH_SIM = 0.68;     // cosine similarity needed when COCO also sees an object
-    const VISUAL_ONLY_SIM = 0.75;      // stricter when COCO sees nothing (chip bags, cans, batteries...)
-    const VISUAL_MARGIN = 0.02;        // must beat the next-best different label by this much
-    const VISUAL_INTERVAL_MS = 450;    // embed ~2 times/sec so GPU stays fast for COCO detection
-    const MAX_FEEDBACK_EXAMPLES = 60; 
-    // Your own waste model trained in Teachable Machine (see docs/train-your-model.md)
-    const wasteModel = (typeof WasteModel !== 'undefined') ? new WasteModel() : null;
-    const DEFAULT_MODEL_URL = './model/';
-    const WASTE_MODEL_MIN_PROB = 0.75;  // the model must be this sure before its answer is used
-    let lastModelTime = 0;
-    let lastModelResult = null;
-    let lastVisualTime = 0;
-    let lastVisualResult = null;
-    let feedbackExamples = [];         // { id, label, type, image, t } from "ผิด" corrections
     let feedbackStats = { correct: 0, incorrect: 0 };
     // Vote over the last moment of frames so one odd frame doesn't flip the answer
     const VOTE_WINDOW_MS = 900;
@@ -296,8 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- DOM Element References ---
     const webcamEl = document.getElementById('webcam');
-    const canvasEl = document.getElementById('detectionCanvas');
-    const ctx = canvasEl.getContext('2d');
     const cameraLoaderEl = document.getElementById('cameraLoader');
     const loaderMessageEl = document.getElementById('loaderMessage');
     const aiStatusTextEl = document.getElementById('aiStatusText');
@@ -316,8 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleCameraBtn = document.getElementById('toggleCameraBtn');
 
     const snapshotBtn = document.getElementById('snapshotBtn');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const imageUploadEl = document.getElementById('imageUpload');
     const resetStatsBtn = document.getElementById('resetStatsBtn');
     const exportCsvBtn = document.getElementById('exportCsvBtn');
     const mascotHelperCard = document.getElementById('mascotHelperCard');
@@ -332,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const shutterScanBtn = document.getElementById('shutterScanBtn');
     const modalCapturedWrap = document.getElementById('modalCapturedWrap');
     const modalCapturedImg = document.getElementById('modalCapturedImg');
-    const cameraHoldFill = document.getElementById('cameraHoldFill');
     const viewfinderContainerEl = document.querySelector('.viewfinder-container');
     const kioskViewfinderEl = document.querySelector('.kiosk-viewfinder');
 
@@ -376,14 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function setHoldProgress(pct, type = null) {
-        const clamped = Math.max(0, Math.min(100, pct));
-        if (holdProgressBar) holdProgressBar.style.width = `${clamped}%`;
-        if (cameraHoldFill) {
-            cameraHoldFill.style.width = `${clamped}%`;
-            cameraHoldFill.className = type ? `camera-hold-fill ${type}` : 'camera-hold-fill';
-        }
-    }
+
 
     function triggerCameraFlash() {
         playShutterSound();
@@ -429,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateScanModeUI() {
         const isSnap = scanMode === 'snap' && !isKioskMode;
         if (scanModeToggleText) {
-            scanModeToggleText.innerText = isSnap ? 'โหมดถ่ายรูป' : 'สแกนอัตโนมัติ';
+            scanModeToggleText.innerText = isSnap ? 'โหมดถ่ายรูป' : 'ดูผลสด';
         }
         if (scanModeToggleBtn) {
             const icon = scanModeToggleBtn.querySelector('i');
@@ -445,9 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 : LIVE_CHIP_IDLE;
         }
         if (isSnap) {
-            drawBoundingBoxes([]);
             voteBuffer = [];
-            holdProgressBar.style.width = '0%';
         }
     }
 
@@ -528,36 +475,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // AI Trainer Studio DOM Elements & State
-    const openTrainerHeaderBtn = document.getElementById('openTrainerHeaderBtn');
-    const openTrainerBtn = document.getElementById('openTrainerBtn');
-    const trainerModalBackdrop = document.getElementById('trainerModalBackdrop');
-    const closeTrainerModalBtn = document.getElementById('closeTrainerModalBtn');
-    const trainerForm = document.getElementById('trainerForm');
-    const trainProductName = document.getElementById('trainProductName');
-    const trainProductBin = document.getElementById('trainProductBin');
-    const trainProductShape = document.getElementById('trainProductShape');
-    const trainProductPrice = document.getElementById('trainProductPrice');
-    const trainProductEstValue = document.getElementById('trainProductEstValue');
-    const trainProductAdvice = document.getElementById('trainProductAdvice');
-    const trainerSnapBtn = document.getElementById('trainerSnapBtn');
-    const trainerImageUpload = document.getElementById('trainerImageUpload');
-    const trainerUploadBtn = document.getElementById('trainerUploadBtn');
-    const trainerPreviewImg = document.getElementById('trainerPreviewImg');
-    const trainerPreviewPlaceholder = document.getElementById('trainerPreviewPlaceholder');
-    const resetTrainerFormBtn = document.getElementById('resetTrainerFormBtn');
-    const trainerProductsContainer = document.getElementById('trainerProductsContainer');
-    const trainerTotalCount = document.getElementById('trainerTotalCount');
-    const clearAllCustomBtn = document.getElementById('clearAllCustomBtn');
-    const customTrainedSection = document.getElementById('customTrainedSection');
-    const customTrainedButtons = document.getElementById('customTrainedButtons');
-    const customProductCountBadge = document.getElementById('customProductCountBadge');
-
-    let customThaiProducts = [];
-    let currentTrainerImages = []; // up to MAX_TRAINER_PHOTOS reference photos (different angles)
-    const MAX_TRAINER_PHOTOS = 5;
-    let lastLiveRegion = null;     // where the camera last saw an object, to crop trainer photos
-
     // UI Prediction Card Elements
     const confidencePill = document.getElementById('confidencePill');
     const binResultBadge = document.getElementById('binResultBadge');
@@ -567,7 +484,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const binDescriptionText = document.getElementById('binDescriptionText');
     const itemPricePill = document.getElementById('itemPricePill');
     const itemPriceText = document.getElementById('itemPriceText');
-    const holdProgressBar = document.getElementById('holdProgressBar');
     const nextScanCountdownEl = document.getElementById('nextScanCountdown');
     const countdownNumberEl = document.getElementById('countdownNumber');
 
@@ -576,8 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const exitKioskBtn = document.getElementById('exitKioskBtn');
     const kioskOverlay = document.getElementById('kioskOverlay');
     const kioskWebcam = document.getElementById('kioskWebcam');
-    const kioskCanvas = document.getElementById('kioskCanvas');
-    const kioskCtx = kioskCanvas ? kioskCanvas.getContext('2d') : null;
     const kioskTotalCountEl = document.getElementById('kioskTotalCount');
     const kioskCountdownOverlay = document.getElementById('kioskCountdownOverlay');
     const kioskCountdownNumEl = document.getElementById('kioskCountdownNum');
@@ -789,7 +703,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadSavedStats();
         loadFeedback();
         initFirebase();
-        loadCustomProducts();
 
         // 1. Try starting webcam
         try {
@@ -798,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isCameraActive = true;
         } catch (camErr) {
             console.warn('Webcam warning:', camErr);
-            showCameraFallbackMessage('ไม่พบกล้องหรือยังไม่อนุญาตการใช้กล้อง — สามารถใช้ปุ่มตัวอย่างสิ่งของหรืออัปโหลดรูปภาพทดสอบแทนได้');
+            showCameraFallbackMessage('ไม่พบกล้องหรือยังไม่อนุญาตการใช้กล้อง — ใช้ปุ่มตัวอย่างสิ่งของทดลองได้');
         }
 
         // Came back from the nightly refresh: go straight back to the kiosk screen
@@ -809,28 +722,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (e) { /* storage blocked: stay on the normal screen */ }
 
-        // 2. Optimize TensorFlow.js WebGL backend (packed float16 textures for ~20-30% faster inference)
         try {
-            if (typeof tf !== 'undefined' && tf.env) {
-                tf.env().set('WEBGL_PACK', true);
-                tf.env().set('WEBGL_FORCE_F16_TEXTURES', true);
-            }
-        } catch (tfOptErr) { /* fallback cleanly on older GPUs */ }
-
-        // 2b. Load COCO-SSD Model (Fast Lite on Mobile for 2-3x speed, High-Accuracy MobileNet V2 on Desktop)
-        const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        try {
-            loaderMessageEl.innerText = isMobileDevice
-                ? 'กำลังดาวน์โหลดโมเดล AI ความเร็วสูงสำหรับมือถือ (MobileNet V2 Lite)...'
-                : 'กำลังดาวน์โหลดโมเดล AI คุณภาพสูง (COCO-SSD MobileNet V2)...';
-            try {
-                model = await cocoSsd.load({ base: isMobileDevice ? 'lite_mobilenet_v2' : 'mobilenet_v2' });
-            } catch (v2Err) {
-                console.warn('Fallback to lite_mobilenet_v2:', v2Err);
-                model = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
-            }
-            
-            aiStatusTextEl.innerText = 'AI พร้อมทำงาน (แม่นยำสูง)';
+            loaderMessageEl.innerText = 'กำลังโหลด RecycleNet Small...';
+            const engine = new RecycleNet();
+            await engine.load();
+            model = engine;
+            aiStatusTextEl.innerText = 'AI พร้อม · RecycleNet Small';
             aiStatusEl.classList.add('ready');
 
             cameraLoaderEl.classList.add('hidden');
@@ -840,9 +737,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Greet user immediately (falls back to tap-to-enable pill if browser blocks autoplay)
             tryAutoWelcomeSpeech();
 
-            // Extra models load in the background; scanning already works without them
-            initVisualMemory();
-            initWasteModel();
 
         } catch (modelErr) {
             console.error('Model load error:', modelErr);
@@ -935,12 +829,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (metaDone) return;
                 metaDone = true;
                 webcamEl.onloadedmetadata = null;
-                canvasEl.width = webcamEl.videoWidth || 640;
-                canvasEl.height = webcamEl.videoHeight || 480;
-                if (kioskCanvas) {
-                    kioskCanvas.width = canvasEl.width;
-                    kioskCanvas.height = canvasEl.height;
-                }
                 webcamEl.play().catch(e => console.log('Autoplay handled:', e));
                 if (kioskWebcam) kioskWebcam.play().catch(e => console.log('Kiosk autoplay handled:', e));
                 resolve();
@@ -1026,7 +914,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         if (now.getHours() !== NIGHTLY_RELOAD_HOUR) return;
         if (Date.now() - pageStartedAt < 60 * 60 * 1000) return; // just (re)loaded
-        const busySince = Math.max(lastUserActivity, lastAutoCommitTime); // auto-scans count as use too
+        const busySince = lastUserActivity;
         if (Date.now() - busySince < IDLE_BEFORE_RELOAD_MS) return;
         try {
             if (localStorage.getItem('ecoscan_last_nightly_reload') === dayId(now)) return;
@@ -1038,7 +926,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Real-time Detection Loop ---
     async function detectLoop() {
-        if (!isDetecting || !model || document.hidden || (scanMode === 'snap' && !isKioskMode)) {
+        if (!isDetecting || !model || document.getElementById('scanConfirm').open || isSnapping || isCountdownActive || document.hidden || (scanMode === 'snap' && !isKioskMode)) {
             requestAnimationFrame(detectLoop);
             return;
         }
@@ -1047,10 +935,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isCameraActive && webcamEl.readyState === 4 && now - lastDetectTime >= DETECT_INTERVAL_MS) {
             lastDetectTime = now;
             try {
-                syncCanvasSize();
-                const { predictions, candidate } = await analyzeFrame(webcamEl, true);
-                renderStableBoxes(buildBoxes(predictions, candidate, canvasEl.width, canvasEl.height));
-                processCandidate(candidate);
+                const candidate = await analyzeFrame(webcamEl, true);
+                if (!isSnapping && !isCountdownActive) processCandidate(candidate);
             } catch (e) {
                 console.error('Detection loop error:', e);
             }
@@ -1059,318 +945,33 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(detectLoop);
     }
 
-    // Resize canvases only when the video size really changes (setting width always clears the canvas)
-    function syncCanvasSize() {
-        const w = webcamEl.videoWidth;
-        const h = webcamEl.videoHeight;
-        if (!w || !h) return;
-        if (canvasEl.width !== w || canvasEl.height !== h) {
-            canvasEl.width = w;
-            canvasEl.height = h;
-        }
-        if (kioskCanvas && (kioskCanvas.width !== w || kioskCanvas.height !== h)) {
-            kioskCanvas.width = w;
-            kioskCanvas.height = h;
-        }
-    }
-
-    function isValidBox(p) {
-        return p.score >= currentConfidenceThreshold && !IGNORED_CLASSES.includes(p.class.toLowerCase());
-    }
-
-    // --- Turning a detection into "which bin" ---
-    function productImages(prod) {
-        if (Array.isArray(prod.images) && prod.images.length) return prod.images;
-        return prod.image ? [prod.image] : [];
-    }
-
-    function customInfo(c, cocoClass) {
-        return {
-            type: c.bin,
-            thName: cocoClass ? `⭐ ${c.name} (${cocoClass})` : `⭐ ${c.name}`,
-            bin: c.binName || BIN_NAMES[c.bin] || 'ขยะทั่วไป',
-            price: c.price || 'กก.ละ 3.00-6.00 บาท',
-            estValue: parseFloat(c.estValue) || 0.25,
-            desc: c.advice || DEFAULT_GENERAL_WASTE.desc,
-            custom: true
-        };
-    }
-
-    // Generic answers for things people corrected with the ถูก/ผิด buttons
-    const TAUGHT_BIN_INFO = {
-        plastic_bottle: { type: 'plastic_bottle', thName: '🍾 ขวดพลาสติก (AI จำจากที่สอน)', bin: 'ถังขวดพลาสติก', price: 'กก.ละ 6–7 บาท', estValue: 0.15, desc: 'ล้างให้สะอาด ดึงฉลากออก บีบให้แบนก่อนทิ้งลงถังขวดพลาสติก' },
-        recyclable: { type: 'recyclable', thName: '♻️ ขยะรีไซเคิล (AI จำจากที่สอน)', bin: 'ขยะรีไซเคิล', price: 'ดูตารางราคาตามวัสดุ', estValue: 0.30, desc: 'ล้างให้สะอาด แยกตามวัสดุ แล้วทิ้งลงถังรีไซเคิล' },
-        hazardous: { type: 'hazardous', thName: '☣️ ขยะอันตราย (AI จำจากที่สอน)', bin: 'ขยะอันตราย', price: 'ไม่อยู่ในรายการรับซื้อ', estValue: 0, desc: 'แยกใส่ถังขยะอันตราย ห้ามทิ้งปนกับขยะอื่น' },
-        general: { type: 'general', thName: '🗑️ ขยะทั่วไป (AI จำจากที่สอน)', bin: 'ขยะทั่วไป', desc: DEFAULT_GENERAL_WASTE.desc },
-        money: { type: 'money', thName: '💵 ธนบัตรไทย (AI จำจากที่สอน)', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด ไม่ควรทิ้ง!', estValue: 0, desc: 'นี่คือ เงิน ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' }
+    const CORRECTION_INFO = {
+        plastic_bottle: WASTE_MAPPING.bottle,
+        recyclable: { type: 'recyclable', thName: 'ขยะรีไซเคิล', bin: 'ขยะรีไซเคิล', desc: 'แยกตามวัสดุและทำความสะอาดก่อนทิ้ง' },
+        general: DEFAULT_GENERAL_WASTE,
+        hazardous: { type: 'hazardous', thName: 'ขยะอันตราย', bin: 'ขยะอันตราย', desc: 'แยกทิ้งที่จุดรับขยะอันตราย' },
+        money: WASTE_MAPPING.banknote
+    };
+    const MATERIAL_INFO = {
+        cardboard: { ...CORRECTION_INFO.recyclable, thName: '📦 กระดาษลัง' },
+        glass: { ...CORRECTION_INFO.recyclable, thName: '🍾 แก้ว' },
+        metal: { ...CORRECTION_INFO.recyclable, thName: '🥫 โลหะ' },
+        paper: { ...CORRECTION_INFO.recyclable, thName: '📄 กระดาษ' },
+        plastic: { ...CORRECTION_INFO.recyclable, thName: '♻️ พลาสติก', desc: 'ตรวจว่าเป็นขวด PET/HDPE หรือไม่ และคัดเฉพาะพลาสติกที่จุดรับรับซื้อ' },
+        trash: DEFAULT_GENERAL_WASTE
     };
 
-    // Built-in Thai Banknote visual references (Series 17: 20, 50, 100, 500, 1,000 THB, front & back)
-    const BUILTIN_BANKNOTES = [
-        {
-            id: 'builtin:thb_20',
-            info: { type: 'money', thName: '💵 ธนบัตร 20 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 20 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 20 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
-            images: ['logos/banknotes/thb-20-front.jpg', 'logos/banknotes/thb-20-back.jpg']
-        },
-        {
-            id: 'builtin:thb_50',
-            info: { type: 'money', thName: '💵 ธนบัตร 50 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 50 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 50 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
-            images: ['logos/banknotes/thb-50-front.jpg', 'logos/banknotes/thb-50-back.jpg']
-        },
-        {
-            id: 'builtin:thb_100',
-            info: { type: 'money', thName: '💵 ธนบัตร 100 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 100 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 100 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
-            images: ['logos/banknotes/thb-100-front.jpg', 'logos/banknotes/thb-100-back.jpg']
-        },
-        {
-            id: 'builtin:thb_500',
-            info: { type: 'money', thName: '💵 ธนบัตร 500 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 500 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 500 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
-            images: ['logos/banknotes/thb-500-front.jpg', 'logos/banknotes/thb-500-back.jpg']
-        },
-        {
-            id: 'builtin:thb_1000',
-            info: { type: 'money', thName: '💵 ธนบัตร 1,000 บาท', bin: '⚠️ ไม่ควรทิ้ง!', price: '⚠️ เงินสด 1,000 บาท ห้ามทิ้ง!', estValue: 0, desc: 'นี่คือ ธนบัตร 1,000 บาท ไม่ควรทิ้ง! กรุณาเก็บไว้ในกระเป๋าสตางค์ หรือนำมาร่วมบุญ' },
-            images: ['logos/banknotes/thb-1000-front.jpg', 'logos/banknotes/thb-1000-back.jpg']
-        }
-    ];
-
-    function infoForCocoClass(cocoClass) {
-        const itemKey = cocoClass.toLowerCase();
-        // Old-style trained products (no photo) still match by shape. Products with photos are
-        // matched by how they look instead, so one trained bottle no longer renames every bottle.
-        const c = customThaiProducts.find(p => p.shape === itemKey && productImages(p).length === 0);
-        if (c) return customInfo(c, cocoClass);
-        return WASTE_MAPPING[itemKey] || {
-            type: 'general',
-            thName: `ขยะทั่วไป (${cocoClass})`,
-            bin: 'ขยะทั่วไป',
-            desc: DEFAULT_GENERAL_WASTE.desc
-        };
+    async function analyzeFrame(source, cropCenter = false) {
+        const result = await model.predict(source, cropCenter);
+        if (result.score < currentConfidenceThreshold || result.margin < 0.15) return null;
+        return { key: result.label, score: result.score, info: MATERIAL_INFO[result.label] };
     }
-
-    function infoForModelResult(r) {
-        if (r.bin === 'money') return WASTE_MAPPING['banknote'];
-        const base = TAUGHT_BIN_INFO[r.bin] || TAUGHT_BIN_INFO.general;
-        return { ...base, thName: `🎯 ${r.name}` };
-    }
-
-    function infoForVisualLabel(label) {
-        if (label.startsWith('bin:')) return TAUGHT_BIN_INFO[label.slice(4)] || null;
-        if (label.startsWith('builtin:')) {
-            const b = BUILTIN_BANKNOTES.find(item => item.id === label);
-            return b ? b.info : null;
-        }
-        const c = customThaiProducts.find(p => p.id === label);
-        return c ? customInfo(c) : null;
-    }
-
-    function rankPredictions(predictions, w, h) {
-        const centerX = w / 2;
-        const centerY = h / 2;
-        const maxDist = Math.hypot(centerX, centerY) || 1;
-        const priority = p => {
-            const midX = p.bbox[0] + p.bbox[2] / 2;
-            const midY = p.bbox[1] + p.bbox[3] / 2;
-            const dist = Math.hypot(midX - centerX, midY - centerY) / maxDist;
-            return p.score * (1.2 - dist * 0.35); // confidence weighted by closeness to the centre
-        };
-        return predictions
-            .filter(p => {
-                if (!isValidBox(p)) return false;
-                // Center Scan Zone (ROI): ignore peripheral background objects near frame edges unless very confident
-                const midX = p.bbox[0] + p.bbox[2] / 2;
-                const midY = p.bbox[1] + p.bbox[3] / 2;
-                const inCenterZone = midX >= w * 0.14 && midX <= w * 0.86 && midY >= h * 0.10 && midY <= h * 0.90;
-                if (!inCenterZone && p.score < 0.85) return false;
-                // Drop tiny boxes at the edge of the frame (< 1.2% of the image) unless very confident
-                const area = p.bbox[2] * p.bbox[3];
-                if (area < w * h * 0.012 && p.score < currentConfidenceThreshold + 0.12) return false;
-                return true;
-            })
-            .sort((a, b) => priority(b) - priority(a));
-    }
-
-    function centerRegion(w, h) {
-        return [w * 0.2, h * 0.15, w * 0.6, h * 0.7];
-    }
-
-    // One place that decides what the camera (or a photo) is looking at:
-    // 1) COCO-SSD finds objects, 2) visual memory checks the main object (or the centre of the
-    // frame when COCO finds nothing) against taught photos and wins when it is a close match.
-    async function analyzeFrame(source, live = false) {
-        const w = source.videoWidth || source.naturalWidth || source.width;
-        const h = source.videoHeight || source.naturalHeight || source.height;
-        const predictions = await model.detect(source, DETECT_MAX_BOXES, DETECT_MIN_SCORE);
-        const top = rankPredictions(predictions, w, h)[0] || null;
-
-        let candidate = top ? {
-            key: top.class.toLowerCase(),
-            score: top.score,
-            region: top.bbox,
-            info: infoForCocoClass(top.class)
-        } : null;
-
-        // Your own trained waste model knows Thai packaging far better than COCO, so it wins over COCO
-        if (wasteModel && wasteModel.ready) {
-            const now = performance.now();
-            let result = null;
-            if (!live || now - lastModelTime >= VISUAL_INTERVAL_MS) {
-                lastModelTime = now;
-                result = await wasteModel.predict(source);
-                if (live) lastModelResult = { result, t: now };
-            } else if (lastModelResult && now - lastModelResult.t < VISUAL_INTERVAL_MS * 2) {
-                result = lastModelResult.result;
-            }
-            if (result && result.prob >= WASTE_MODEL_MIN_PROB) {
-                if (result.bin === 'none') {
-                    // The model is sure there is no waste in view: only trust COCO if it is very sure too
-                    if (candidate && candidate.score < 0.75) candidate = null;
-                } else {
-                    candidate = {
-                        key: 'tm:' + result.label,
-                        score: result.prob,
-                        region: top ? top.bbox : centerRegion(w, h),
-                        info: infoForModelResult(result)
-                    };
-                }
-            }
-        }
-
-        // Skip heavy VisualMemory embed when COCO is already highly confident on an obvious class & no custom products exist
-        const obviousCoco = top && top.score >= 0.78 && ['bottle', 'cup', 'wine glass', 'scissors'].includes(top.class.toLowerCase()) && customThaiProducts.length === 0 && feedbackExamples.length === 0;
-        if (visualMemory && visualMemory.isUsable() && !obviousCoco) {
-            const region = top ? top.bbox : centerRegion(w, h);
-            const now = performance.now();
-            let match = null;
-            if (!live || now - lastVisualTime >= VISUAL_INTERVAL_MS) {
-                lastVisualTime = now;
-                match = visualMemory.classify(await visualMemory.embed(source, region));
-                if (live) lastVisualResult = { match, t: now };
-            } else if (lastVisualResult && now - lastVisualResult.t < VISUAL_INTERVAL_MS * 2) {
-                match = lastVisualResult.match;
-            }
-
-            if (match) {
-                if (match.label === 'bg:empty' && match.sim >= 0.78) {
-                    // Camera is looking at the calibrated empty background: drop weak false positives
-                    if (candidate && candidate.score < 0.80) candidate = null;
-                } else {
-                    const info = infoForVisualLabel(match.label);
-                    const isBuiltinNote = match.label.startsWith('builtin:thb_');
-                    const topCls = top ? top.class.toLowerCase() : '';
-                    const need = isBuiltinNote
-                        ? (topCls === 'book' || topCls === 'cell phone' ? 0.54 : (top ? 0.60 : 0.64))
-                        : (top ? VISUAL_MATCH_SIM : VISUAL_ONLY_SIM);
-                    if (info && match.sim >= need && match.margin >= VISUAL_MARGIN) {
-                        candidate = { key: 'vm:' + match.label, score: match.sim, region, info, visual: true };
-                    }
-                }
-            }
-        }
-
-        return { predictions, candidate };
-    }
-
-    function buildBoxes(predictions, candidate, w, h) {
-        const boxes = rankPredictions(predictions, w, h).map(p => ({
-            region: p.bbox,
-            score: p.score,
-            info: infoForCocoClass(p.class)
-        }));
-        if (candidate && candidate.visual) {
-            const i = boxes.findIndex(b => b.region === candidate.region);
-            const vBox = { region: candidate.region, score: candidate.score, info: candidate.info, visual: true };
-            if (i >= 0) boxes[i] = vBox; else boxes.unshift(vBox);
-        }
-        return boxes;
-    }
-
-    // Keep the previous boxes for a short moment when the AI misses a frame, so boxes don't blink on and off
-    function renderStableBoxes(boxes) {
-        const now = performance.now();
-        if (boxes.length > 0) {
-            lastValidDetectionTime = now;
-            drawBoundingBoxes(boxes);
-        } else if (now - lastValidDetectionTime > BOX_HOLD_MS) {
-            drawBoundingBoxes([]);
-        }
-        // Otherwise leave the last boxes on screen
-    }
-
-    const BOX_COLORS = {
-        plastic_bottle: '#0d9488',
-        recyclable: '#10b981',
-        hazardous: '#f43f5e',
-        money: '#d97706',
-        general: '#0ea5e9'
-    };
-
-    // --- Bounding Box Canvas Renderer ---
-    function drawBoundingBoxes(boxes) {
-        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-        if (isKioskMode && kioskCtx) {
-            kioskCtx.clearRect(0, 0, kioskCanvas.width, kioskCanvas.height);
-        }
-
-        boxes.forEach(box => {
-            const [x, y, width, height] = box.region;
-            const mappedInfo = box.info;
-            const boxColor = BOX_COLORS[mappedInfo.type] || BOX_COLORS.general;
-
-            // Draw bounding box on main canvas (dashed = matched from taught photos)
-            ctx.setLineDash(box.visual ? [10, 6] : []);
-            ctx.strokeStyle = boxColor;
-            ctx.lineWidth = 3;
-            ctx.strokeRect(x, y, width, height);
-            ctx.setLineDash([]);
-
-            const labelText = `${mappedInfo.thName} (${Math.round(box.score * 100)}%)`;
-            ctx.font = '14px Sarabun, sans-serif';
-            const textWidth = ctx.measureText(labelText).width;
-
-            ctx.fillStyle = boxColor;
-            ctx.fillRect(x, y > 22 ? y - 24 : y, textWidth + 12, 24);
-
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(labelText, x + 6, y > 22 ? y - 7 : y + 17);
-
-            // Draw bounding box on Kiosk Canvas if active
-            if (isKioskMode && kioskCtx && kioskCanvas.width > 0) {
-                const scaleX = kioskCanvas.width / canvasEl.width;
-                const scaleY = kioskCanvas.height / canvasEl.height;
-
-                const kX = x * scaleX;
-                const kY = y * scaleY;
-                const kW = width * scaleX;
-                const kH = height * scaleY;
-
-                kioskCtx.setLineDash(box.visual ? [12, 8] : []);
-                kioskCtx.strokeStyle = boxColor;
-                kioskCtx.lineWidth = 4;
-                kioskCtx.strokeRect(kX, kY, kW, kH);
-                kioskCtx.setLineDash([]);
-
-                kioskCtx.font = '18px Sarabun, sans-serif';
-                const kTextWidth = kioskCtx.measureText(labelText).width;
-
-                kioskCtx.fillStyle = boxColor;
-                kioskCtx.fillRect(kX, kY > 30 ? kY - 30 : kY, kTextWidth + 16, 30);
-
-                kioskCtx.fillStyle = '#ffffff';
-                kioskCtx.fillText(labelText, kX + 8, kY > 30 ? kY - 8 : kY + 22);
-            }
-        });
-    }
-
 
     // --- Vote over recent frames & Hold-Steady trigger ---
     function resetHold() {
-        currentStableClass = null;
-        setHoldProgress(0);
         setLiveChip(null);
     }
 
-    let lastMotionBox = null;
     let isLowLight = false;
     let lastLightCheckTime = 0;
     const lightSampleCanvas = document.createElement('canvas');
@@ -1405,9 +1006,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function processCandidate(candidate) {
         if (isCountdownActive) {
             voteBuffer = [];
-            lastMotionBox = null;
-            currentStableClass = null;
-            holdProgressBar.style.width = '0%';
             return;
         }
 
@@ -1416,36 +1014,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const VOTE_MAX_FRAMES = 6;
-        const VOTE_MIN_FRAMES = 2;
         const nowP = performance.now();
         voteBuffer = voteBuffer.filter(v => nowP - v.t <= VOTE_WINDOW_MS);
-        if (candidate) {
-            // Motion Stability Gate: skip blurry frames while hand/item is moving rapidly across frame
-            let isMovingFast = false;
-            if (candidate.region && canvasEl.width > 0 && canvasEl.height > 0) {
-                const cx = candidate.region[0] + candidate.region[2] / 2;
-                const cy = candidate.region[1] + candidate.region[3] / 2;
-                if (lastMotionBox && (nowP - lastMotionBox.t) < 450) {
-                    const moveDist = Math.hypot(cx - lastMotionBox.cx, cy - lastMotionBox.cy);
-                    const diag = Math.hypot(canvasEl.width, canvasEl.height) || 800;
-                    if (moveDist > diag * 0.12) isMovingFast = true;
-                }
-                lastMotionBox = { cx, cy, t: nowP };
-            }
-            if (!isMovingFast) {
-                voteBuffer.push({ key: candidate.key, score: candidate.score, t: nowP, candidate });
-                if (voteBuffer.length > VOTE_MAX_FRAMES) {
-                    voteBuffer = voteBuffer.slice(-VOTE_MAX_FRAMES);
-                }
-            }
-            lastLiveRegion = { region: candidate.region, t: nowP };
-        }
-
-        if (voteBuffer.length === 0) {
-            // Ignore a short miss so the progress bar doesn't jump back to zero on every blink
-            if (nowP - lastValidDetectionTime > BOX_HOLD_MS) resetHold();
+        if (!candidate) {
+            voteBuffer = [];
+            resetHold();
             return;
         }
+        voteBuffer.push({ key: candidate.key, score: candidate.score, t: nowP, candidate });
+        if (voteBuffer.length > VOTE_MAX_FRAMES) voteBuffer.shift();
 
         // Multi-Frame Majority Voting: pick label with the most frames, tie-break by highest average confidence
         const totals = new Map();
@@ -1468,42 +1045,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const winner = [...voteBuffer].reverse().find(v => v.key === winKey).candidate;
         const avgScore = bestAvg;
-        const voteRatio = bestCount / voteBuffer.length;
 
         // Only update live UI once we have at least 2 agreeing frames (filters out single-frame motion blur)
         if (bestCount >= 2 || voteBuffer.length === 1) {
             updatePredictionUI(winner.info, avgScore);
         }
 
-        const now = Date.now();
-        if (currentStableClass === winKey) {
-            const timeHeld = now - stableStartTime;
-            const progressPct = Math.min((timeHeld / STABILITY_THRESHOLD_MS) * 100, 100);
-            setHoldProgress(progressPct, winner.info.type);
-
-            // Commit only when held steady AND backed by a clear multi-frame majority (at least 3 agreeing frames & >=60% share)
-            if (
-                timeHeld >= STABILITY_THRESHOLD_MS &&
-                bestCount >= VOTE_MIN_FRAMES &&
-                voteRatio >= 0.6 &&
-                (now - lastAutoCommitTime) > AUTO_COMMIT_COOLDOWN_MS
-            ) {
-                commitWasteScan(winner.info, avgScore, { source: webcamEl, region: winner.region });
-                lastAutoCommitTime = now;
-                voteBuffer = [];
-                setHoldProgress(0);
-            }
-        } else {
-            currentStableClass = winKey;
-            stableStartTime = now;
-            setHoldProgress(0, winner.info.type);
-        }
     }
 
     // --- Live answer shown right on the camera, so people don't have to look away ---
     const liveResultChip = document.getElementById('liveResultChip');
     const liveResultText = document.getElementById('liveResultText');
-    const LIVE_CHIP_IDLE = 'ยื่นขยะเข้ากลางกรอบ แล้วถือนิ่ง ๆ 1 วินาที';
+    const LIVE_CHIP_IDLE = 'ยื่นขยะชิ้นเดียวเข้ากลางกรอบ แล้วกดสแกนเพื่อยืนยัน';
     let liveChipKey = '';
 
     function setLiveChip(info) {
@@ -1540,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Update UI Badge & Cards ---
     function updatePredictionUI(info, score) {
-        confidencePill.innerText = `ความมั่นใจ ${Math.round(score * 100)}%`;
+        confidencePill.innerText = score === null ? 'ผู้ใช้เลือกถัง' : `คะแนน AI ${Math.round(score * 100)}%`;
         setLiveChip(info);
 
         // Only rebuild the result card when the detected item changes (rebuilding every frame makes it flash)
@@ -1626,7 +1179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // capture = { source, region } of the camera frame/photo, kept so a wrong answer can be taught
     // "สถิติวันนี้" really means today: start fresh counts each new day (merit points carry over)
     function todayKey() {
         const d = new Date();
@@ -1677,15 +1229,11 @@ document.addEventListener('DOMContentLoaded', () => {
             item: info.thName,
             bin: info.bin,
             type: info.type,
-            confidence: `${Math.round(score * 100)}%`
+            confidence: score === null ? '–' : `${Math.round(score * 100)}%`
         };
 
 
-        let captureImage = null;
-        if (capture && capture.source && window.cropToDataUrl) {
-            try { captureImage = cropToDataUrl(capture.source, capture.region, 320); } catch (e) { captureImage = null; }
-        }
-        lastCommit = { info, historyId: historyItem.id, image: captureImage };
+        lastCommit = { info, historyId: historyItem.id };
         resetFeedbackUI();
 
         scanHistory.unshift(historyItem);
@@ -1700,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resultModalBackdrop) {
             modalObjectName.innerText = info.thName;
             modalCategoryPill.className = `modal-category-pill ${info.type}`;
-            modalCategoryPill.innerText = `${info.bin} · ความมั่นใจ ${Math.round(score * 100)}%`;
+            modalCategoryPill.innerText = score === null ? info.bin : `${info.bin} · คะแนน AI ${Math.round(score * 100)}%`;
             modalDesc.innerText = info.desc;
             setPricePill(document.getElementById('modalPricePill'), document.getElementById('modalPriceText'), info);
             modalObjectIcon.className = `modal-object-icon ${info.type}`;
@@ -1775,8 +1323,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (countdownInterval) clearInterval(countdownInterval);
 
         isCountdownActive = true;
-        currentStableClass = null;
-        holdProgressBar.style.width = '0%';
 
         let count = NEXT_SCAN_SECONDS;
         setCountdownNumber(count);
@@ -1812,7 +1358,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (kioskCountdownOverlay) kioskCountdownOverlay.classList.add('hidden');
         if (resultModalBackdrop) resultModalBackdrop.classList.add('hidden');
         isCountdownActive = false;
-        currentStableClass = null;
         voteBuffer = [];
         setLiveChip(null);
     }
@@ -1905,7 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Manual Snapshot Scan Handler (Snap a crisp still frame and analyze) ---
     let isSnapping = false;
     async function triggerManualSnapshot() {
-        if (!model || isCountdownActive || isSnapping) return;
+        if (!model || isCountdownActive || isSnapping || document.getElementById('scanConfirm').open) return;
 
         if (isCameraActive && webcamEl.readyState === 4) {
             isSnapping = true;
@@ -1921,21 +1466,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 snapCanvas.getContext('2d').drawImage(webcamEl, 0, 0, vw, vh);
 
                 if (liveResultText) liveResultText.innerText = 'กำลังวิเคราะห์ภาพ...';
-                syncCanvasSize();
-                const { predictions, candidate } = await analyzeFrame(snapCanvas, false);
-                drawBoundingBoxes(buildBoxes(predictions, candidate, canvasEl.width, canvasEl.height));
-
-                if (candidate) {
-                    updatePredictionUI(candidate.info, candidate.score);
-                    commitWasteScan(candidate.info, candidate.score, { source: snapCanvas, region: candidate.region });
-                } else {
-                    if (liveResultText) liveResultText.innerText = 'ไม่พบวัตถุชัด ลองขยับเข้าใกล้กล้องแล้วกดถ่ายใหม่';
-                    setTimeout(() => {
-                        if (liveResultText && scanMode === 'snap') {
-                            liveResultText.innerText = 'เล็งขยะให้อยู่กลางกรอบ แล้วกดปุ่ม 📸 ถ่ายรูป';
-                        }
-                    }, 2200);
-                }
+                const candidate = await analyzeFrame(snapCanvas, true);
+                submitPrediction(candidate, snapCanvas);
             } catch (e) {
                 console.error('Snapshot error:', e);
             } finally {
@@ -1943,26 +1475,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (shutterScanBtn) shutterScanBtn.classList.remove('capturing');
             }
         } else {
-            // Default sample snapshot if camera is not active
-            const sampleKey = 'singha_bottle';
-            const mappedInfo = WASTE_MAPPING[sampleKey] || WASTE_MAPPING['bottle'];
-            updatePredictionUI(mappedInfo, 0.95);
-            commitWasteScan(mappedInfo, 0.95);
+            showCameraFallbackMessage('กรุณาเปิดกล้องก่อนสแกน');
         }
+    }
+
+    function submitPrediction(candidate, source) {
+        if (!candidate) {
+            if (liveResultText) liveResultText.innerText = 'ยังไม่แน่ใจ ลองจัดขยะชิ้นเดียวให้อยู่กลางกรอบแล้วสแกนใหม่';
+            if (isKioskMode && kioskBinDesc) kioskBinDesc.innerText = 'ยังไม่แน่ใจ ลองจัดขยะชิ้นเดียวให้อยู่กลางกรอบแล้วสแกนใหม่';
+            return;
+        }
+        const { info, score } = candidate;
+        updatePredictionUI(info, score);
+        const dialog = document.getElementById('scanConfirm');
+        const select = document.getElementById('scanConfirmBin');
+        document.getElementById('scanConfirmPrediction').textContent =
+            `AI คาดว่าเป็น ${info.thName} (${Math.round(score * 100)}%)`;
+        select.value = info.type;
+        dialog.returnValue = '';
+        dialog.addEventListener('close', () => {
+            if (dialog.returnValue !== 'save') return;
+            const chosen = select.value === info.type ? info : CORRECTION_INFO[select.value];
+            const chosenScore = chosen === info ? score : null;
+            updatePredictionUI(chosen, chosenScore);
+            commitWasteScan(chosen, chosenScore, { source });
+        }, { once: true });
+        dialog.showModal();
     }
 
     // --- Sample Test Buttons Click Handler (Event Delegation for Static & Dynamic Custom Buttons) ---
     const sampleObjectsContainer = document.querySelector('.sample-objects-container');
     if (sampleObjectsContainer) {
         sampleObjectsContainer.addEventListener('click', (e) => {
-            const delBtn = e.target.closest('.custom-btn-del');
-            if (delBtn) {
-                e.stopPropagation();
-                const prodId = delBtn.getAttribute('data-del');
-                deleteCustomProduct(prodId);
-                return;
-            }
-
             const btn = e.target.closest('.sample-btn');
             if (!btn) return;
             const itemKey = btn.getAttribute('data-item');
@@ -1973,37 +1517,6 @@ document.addEventListener('DOMContentLoaded', () => {
             commitWasteScan(mappedInfo, 0.95);
         });
     }
-
-    // --- File Upload Test Image Handler ---
-    imageUploadEl.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const img = new Image();
-            img.onload = async () => {
-                if (!model || isCountdownActive) return;
-                const { predictions, candidate } = await analyzeFrame(img);
-                // Scale the photo's boxes onto the overlay canvas
-                const sx = canvasEl.width / img.naturalWidth;
-                const sy = canvasEl.height / img.naturalHeight;
-                drawBoundingBoxes(buildBoxes(predictions, candidate, img.naturalWidth, img.naturalHeight)
-                    .map(b => ({ ...b, region: [b.region[0] * sx, b.region[1] * sy, b.region[2] * sx, b.region[3] * sy] })));
-
-                if (candidate) {
-                    updatePredictionUI(candidate.info, candidate.score);
-                    commitWasteScan(candidate.info, candidate.score, { source: img, region: candidate.region });
-                } else {
-                    updatePredictionUI(DEFAULT_GENERAL_WASTE, 0.60);
-                    commitWasteScan(DEFAULT_GENERAL_WASTE, 0.60, { source: img, region: null });
-                }
-                imageUploadEl.value = ''; // allow picking the same photo again
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
 
     // --- CSV Exporter ---
 
@@ -2041,7 +1554,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    uploadBtn.addEventListener('click', () => imageUploadEl.click());
+    document.getElementById('kioskScanBtn').addEventListener('click', triggerManualSnapshot);
 
     toggleCameraBtn.addEventListener('click', async () => {
         try {
@@ -2118,8 +1631,6 @@ document.addEventListener('DOMContentLoaded', () => {
         keepScreenOn(true);
         if (webcamStream) {
             kioskWebcam.srcObject = webcamStream;
-            kioskCanvas.width = canvasEl.width || 640;
-            kioskCanvas.height = canvasEl.height || 480;
         }
         updateStatsUI();
     }
@@ -2222,669 +1733,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================================================
-    // Thai Product AI Training Studio Engine
-    // ==========================================================================
-
-    // Products deleted on any kiosk stay in the cloud marked hidden, so they can be restored
-    let hiddenCloudProducts = [];
-
-    function registerProduct(prod) {
-        WASTE_MAPPING[prod.id] = {
-            type: prod.bin,
-            thName: prod.name,
-            bin: prod.binName || BIN_NAMES[prod.bin] || 'ขยะทั่วไป',
-            price: prod.price || 'กก.ละ 3.00-6.00 บาท',
-            estValue: parseFloat(prod.estValue) || 0.25,
-            desc: prod.advice || 'คัดแยกให้สะอาดก่อนทิ้ง',
-            custom: true,
-            shape: prod.shape,
-            image: prod.image,
-            images: prod.images
-        };
-    }
-
-    function loadCustomProducts() {
-        try {
-            const stored = localStorage.getItem('ecoscan_custom_thai_products');
-            customThaiProducts = stored ? JSON.parse(stored) : [];
-        } catch (e) {
-            console.warn('Failed to load custom products from localStorage:', e);
-            customThaiProducts = [];
-        }
-
-        // Register custom products into active WASTE_MAPPING dictionary
-        customThaiProducts.forEach(registerProduct);
-        renderCustomProductsUI();
-
-        // Also sync from Firestore cloud database if connected
-        if (db) {
-            db.collection('custom_thai_products').orderBy('timestamp', 'desc').get()
-                .then(snapshot => {
-                    const cloudProducts = [];
-                    snapshot.forEach(doc => cloudProducts.push({ id: doc.id, ...doc.data() }));
-
-                    hiddenCloudProducts = cloudProducts.filter(cp => cp.hidden === true);
-                    let changed = false;
-
-                    // Deleted on another kiosk: drop it here too
-                    hiddenCloudProducts.forEach(hp => {
-                        if (customThaiProducts.some(p => p.id === hp.id)) {
-                            customThaiProducts = customThaiProducts.filter(p => p.id !== hp.id);
-                            delete WASTE_MAPPING[hp.id];
-                            if (visualMemory) visualMemory.removeLabel(hp.id);
-                            changed = true;
-                        }
-                    });
-
-                    cloudProducts.filter(cp => cp.hidden !== true).forEach(cp => {
-                        if (!customThaiProducts.some(p => p.id === cp.id)) {
-                            customThaiProducts.push(cp);
-                            registerProduct(cp);
-                            queueMemory(() => addProductToMemory(cp));
-                            changed = true;
-                        }
-                    });
-
-                    if (changed) {
-                        persistCustomProducts();
-                        updateAiStatus();
-                    }
-                    renderCustomProductsUI();
-                })
-                .catch(err => console.log('Firestore custom products offline:', err));
-        }
-    }
-
-    function renderHiddenProductsUI() {
-        const section = document.getElementById('trainerHiddenSection');
-        const list = document.getElementById('trainerHiddenList');
-        if (!section || !list) return;
-        if (hiddenCloudProducts.length === 0) {
-            section.classList.add('hidden');
-            list.innerHTML = '';
-            return;
-        }
-        section.classList.remove('hidden');
-        list.innerHTML = hiddenCloudProducts.map(prod => `
-            <div class="trainer-hidden-item">
-                <span>${escapeHtml(prod.name)} <small>(${escapeHtml(prod.binName || BIN_NAMES[prod.bin] || '')})</small></span>
-                <button type="button" class="btn btn-sm btn-outline restore-prod-btn" data-id="${escapeHtml(prod.id)}">
-                    <i class="fa-solid fa-rotate-left"></i> กู้คืน
-                </button>
-            </div>
-        `).join('');
-        list.querySelectorAll('.restore-prod-btn').forEach(b => {
-            b.addEventListener('click', () => restoreCustomProduct(b.getAttribute('data-id')));
-        });
-    }
-
-    function restoreCustomProduct(id) {
-        const prod = hiddenCloudProducts.find(p => p.id === id);
-        if (!prod) return;
-        hiddenCloudProducts = hiddenCloudProducts.filter(p => p.id !== id);
-        const { hidden, hiddenAt, ...clean } = prod;
-        if (!customThaiProducts.some(p => p.id === id)) customThaiProducts.unshift(clean);
-        registerProduct(clean);
-        queueMemory(() => addProductToMemory(clean));
-        persistCustomProducts();
-        if (db) {
-            db.collection('custom_thai_products').doc(id)
-                .update({ hidden: false, hiddenAt: firebase.firestore.FieldValue.serverTimestamp() })
-                .catch(err => console.log('Firestore restore failed:', err));
-        }
-        renderCustomProductsUI();
-        updateAiStatus();
-    }
-
-    // Hide in the cloud instead of deleting, so a mistake (or a prank) can be undone
-    function hideProductInCloud(prod) {
-        if (!db || !prod) return;
-        db.collection('custom_thai_products').doc(prod.id)
-            .update({ hidden: true, hiddenAt: firebase.firestore.FieldValue.serverTimestamp() })
-            .catch(err => console.log('Firestore hide failed:', err));
-        if (!hiddenCloudProducts.some(p => p.id === prod.id)) hiddenCloudProducts.unshift({ ...prod, hidden: true });
-    }
-
-    function renderCustomProductsUI() {
-        renderHiddenProductsUI();
-        if (!trainerProductsContainer || !customTrainedButtons) return;
-
-        const count = customThaiProducts.length;
-        if (trainerTotalCount) trainerTotalCount.innerText = count.toString();
-        if (customProductCountBadge) customProductCountBadge.innerText = count.toString();
-
-        if (count === 0) {
-            if (customTrainedSection) customTrainedSection.classList.add('hidden');
-            trainerProductsContainer.innerHTML = `
-                <div class="trainer-empty-notice">
-                    <i class="fa-solid fa-graduation-cap" style="font-size: 2.2rem; color: #a78bfa; margin-bottom: 0.5rem; display: block;"></i>
-                    ยังไม่มีสินค้าไทยที่บันทึกไว้ในระบบ<br>
-                    <span style="font-size: 0.82rem; color: #94a3b8;">กรอกแบบฟอร์มด้านบนแล้วกด "บันทึกการฝึกสอน AI" เพื่อเริ่มสอนสินค้าท้องถิ่นชิ้นแรก</span>
-                </div>
-            `;
-            customTrainedButtons.innerHTML = '';
-            return;
-        }
-
-        if (customTrainedSection) customTrainedSection.classList.remove('hidden');
-
-        // Render Quick-Test Buttons in Sample Objects Bar
-        customTrainedButtons.innerHTML = customThaiProducts.map(prod => {
-            let binBtnClass = 'general-btn';
-            if (prod.bin === 'plastic_bottle') binBtnClass = 'plastic-bottle-btn';
-            else if (prod.bin === 'recyclable') binBtnClass = 'recyclable-btn';
-            else if (prod.bin === 'hazardous') binBtnClass = 'hazardous-btn';
-
-            return `
-                <button class="btn btn-sm btn-outline sample-btn custom-btn ${binBtnClass}" data-item="${escapeHtml(prod.id)}" title="ทดสอบจำแนก ${escapeHtml(prod.name)}">
-                    ⭐ ${escapeHtml(prod.name)}
-                    <span class="custom-btn-del" data-del="${escapeHtml(prod.id)}" title="ลบสินค้าชิ้นนี้">&times;</span>
-                </button>
-            `;
-        }).join('');
-
-        // Render Cards in Trainer Studio Modal
-        const shapeNames = {
-            'any': '🤖 จำจากรูปถ่าย',
-            'bottle': 'ขวด (Bottle)',
-            'cup': 'แก้ว/ถ้วย (Cup)',
-            'bowl': 'ชาม (Bowl)',
-            'box': 'กล่อง (Box)',
-            'book': 'กระดาษ (Book)',
-            'cell phone': 'มือถือ (Phone)',
-            'scissors': 'มีด/ของมีคม (Cutters)'
-        };
-
-        trainerProductsContainer.innerHTML = customThaiProducts.map(prod => {
-            return `
-                <div class="trainer-product-card">
-                    <div class="trainer-prod-name">
-                        <span>⭐</span> <strong>${escapeHtml(prod.name)}</strong>
-                    </div>
-                    <div class="trainer-prod-meta">
-                        <span class="trainer-bin-pill ${escapeHtml(prod.bin)}">${escapeHtml(prod.binName || BIN_NAMES[prod.bin])}</span>
-                        <span style="color: #64748b;">${escapeHtml(shapeNames[prod.shape] || prod.shape)} · 📷 ${productImages(prod).length} รูป</span>
-                    </div>
-                    <div style="font-size: 0.76rem; color: #475569;">
-                        <div>💰 ${escapeHtml(prod.price || 'กก.ละ 3.00-6.00 บาท')} (~${(parseFloat(prod.estValue) || 0.25).toFixed(2)} บ./ชิ้น)</div>
-                        <div style="margin-top: 2px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(prod.advice)}">💡 ${escapeHtml(prod.advice)}</div>
-                    </div>
-                    <div class="trainer-prod-actions">
-                        <button type="button" class="btn btn-sm btn-primary test-prod-btn" data-id="${escapeHtml(prod.id)}">
-                            <i class="fa-solid fa-play"></i> ทดสอบ
-                        </button>
-                        <button type="button" class="btn btn-sm btn-secondary del-prod-btn" data-id="${escapeHtml(prod.id)}" style="color: #e11d48;">
-                            <i class="fa-solid fa-trash"></i> ลบ
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        // Attach listeners for modal cards
-        trainerProductsContainer.querySelectorAll('.test-prod-btn').forEach(b => {
-            b.addEventListener('click', () => {
-                const pid = b.getAttribute('data-id');
-                const info = WASTE_MAPPING[pid] || DEFAULT_GENERAL_WASTE;
-                closeTrainerModal();
-                updatePredictionUI(info, 0.96);
-                commitWasteScan(info, 0.96);
-            });
-        });
-
-        trainerProductsContainer.querySelectorAll('.del-prod-btn').forEach(b => {
-            b.addEventListener('click', () => {
-                const pid = b.getAttribute('data-id');
-                deleteCustomProduct(pid);
-            });
-        });
-    }
-
-    function persistCustomProducts() {
-        try {
-            localStorage.setItem('ecoscan_custom_thai_products', JSON.stringify(customThaiProducts));
-        } catch (e) {
-            console.warn('Could not save custom products to localStorage:', e);
-        }
-    }
-
-    function saveCustomProduct(prod) {
-        customThaiProducts.unshift(prod);
-        persistCustomProducts();
-        queueMemory(() => addProductToMemory(prod));
-
-        // Register into active dictionary
-        registerProduct(prod);
-
-        // Sync with Firestore if online
-        if (db) {
-            db.collection('custom_thai_products').doc(prod.id).set(prod)
-                .catch(err => console.log('Failed to save to Firestore:', err));
-        }
-
-        renderCustomProductsUI();
-
-        // Audio confirmation in selected dialect
-        if (currentDialect === 'khammuang') {
-            speakThaiText(`บันทึกการฝึกสอนสินค้า ${prod.name} เรียบร้อยแล้วเน้อ`);
-        } else {
-            speakThaiText(`บันทึกการฝึกสอนสินค้า ${prod.name} เรียบร้อยแล้ว`);
-        }
-    }
-
-    function deleteCustomProduct(id) {
-        const prod = customThaiProducts.find(p => p.id === id);
-        const name = prod ? prod.name : 'สินค้านี้';
-        if (!confirm(`คุณต้องการลบ "${name}" ออกจากการฝึกสอน AI ใช่หรือไม่?\n(กู้คืนได้ภายหลังในหน้าสตูดิโอฝึกสอน)`)) return;
-
-        customThaiProducts = customThaiProducts.filter(p => p.id !== id);
-        delete WASTE_MAPPING[id];
-        if (visualMemory) { visualMemory.removeLabel(id); updateAiStatus(); }
-        persistCustomProducts();
-
-        hideProductInCloud(prod);
-
-        renderCustomProductsUI();
-    }
-
-    function openTrainerModal() {
-        if (trainerModalBackdrop) trainerModalBackdrop.classList.remove('hidden');
-    }
-
-    function closeTrainerModal() {
-        if (trainerModalBackdrop) trainerModalBackdrop.classList.add('hidden');
-    }
-
-    // Modal Triggers (protected by Staff PIN on public kiosks)
-    const guardedOpenTrainer = () => {
-        if (!requireAdminPin('เปิดสตูดิโอฝึกสอนสินค้าไทย')) return;
-        openTrainerModal();
-    };
-    if (openTrainerHeaderBtn) openTrainerHeaderBtn.addEventListener('click', guardedOpenTrainer);
-    if (openTrainerBtn) openTrainerBtn.addEventListener('click', guardedOpenTrainer);
-    if (closeTrainerModalBtn) closeTrainerModalBtn.addEventListener('click', closeTrainerModal);
-    if (trainerModalBackdrop) {
-        trainerModalBackdrop.addEventListener('click', (e) => {
-            if (e.target === trainerModalBackdrop) closeTrainerModal();
-        });
-    }
-
-    // Reference photos are kept small: phone photos are several MB, which overflows
-    // localStorage (~5MB) and Firestore's 1MB document limit, so saving silently failed
-    function shrinkImageToDataUrl(source, srcW, srcH, maxSide = 320) {
-        const w = srcW || 320;
-        const h = srcH || 240;
-        const scale = Math.min(1, maxSide / Math.max(w, h));
-        const c = document.createElement('canvas');
-        c.width = Math.round(w * scale);
-        c.height = Math.round(h * scale);
-        c.getContext('2d').drawImage(source, 0, 0, c.width, c.height);
-        return c.toDataURL('image/jpeg', 0.75);
-    }
-
-    // Snapshot from Live Webcam for Training Reference
-    if (trainerSnapBtn) {
-        trainerSnapBtn.addEventListener('click', () => {
-            if (!webcamEl || !webcamEl.videoWidth) {
-                alert('กรุณาเปิดกล้องเว็บแคมก่อนถ่ายรูปภาพอ้างอิง');
-                return;
-            }
-            // Crop to the object the camera is looking at (or the centre), so the photo is about the item, not the room
-            const recent = lastLiveRegion && performance.now() - lastLiveRegion.t < 1500 ? lastLiveRegion.region : null;
-            const region = recent || centerRegion(webcamEl.videoWidth, webcamEl.videoHeight);
-            addTrainerImage(window.cropToDataUrl
-                ? cropToDataUrl(webcamEl, region, 320)
-                : shrinkImageToDataUrl(webcamEl, webcamEl.videoWidth, webcamEl.videoHeight));
-        });
-    }
-
-    // Upload Reference Image for Training
-    if (trainerUploadBtn && trainerImageUpload) {
-        trainerUploadBtn.addEventListener('click', () => trainerImageUpload.click());
-        trainerImageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                const img = new Image();
-                img.onload = () => {
-                    addTrainerImage(shrinkImageToDataUrl(img, img.naturalWidth, img.naturalHeight));
-                    trainerImageUpload.value = '';
-                };
-                img.src = evt.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    const trainerThumbs = document.getElementById('trainerThumbs');
-
-    function addTrainerImage(dataUrl) {
-        if (!dataUrl) return;
-        if (currentTrainerImages.length >= MAX_TRAINER_PHOTOS) currentTrainerImages.shift();
-        currentTrainerImages.push(dataUrl);
-        showTrainerPreview();
-    }
-
-    function clearTrainerImages() {
-        currentTrainerImages = [];
-        showTrainerPreview();
-    }
-
-    function showTrainerPreview() {
-        const latest = currentTrainerImages[currentTrainerImages.length - 1];
-        if (trainerPreviewImg) {
-            trainerPreviewImg.src = latest || '';
-            trainerPreviewImg.classList.toggle('hidden', !latest);
-        }
-        if (trainerPreviewPlaceholder) {
-            trainerPreviewPlaceholder.classList.toggle('hidden', !!latest);
-        }
-        if (trainerThumbs) {
-            trainerThumbs.innerHTML = currentTrainerImages.map((src, i) => `
-                <div class="trainer-thumb">
-                    <img src="${src}" alt="รูปที่ ${i + 1}">
-                    <button type="button" class="trainer-thumb-del" data-idx="${i}" title="ลบรูปนี้">&times;</button>
-                </div>`).join('') +
-                `<span class="trainer-thumb-count">${currentTrainerImages.length}/${MAX_TRAINER_PHOTOS} รูป · ถ่ายหลายมุมช่วยให้ AI จำแม่นขึ้น</span>`;
-        }
-    }
-
-    if (trainerThumbs) {
-        trainerThumbs.addEventListener('click', (e) => {
-            const del = e.target.closest('.trainer-thumb-del');
-            if (!del) return;
-            currentTrainerImages.splice(parseInt(del.getAttribute('data-idx'), 10), 1);
-            showTrainerPreview();
-        });
-    }
-
-    // Trainer Form Submit Handler
-    if (trainerForm) {
-        trainerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = trainProductName.value.trim();
-            if (!name) return;
-
-            const bin = trainProductBin.value;
-            const shape = trainProductShape.value;
-            const price = trainProductPrice.value.trim() || 'กก.ละ 3.00-6.00 บาท';
-            const estVal = parseFloat(trainProductEstValue.value) || 0.25;
-            const advice = trainProductAdvice.value.trim() || 'คัดแยกให้สะอาดก่อนทิ้ง';
-            const id = 'thai_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-            if (shape === 'any' && currentTrainerImages.length === 0) {
-                alert('กรุณาถ่ายรูปหรืออัปโหลดรูปสินค้าอย่างน้อย 1 รูป เพื่อให้ AI จำหน้าตาสินค้าได้');
-                return;
-            }
-
-            const newProduct = {
-                id,
-                name,
-                bin,
-                binName: BIN_NAMES[bin] || 'ขยะทั่วไป',
-                shape,
-                price,
-                estValue: estVal,
-                advice,
-                image: currentTrainerImages[0] || null,
-                images: currentTrainerImages.slice(),
-                timestamp: new Date().toISOString()
-            };
-
-            saveCustomProduct(newProduct);
-
-            // Reset form
-            trainerForm.reset();
-            clearTrainerImages();
-
-            alert(`🎉 ฝึกสอนโมเดล AI สำเร็จ!\nเพิ่มสินค้า: "${name}" ลงใน ${BIN_NAMES[bin]}\nลองส่องสินค้าให้กล้องดูได้ทันที (กรอบเส้นประ = AI จำจากรูปที่คุณสอน)`);
-        });
-    }
-
-    // Reset Form
-    if (resetTrainerFormBtn) {
-        resetTrainerFormBtn.addEventListener('click', () => {
-            trainerForm.reset();
-            clearTrainerImages();
-        });
-    }
-
-    // Clear All Custom Products
-    if (clearAllCustomBtn) {
-        clearAllCustomBtn.addEventListener('click', () => {
-            if (customThaiProducts.length === 0) {
-                alert('ยังไม่มีรายการสินค้าที่คุณฝึกสอนไว้');
-                return;
-            }
-            if (confirm('คุณต้องการลบข้อมูลสินค้าไทยที่คุณฝึกสอนไว้ทั้งหมดใช่หรือไม่?')) {
-                customThaiProducts.forEach(p => {
-                    delete WASTE_MAPPING[p.id];
-                    if (visualMemory) visualMemory.removeLabel(p.id);
-                    // Also hide in the cloud, otherwise they come back on the next page load
-                    hideProductInCloud(p);
-                });
-                customThaiProducts = [];
-                localStorage.removeItem('ecoscan_custom_thai_products');
-                renderCustomProductsUI();
-                updateAiStatus();
-            }
-        });
-    }
-
-    // ==========================================================================
-    // Visual Memory (ภาพจำ AI) & ถูก/ผิด feedback
-    // ==========================================================================
-
-    let memoryQueue = Promise.resolve();
-    // Embedding photos is async; run one job at a time so adds/removes stay in order
-    function queueMemory(job) {
-        memoryQueue = memoryQueue.then(job).catch(e => console.warn('Visual memory job failed:', e));
-        return memoryQueue;
-    }
-
-    function updateAiStatus() {
-        if (!model) return;
-        const modelPart = wasteModel && wasteModel.ready ? ' · โมเดลขยะไทย ✓' : '';
-        if (!visualMemory || !visualMemory.ready) {
-            aiStatusTextEl.innerText = 'AI พร้อมทำงาน' + modelPart;
-            return;
-        }
-        aiStatusTextEl.innerText = `AI พร้อม · ภาพจำ ${visualMemory.size} ภาพ${modelPart}`;
-    }
-
-    // --- Your own waste model (Teachable Machine) ---
-    const modelUrlInput = document.getElementById('modelUrlInput');
-    const loadModelBtn = document.getElementById('loadModelBtn');
-    const clearModelBtn = document.getElementById('clearModelBtn');
-    const modelStatusText = document.getElementById('modelStatusText');
-
-    function setModelStatus(text, ok = null) {
-        if (!modelStatusText) return;
-        modelStatusText.innerText = text;
-        modelStatusText.className = 'model-status' + (ok === true ? ' ok' : ok === false ? ' bad' : '');
-    }
-
-    function savedModelUrl() {
-        const fromLink = new URLSearchParams(location.search).get('model');
-        if (fromLink) return fromLink;
-        try { return localStorage.getItem('ecoscan_model_url') || ''; } catch (e) { return ''; }
-    }
-
-    async function loadWasteModel(url, quietIfMissing) {
-        if (!wasteModel) return false;
-        try {
-            setModelStatus('กำลังโหลดโมเดล...');
-            await wasteModel.load(url);
-            const bins = wasteModel.labels.map((l, i) => `${l} → ${BIN_NAMES[wasteModel.bins[i]] || 'ไม่มีขยะ'}`);
-            setModelStatus(`ใช้งานอยู่: ${wasteModel.labels.length} หมวด (${bins.join(', ')})`, true);
-            updateAiStatus();
-            return true;
-        } catch (e) {
-            console.warn('Waste model not loaded:', e);
-            wasteModel.ready = false;
-            if (quietIfMissing) setModelStatus('ยังไม่ได้ใส่โมเดลของคุณ (ใช้ AI พื้นฐาน + ภาพจำ)');
-            else setModelStatus('โหลดไม่สำเร็จ: ตรวจลิงก์ให้ลงท้ายด้วย /models/xxxx/ หรือโฟลเดอร์ที่มี model.json', false);
-            updateAiStatus();
-            return false;
-        }
-    }
-
-    async function initWasteModel() {
-        const url = savedModelUrl();
-        if (modelUrlInput) modelUrlInput.value = url;
-        await loadWasteModel(url || DEFAULT_MODEL_URL, !url);
-    }
-
-    if (loadModelBtn) {
-        loadModelBtn.addEventListener('click', async () => {
-            const url = (modelUrlInput.value || '').trim();
-            if (!url) return;
-            if (await loadWasteModel(url, false)) {
-                try { localStorage.setItem('ecoscan_model_url', url); } catch (e) { /* ignore */ }
-            }
-        });
-    }
-
-    if (clearModelBtn) {
-        clearModelBtn.addEventListener('click', async () => {
-            try { localStorage.removeItem('ecoscan_model_url'); } catch (e) { /* ignore */ }
-            if (modelUrlInput) modelUrlInput.value = '';
-            if (wasteModel) wasteModel.ready = false;
-            await loadWasteModel(DEFAULT_MODEL_URL, true);
-        });
-    }
-
-    async function addProductToMemory(prod) {
-        if (!visualMemory || !visualMemory.ready) return;
-        visualMemory.removeLabel(prod.id);
-        const imgs = productImages(prod);
-        for (let i = 0; i < imgs.length; i++) {
-            const embs = visualMemory.embedDataUrlAugmented
-                ? await visualMemory.embedDataUrlAugmented(imgs[i])
-                : [await visualMemory.embedDataUrl(imgs[i])];
-            embs.forEach((emb, k) => {
-                visualMemory.add(`${prod.id}#${i}_${k}`, prod.id, emb, { group: prod.bin });
-            });
-        }
-        updateAiStatus();
-    }
-
-    async function addFeedbackToMemory(ex) {
-        if (!visualMemory || !visualMemory.ready) return;
-        // A person's correction outranks a near-identical taught photo (augmented x3 for angle/scale robustness)
-        const embs = visualMemory.embedDataUrlAugmented
-            ? await visualMemory.embedDataUrlAugmented(ex.image)
-            : [await visualMemory.embedDataUrl(ex.image)];
-        embs.forEach((emb, k) => {
-            visualMemory.add(`${ex.id}_${k}`, ex.label, emb, { group: ex.type, boost: 0.06 });
-        });
-        updateAiStatus();
-    }
-
-    // --- Background Calibration ("จำพื้นหลังเปล่า") to suppress false positives ---
-    const calibrateBgBtn = document.getElementById('calibrateBgBtn');
-    async function loadSavedBackgroundRefs() {
-        if (!visualMemory || !visualMemory.ready) return;
-        try {
-            const saved = JSON.parse(localStorage.getItem('ecoscan_bg_refs') || '[]');
-            visualMemory.removeLabel('bg:empty');
-            for (let i = 0; i < saved.length; i++) {
-                const emb = await visualMemory.embedDataUrl(saved[i]);
-                if (emb) visualMemory.add(`bg:empty#${i}`, 'bg:empty', emb, { group: 'none', boost: 0.02 });
-            }
-        } catch (e) { /* ignore */ }
-    }
-
-    if (calibrateBgBtn) {
-        calibrateBgBtn.addEventListener('click', async () => {
-            if (!isCameraActive || webcamEl.readyState !== 4) {
-                alert('กรุณาเปิดกล้องก่อนจำพื้นหลังเปล่า');
-                return;
-            }
-            if (!visualMemory || !visualMemory.ready) {
-                alert('กำลังโหลดระบบภาพจำ AI กรุณารอสักครู่แล้วลองใหม่');
-                return;
-            }
-            calibrateBgBtn.disabled = true;
-            const origHtml = calibrateBgBtn.innerHTML;
-            calibrateBgBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังจำพื้นหลัง...';
-            try {
-                const bgUrls = [];
-                visualMemory.removeLabel('bg:empty');
-                for (let i = 0; i < 3; i++) {
-                    const url = captureThumbnailDataUrl(webcamEl, null);
-                    if (url) {
-                        bgUrls.push(url);
-                        const emb = await visualMemory.embedDataUrl(url);
-                        if (emb) visualMemory.add(`bg:empty#${i}`, 'bg:empty', emb, { group: 'none', boost: 0.02 });
-                    }
-                    if (i < 2) await new Promise(r => setTimeout(r, 180));
-                }
-                try { localStorage.setItem('ecoscan_bg_refs', JSON.stringify(bgUrls)); } catch (e) { /* ignore */ }
-                updateAiStatus();
-                alert('✅ จำพื้นหลังเปล่าเรียบร้อย! ระบบจะลดการทายมั่วจากฉากหลังนี้โดยอัตโนมัติ');
-            } catch (err) {
-                console.warn('Background calibration error:', err);
-            } finally {
-                calibrateBgBtn.disabled = false;
-                calibrateBgBtn.innerHTML = origHtml;
-            }
-        });
-    }
-
-    async function loadBuiltinBanknotesToMemory() {
-        if (!visualMemory || !visualMemory.ready) return;
-        for (const note of BUILTIN_BANKNOTES) {
-            for (let i = 0; i < note.images.length; i++) {
-                try {
-                    const img = await new Promise((res, rej) => {
-                        const el = new Image();
-                        el.onload = () => res(el);
-                        el.onerror = rej;
-                        el.src = note.images[i];
-                    });
-                    const w = img.naturalWidth || img.width;
-                    const h = img.naturalHeight || img.height;
-                    // Embed full banknote + clean center square crop (avoids edge-stretch distortion on 2:1 notes)
-                    const embFull = await visualMemory.embed(img);
-                    if (embFull) visualMemory.add(`${note.id}#${i}_full`, note.id, embFull, { group: 'money', boost: 0.03 });
-                    if (w > h * 1.3) {
-                        const cx = Math.max(0, (w - h) / 2);
-                        const embCenter = await visualMemory.embed(img, [cx, 0, h, h]);
-                        if (embCenter) visualMemory.add(`${note.id}#${i}_ctr`, note.id, embCenter, { group: 'money', boost: 0.03 });
-                        const rx = Math.max(0, w - h);
-                        const embRight = await visualMemory.embed(img, [rx, 0, h, h]);
-                        if (embRight) visualMemory.add(`${note.id}#${i}_right`, note.id, embRight, { group: 'money', boost: 0.03 });
-                    }
-                } catch (e) {
-                    console.warn('Skipped banknote ref:', note.images[i], e);
-                }
-            }
-        }
-        updateAiStatus();
-    }
-
-    async function initVisualMemory() {
-        if (!visualMemory) return;
-        try {
-            aiStatusTextEl.innerText = 'AI พร้อม · กำลังโหลดภาพจำ...';
-            await visualMemory.load();
-            await queueMemory(() => loadSavedBackgroundRefs());
-            await queueMemory(() => loadBuiltinBanknotesToMemory());
-            for (const prod of customThaiProducts) await queueMemory(() => addProductToMemory(prod));
-            for (const ex of feedbackExamples) await queueMemory(() => addFeedbackToMemory(ex));
-        } catch (e) {
-            console.warn('Visual memory unavailable, using object detection only:', e);
-        }
-        updateAiStatus();
-    }
-
+    // Scan feedback
     function loadFeedback() {
         try {
-            feedbackExamples = JSON.parse(localStorage.getItem('ecoscan_feedback_examples') || '[]');
-            feedbackStats = JSON.parse(localStorage.getItem('ecoscan_feedback_stats') || '{"correct":0,"incorrect":0}');
+            feedbackStats = JSON.parse(localStorage.getItem('ecoscan_onnx_feedback_stats') || '{"correct":0,"incorrect":0}');
         } catch (e) {
-            feedbackExamples = [];
             feedbackStats = { correct: 0, incorrect: 0 };
         }
         updateAccuracyUI();
@@ -2892,13 +1745,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function persistFeedback() {
         try {
-            localStorage.setItem('ecoscan_feedback_stats', JSON.stringify(feedbackStats));
-            localStorage.setItem('ecoscan_feedback_examples', JSON.stringify(feedbackExamples));
-        } catch (e) {
-            // Storage full: drop the oldest half of the taught photos and try once more
-            feedbackExamples = feedbackExamples.slice(Math.floor(feedbackExamples.length / 2));
-            try { localStorage.setItem('ecoscan_feedback_examples', JSON.stringify(feedbackExamples)); } catch (e2) { /* give up quietly */ }
-        }
+            localStorage.setItem('ecoscan_onnx_feedback_stats', JSON.stringify(feedbackStats));
+        } catch (e) { /* storage unavailable */ }
     }
 
     function updateAccuracyUI() {
@@ -2965,7 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = e.target.closest('[data-bin]');
             if (!btn || !lastCommit) return;
             const type = btn.getAttribute('data-bin');
-            const newInfo = TAUGHT_BIN_INFO[type];
+            const newInfo = CORRECTION_INFO[type];
             const commit = lastCommit;
             lastCommit = null;
 
@@ -2980,31 +1828,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             feedbackStats.incorrect += 1;
 
-            // Remember what this looked like so the AI gets it right next time
-            if (commit.image) {
-                const ex = { id: 'fb_' + Date.now(), label: 'bin:' + type, type, image: commit.image, t: Date.now() };
-                feedbackExamples.push(ex);
-                if (feedbackExamples.length > MAX_FEEDBACK_EXAMPLES) {
-                    const dropped = feedbackExamples.shift();
-                    if (visualMemory) visualMemory.removeId(dropped.id);
-                }
-                queueMemory(() => addFeedbackToMemory(ex));
-            }
-
             persistFeedback();
             saveStats();
             updateStatsUI();
             renderHistoryTable();
             updateAccuracyUI();
 
-            showFeedbackThanks(commit.image
-                ? `จำแล้ว! ครั้งหน้าของแบบนี้จะบอกให้ทิ้ง "${newInfo.bin}"`
-                : `แก้เป็น "${newInfo.bin}" แล้ว`);
-            if (currentDialect === 'khammuang') {
-                speakThaiText(`ขอบคุณเน้อ จำไว้แล้ว อันนี้ทิ้ง${newInfo.bin}`);
-            } else {
-                speakThaiText(`ขอบคุณ จำไว้แล้ว อันนี้ทิ้ง${newInfo.bin}`);
-            }
+            showFeedbackThanks(`แก้เป็น "${newInfo.bin}" ในประวัติเครื่องนี้แล้ว`);
+            speakThaiText(`ขอบคุณครับ อันนี้ทิ้ง${newInfo.bin}`);
             setTimeout(finishCountdown, 1600);
         });
     }

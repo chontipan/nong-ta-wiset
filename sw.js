@@ -2,7 +2,7 @@
    Keeps the app, AI libraries and AI models on the device so a kiosk keeps
    working when the internet drops. Bump CACHE_VERSION when the cache rules change. */
 
-const CACHE_VERSION = 'v27';
+const CACHE_VERSION = 'v28';
 const APP_CACHE = `app-${CACHE_VERSION}`;
 const LIB_CACHE = `libs-${CACHE_VERSION}`;
 
@@ -11,6 +11,10 @@ const APP_SHELL = [
     'index.html',
     'app.js',
     'ai-vision.js',
+    'vendor/ort/ort.wasm.min.js',
+    'vendor/ort/ort-wasm-simd-threaded.mjs',
+    'vendor/ort/ort-wasm-simd-threaded.wasm',
+    'models/recyclenet-small.onnx',
     'styles.css',
     'manifest.webmanifest',
     'icons/icon-192.png',
@@ -24,16 +28,6 @@ const APP_SHELL = [
     'logos/mascot-hazardous.jpg',
     'logos/mascot-money.jpg',
     'logos/mascot-celebrate.jpg',
-    'logos/banknotes/thb-20-front.jpg',
-    'logos/banknotes/thb-20-back.jpg',
-    'logos/banknotes/thb-50-front.jpg',
-    'logos/banknotes/thb-50-back.jpg',
-    'logos/banknotes/thb-100-front.jpg',
-    'logos/banknotes/thb-100-back.jpg',
-    'logos/banknotes/thb-500-front.jpg',
-    'logos/banknotes/thb-500-back.jpg',
-    'logos/banknotes/thb-1000-front.jpg',
-    'logos/banknotes/thb-1000-back.jpg'
 ];
 
 // Versioned libraries, fonts and AI model files: they never change at the same URL
@@ -42,9 +36,6 @@ const LIB_HOSTS = [
     'cdnjs.cloudflare.com',
     'fonts.googleapis.com',
     'fonts.gstatic.com',
-    'storage.googleapis.com',
-    'tfhub.dev',
-    'www.kaggle.com'
 ];
 
 self.addEventListener('install', (event) => {
@@ -82,10 +73,6 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Your own Teachable Machine model: newest when online, saved copy when offline
-    if (url.hostname === 'teachablemachine.withgoogle.com') {
-        event.respondWith(networkFirst(req, LIB_CACHE));
-    }
     // Everything else (Firestore, etc.) goes straight to the network
 });
 

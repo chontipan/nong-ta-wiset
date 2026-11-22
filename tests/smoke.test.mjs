@@ -3,8 +3,8 @@
 // Run with: npm run test:smoke
 //
 // Writes to the live Firestore are blocked, so this test never touches real data.
-// LIBS_DIR (optional): a folder with node_modules for @tensorflow/tfjs, coco-ssd and
-// firebase@10.8.0, for machines that can't reach the CDNs.
+// LIBS_DIR (optional): a folder with node_modules/firebase@10.8.0 for machines
+// that can't reach the Firebase CDN.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -66,7 +66,14 @@ test('page loads, AI starts, no JavaScript errors', async () => {
     const { page, errors } = await openPage(`${BASE}/?kiosk=smoke-test`);
     await page.waitForFunction(() => document.getElementById('aiStatusText')?.innerText.includes('พร้อม'), null, { timeout: 120000 });
     assert.match(await page.locator('#firebaseStatusText').innerText(), /smoke-test/);
-    assert.equal(await page.locator('#trainerHiddenSection').count(), 1);
+    assert.equal(await page.locator('#trainerModalBackdrop, input[type=file]').count(), 0);
+    const prediction = await page.evaluate(async () => {
+        const engine = new RecycleNet();
+        await engine.load();
+        return engine.predict(document.getElementById('webcam'), true);
+    });
+    assert.match(prediction.label, /^(cardboard|glass|metal|paper|plastic|trash)$/);
+    assert.ok(prediction.score >= 1 / 6 && prediction.score <= 1);
     assert.deepEqual(errors, []);
     await page.context().close();
 });
@@ -87,23 +94,25 @@ test('camera watchdog reconnects a camera that stopped', async () => {
     await page.context().close();
 });
 
-test('deleting a trained product hides it and it can be restored', async () => {
+test('camera scan records only the bin confirmed by the user', async () => {
     const { page, errors } = await openPage(BASE);
-    page.on('dialog', d => d.accept());
+    await page.waitForFunction(() => document.getElementById('aiStatusText').innerText.includes('พร้อม')
+        && document.getElementById('webcam').readyState === 4);
+    // A fake camera has no stable target class. Control only the model output for this UI test.
     await page.evaluate(() => {
-        localStorage.setItem('ecoscan_custom_thai_products', JSON.stringify([{
-            id: 'custom_smoke', name: 'สินค้าทดสอบ', bin: 'recyclable', shape: 'any',
-            price: 'กก.ละ 3 บาท', estValue: 0.2, advice: 'ทดสอบ', image: null, images: [],
-            timestamp: new Date().toISOString()
-        }]));
+        RecycleNet.prototype.predict = async () => ({ label: 'plastic', score: 0.95, margin: 0.8 });
     });
-    await page.reload();
-    await page.waitForSelector('.del-prod-btn[data-id="custom_smoke"]', { state: 'attached' });
-    await page.evaluate(() => document.querySelector('.del-prod-btn[data-id="custom_smoke"]').click());
-    await page.waitForSelector('#trainerHiddenSection:not(.hidden) .restore-prod-btn', { state: 'attached' });
-    await page.evaluate(() => document.querySelector('.restore-prod-btn').click());
-    await page.waitForSelector('.del-prod-btn[data-id="custom_smoke"]', { state: 'attached' });
-    assert.equal(await page.locator('#trainerHiddenSection.hidden').count(), 1);
+    await page.locator('#snapshotBtn').click();
+    await page.locator('#scanConfirm').waitFor({ state: 'visible' });
+    await page.locator('#scanConfirm button[value=cancel]').click();
+    assert.match(await page.locator('#resultModalBackdrop').getAttribute('class'), /hidden/);
+    await page.locator('#snapshotBtn').click();
+    await page.locator('#scanConfirmBin').selectOption('plastic_bottle');
+    await page.locator('#scanConfirm button[value=save]').click();
+    await page.locator('#scanConfirm').waitFor({ state: 'hidden' });
+    await page.waitForFunction(() => document.getElementById('scanConfirm').returnValue === 'save');
+    await page.locator('#resultModalBackdrop:not(.hidden)').waitFor({ state: 'visible', timeout: 3000 });
+    assert.match(await page.locator('#modalCategoryPill').innerText(), /ถังขวดพลาสติก/);
     assert.deepEqual(errors, []);
     await page.context().close();
 });
