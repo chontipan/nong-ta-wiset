@@ -107,3 +107,25 @@ test('deleting a trained product hides it and it can be restored', async () => {
     assert.deepEqual(errors, []);
     await page.context().close();
 });
+
+test('ready-made AlphaTrash model loads from its button and sorts sample photos', async () => {
+    const { page, errors } = await openPage(BASE);
+    await page.waitForSelector('#alphaTrashModelBtn', { state: 'attached' });
+    await page.evaluate(() => document.getElementById('alphaTrashModelBtn').click());
+    await page.waitForFunction(() => document.getElementById('modelStatusText')?.textContent.includes('ใช้งานอยู่: 6 หมวด'), null, { timeout: 120000 });
+    const bins = await page.evaluate(async () => {
+        const m = new WasteModel();
+        await m.load('./models/alphatrash/');
+        const out = {};
+        for (const name of ['metal', 'organic']) {
+            const img = new Image();
+            img.src = `./tests/fixtures/alphatrash-${name}.jpg`;
+            await img.decode();
+            out[name] = (await m.predict(img)).bin;
+        }
+        return out;
+    });
+    assert.deepEqual(bins, { metal: 'recyclable', organic: 'general' });
+    assert.deepEqual(errors, []);
+    await page.context().close();
+});

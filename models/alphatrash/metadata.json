@@ -1,0 +1,72 @@
+{
+ "tfjsVersion": "4.22.0",
+ "modelName": "alphatrash-waste",
+ "imageSize": 224,
+ "labels": [
+  "recyclable: พลาสติก",
+  "recyclable: กระป๋องโลหะ",
+  "recyclable: กระดาษ / กล่อง",
+  "general: เศษอาหาร (ขยะอินทรีย์)",
+  "general: ขยะทั่วไป",
+  "background"
+ ],
+ "trainedOn": "AlphaTrash train+val (4,842 photos) + background photos",
+ "testResult": {
+  "test_waste_images": 849,
+  "class5_acc": 0.9599528857479388,
+  "bin_acc": 0.9717314487632509,
+  "bin_acc_sure_075": 0.9599528857479388,
+  "background_test_images": 430,
+  "background_false_alarm_075": 0.004651162790697674,
+  "confusion": {
+   "plastic": {
+    "plastic": 254,
+    "metal": 1,
+    "paper": 0,
+    "organic": 0,
+    "general": 2,
+    "background": 0
+   },
+   "metal": {
+    "plastic": 3,
+    "metal": 156,
+    "paper": 0,
+    "organic": 0,
+    "general": 0,
+    "background": 0
+   },
+   "paper": {
+    "plastic": 4,
+    "metal": 0,
+    "paper": 116,
+    "organic": 2,
+    "general": 11,
+    "background": 0
+   },
+   "organic": {
+    "plastic": 0,
+    "metal": 0,
+    "paper": 0,
+    "organic": 121,
+    "general": 1,
+    "background": 0
+   },
+   "general": {
+    "plastic": 6,
+    "metal": 2,
+    "paper": 1,
+    "organic": 1,
+    "general": 168,
+    "background": 0
+   },
+   "background": {
+    "plastic": 0,
+    "metal": 0,
+    "paper": 1,
+    "organic": 0,
+    "general": 2,
+    "background": 427
+   }
+  }
+ }
+}

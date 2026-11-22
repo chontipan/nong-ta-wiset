@@ -1,0 +1,568 @@
+{
+ "n_test": 849,
+ "counts": {
+  "train": {
+   "plastic": 1206,
+   "metal": 746,
+   "paper": 627,
+   "organic": 574,
+   "general": 833
+  },
+  "val": {
+   "plastic": 259,
+   "metal": 160,
+   "paper": 135,
+   "organic": 123,
+   "general": 179
+  },
+  "test": {
+   "plastic": 257,
+   "metal": 159,
+   "paper": 133,
+   "organic": 122,
+   "general": 178
+  }
+ },
+ "A": {
+  "scores": {
+   "plastic": {
+    "n": 257,
+    "correct": 23,
+    "acc": 0.08949416342412451,
+    "answered": 43,
+    "coverage": 0.16731517509727625,
+    "acc_when_answered": 0.5348837209302325
+   },
+   "metal": {
+    "n": 159,
+    "correct": 6,
+    "acc": 0.03773584905660377,
+    "answered": 33,
+    "coverage": 0.20754716981132076,
+    "acc_when_answered": 0.18181818181818182
+   },
+   "paper": {
+    "n": 133,
+    "correct": 1,
+    "acc": 0.007518796992481203,
+    "answered": 2,
+    "coverage": 0.015037593984962405,
+    "acc_when_answered": 0.5
+   },
+   "organic": {
+    "n": 122,
+    "correct": 28,
+    "acc": 0.22950819672131148,
+    "answered": 28,
+    "coverage": 0.22950819672131148,
+    "acc_when_answered": 1.0
+   },
+   "general": {
+    "n": 178,
+    "correct": 2,
+    "acc": 0.011235955056179775,
+    "answered": 9,
+    "coverage": 0.05056179775280899,
+    "acc_when_answered": 0.2222222222222222
+   },
+   "ALL": {
+    "n": 849,
+    "correct": 60,
+    "acc": 0.0706713780918728,
+    "answered": 115,
+    "coverage": 0.1354534746760895,
+    "acc_when_answered": 0.5217391304347826
+   }
+  },
+  "confusion": {
+   "plastic": {
+    "plastic_bottle": 21,
+    "recyclable": 2,
+    "hazardous": 2,
+    "general": 18,
+    "money": 0,
+    "none": 214
+   },
+   "metal": {
+    "plastic_bottle": 18,
+    "recyclable": 6,
+    "hazardous": 1,
+    "general": 8,
+    "money": 0,
+    "none": 126
+   },
+   "paper": {
+    "plastic_bottle": 0,
+    "recyclable": 1,
+    "hazardous": 1,
+    "general": 0,
+    "money": 0,
+    "none": 131
+   },
+   "organic": {
+    "plastic_bottle": 0,
+    "recyclable": 0,
+    "hazardous": 0,
+    "general": 28,
+    "money": 0,
+    "none": 94
+   },
+   "general": {
+    "plastic_bottle": 1,
+    "recyclable": 3,
+    "hazardous": 3,
+    "general": 2,
+    "money": 0,
+    "none": 169
+   }
+  },
+  "coco_classes": {
+   "plastic": {
+    "bottle": 21,
+    "toothbrush": 11,
+    "vase": 3,
+    "cup": 2,
+    "snowboard": 2,
+    "remote": 2,
+    "teddy bear": 1,
+    "cake": 1
+   },
+   "metal": {
+    "bottle": 18,
+    "cup": 5,
+    "toothbrush": 5,
+    "umbrella": 1,
+    "snowboard": 1,
+    "clock": 1,
+    "skateboard": 1,
+    "cell phone": 1
+   },
+   "paper": {
+    "keyboard": 1,
+    "umbrella": 1
+   },
+   "organic": {
+    "potted plant": 15,
+    "banana": 5,
+    "orange": 4,
+    "pizza": 3,
+    "cake": 1
+   },
+   "general": {
+    "book": 2,
+    "bowl": 1,
+    "cell phone": 1,
+    "tie": 1,
+    "knife": 1,
+    "scissors": 1,
+    "cake": 1,
+    "bottle": 1
+   }
+  },
+  "macro": 0.07509859225014015
+ },
+ "A_thr040": {
+  "scores": {
+   "plastic": {
+    "n": 257,
+    "correct": 31,
+    "acc": 0.12062256809338522,
+    "answered": 58,
+    "coverage": 0.22568093385214008,
+    "acc_when_answered": 0.5344827586206896
+   },
+   "metal": {
+    "n": 159,
+    "correct": 12,
+    "acc": 0.07547169811320754,
+    "answered": 55,
+    "coverage": 0.34591194968553457,
+    "acc_when_answered": 0.21818181818181817
+   },
+   "paper": {
+    "n": 133,
+    "correct": 5,
+    "acc": 0.03759398496240601,
+    "answered": 9,
+    "coverage": 0.06766917293233082,
+    "acc_when_answered": 0.5555555555555556
+   },
+   "organic": {
+    "n": 122,
+    "correct": 34,
+    "acc": 0.2786885245901639,
+    "answered": 34,
+    "coverage": 0.2786885245901639,
+    "acc_when_answered": 1.0
+   },
+   "general": {
+    "n": 178,
+    "correct": 6,
+    "acc": 0.033707865168539325,
+    "answered": 20,
+    "coverage": 0.11235955056179775,
+    "acc_when_answered": 0.3
+   },
+   "ALL": {
+    "n": 849,
+    "correct": 88,
+    "acc": 0.10365135453474676,
+    "answered": 176,
+    "coverage": 0.20730270906949352,
+    "acc_when_answered": 0.5
+   }
+  }
+ },
+ "B": {
+  "1": {
+   "bin_acc": 0.0800942285041225,
+   "bin_acc_sd": 0.00471142520612485,
+   "coverage": 0.14558303886925797,
+   "bin_acc_no_threshold": 0.7290930506478209,
+   "class5_acc_1nn": 0.4603062426383981,
+   "runs": 5
+  },
+  "3": {
+   "bin_acc": 0.10977620730270907,
+   "bin_acc_sd": 0.008982650631301586,
+   "coverage": 0.17714958775029446,
+   "bin_acc_no_threshold": 0.7561837455830389,
+   "class5_acc_1nn": 0.5191990577149588,
+   "runs": 5
+  },
+  "5": {
+   "bin_acc": 0.13521790341578327,
+   "bin_acc_sd": 0.006468565473614122,
+   "coverage": 0.20070671378091873,
+   "bin_acc_no_threshold": 0.7731448763250883,
+   "class5_acc_1nn": 0.5677267373380448,
+   "runs": 5
+  },
+  "10": {
+   "bin_acc": 0.2131919905771496,
+   "bin_acc_sd": 0.021756890250212144,
+   "coverage": 0.2819787985865724,
+   "bin_acc_no_threshold": 0.8299175500588929,
+   "class5_acc_1nn": 0.6628975265017668,
+   "runs": 5
+  },
+  "20": {
+   "bin_acc": 0.3031802120141342,
+   "bin_acc_sd": 0.007011955743763119,
+   "coverage": 0.3653710247349823,
+   "bin_acc_no_threshold": 0.8442873969375737,
+   "class5_acc_1nn": 0.7159010600706714,
+   "runs": 5
+  },
+  "50": {
+   "bin_acc": 0.4730270906949352,
+   "bin_acc_sd": 0.020892926500486922,
+   "coverage": 0.5262661955241461,
+   "bin_acc_no_threshold": 0.9083627797408717,
+   "class5_acc_1nn": 0.8141342756183745,
+   "runs": 5
+  },
+  "all": {
+   "bin_acc": 0.901060070671378,
+   "bin_acc_sd": 0.0,
+   "coverage": 0.9093050647820966,
+   "bin_acc_no_threshold": 0.9752650176678446,
+   "class5_acc_1nn": 0.9634864546525324,
+   "runs": 1
+  }
+ },
+ "B_k10_confusion": {
+  "plastic": {
+   "plastic_bottle": 18,
+   "recyclable": 31,
+   "hazardous": 2,
+   "general": 22,
+   "money": 0,
+   "none": 184
+  },
+  "metal": {
+   "plastic_bottle": 14,
+   "recyclable": 27,
+   "hazardous": 1,
+   "general": 7,
+   "money": 0,
+   "none": 110
+  },
+  "paper": {
+   "plastic_bottle": 0,
+   "recyclable": 25,
+   "hazardous": 0,
+   "general": 1,
+   "money": 0,
+   "none": 107
+  },
+  "organic": {
+   "plastic_bottle": 0,
+   "recyclable": 3,
+   "hazardous": 0,
+   "general": 64,
+   "money": 0,
+   "none": 55
+  },
+  "general": {
+   "plastic_bottle": 1,
+   "recyclable": 3,
+   "hazardous": 3,
+   "general": 27,
+   "money": 0,
+   "none": 144
+  }
+ },
+ "B_k10_scores": {
+  "plastic": {
+   "n": 257,
+   "correct": 49,
+   "acc": 0.19066147859922178,
+   "answered": 73,
+   "coverage": 0.2840466926070039,
+   "acc_when_answered": 0.6712328767123288
+  },
+  "metal": {
+   "n": 159,
+   "correct": 27,
+   "acc": 0.16981132075471697,
+   "answered": 49,
+   "coverage": 0.3081761006289308,
+   "acc_when_answered": 0.5510204081632653
+  },
+  "paper": {
+   "n": 133,
+   "correct": 25,
+   "acc": 0.18796992481203006,
+   "answered": 26,
+   "coverage": 0.19548872180451127,
+   "acc_when_answered": 0.9615384615384616
+  },
+  "organic": {
+   "n": 122,
+   "correct": 64,
+   "acc": 0.5245901639344263,
+   "answered": 67,
+   "coverage": 0.5491803278688525,
+   "acc_when_answered": 0.9552238805970149
+  },
+  "general": {
+   "n": 178,
+   "correct": 27,
+   "acc": 0.15168539325842698,
+   "answered": 34,
+   "coverage": 0.19101123595505617,
+   "acc_when_answered": 0.7941176470588235
+  },
+  "ALL": {
+   "n": 849,
+   "correct": 192,
+   "acc": 0.22614840989399293,
+   "answered": 249,
+   "coverage": 0.29328621908127206,
+   "acc_when_answered": 0.7710843373493976
+  }
+ },
+ "C": {
+  "C": 100,
+  "val_acc": 0.9415887850467289,
+  "class5_acc": 0.9540636042402827,
+  "per_class": {
+   "plastic": {
+    "precision": 0.9543726235741445,
+    "recall": 0.9766536964980544,
+    "f1": 0.9653846153846154,
+    "n": 257
+   },
+   "metal": {
+    "precision": 0.9691358024691358,
+    "recall": 0.9874213836477987,
+    "f1": 0.9781931464174456,
+    "n": 159
+   },
+   "paper": {
+    "precision": 0.9236641221374046,
+    "recall": 0.9097744360902256,
+    "f1": 0.9166666666666667,
+    "n": 133
+   },
+   "organic": {
+    "precision": 0.9918032786885246,
+    "recall": 0.9918032786885246,
+    "f1": 0.9918032786885246,
+    "n": 122
+   },
+   "general": {
+    "precision": 0.935672514619883,
+    "recall": 0.898876404494382,
+    "f1": 0.9169054441260744,
+    "n": 178
+   }
+  },
+  "confusion5": {
+   "plastic": {
+    "plastic": 251,
+    "metal": 3,
+    "paper": 0,
+    "organic": 0,
+    "general": 3
+   },
+   "metal": {
+    "plastic": 2,
+    "metal": 157,
+    "paper": 0,
+    "organic": 0,
+    "general": 0
+   },
+   "paper": {
+    "plastic": 3,
+    "metal": 0,
+    "paper": 121,
+    "organic": 1,
+    "general": 8
+   },
+   "organic": {
+    "plastic": 1,
+    "metal": 0,
+    "paper": 0,
+    "organic": 121,
+    "general": 0
+   },
+   "general": {
+    "plastic": 6,
+    "metal": 2,
+    "paper": 10,
+    "organic": 0,
+    "general": 160
+   }
+  },
+  "macro_f1": 0.9537906302566654,
+  "bin_scores": {
+   "plastic": {
+    "n": 257,
+    "correct": 254,
+    "acc": 0.9883268482490273,
+    "answered": 257,
+    "coverage": 1.0,
+    "acc_when_answered": 0.9883268482490273
+   },
+   "metal": {
+    "n": 159,
+    "correct": 159,
+    "acc": 1.0,
+    "answered": 159,
+    "coverage": 1.0,
+    "acc_when_answered": 1.0
+   },
+   "paper": {
+    "n": 133,
+    "correct": 124,
+    "acc": 0.9323308270676691,
+    "answered": 133,
+    "coverage": 1.0,
+    "acc_when_answered": 0.9323308270676691
+   },
+   "organic": {
+    "n": 122,
+    "correct": 121,
+    "acc": 0.9918032786885246,
+    "answered": 122,
+    "coverage": 1.0,
+    "acc_when_answered": 0.9918032786885246
+   },
+   "general": {
+    "n": 178,
+    "correct": 160,
+    "acc": 0.898876404494382,
+    "answered": 178,
+    "coverage": 1.0,
+    "acc_when_answered": 0.898876404494382
+   },
+   "ALL": {
+    "n": 849,
+    "correct": 818,
+    "acc": 0.9634864546525324,
+    "answered": 849,
+    "coverage": 1.0,
+    "acc_when_answered": 0.9634864546525324
+   }
+  },
+  "bin_scores_app_rule": {
+   "plastic": {
+    "n": 257,
+    "correct": 240,
+    "acc": 0.933852140077821,
+    "answered": 243,
+    "coverage": 0.9455252918287937,
+    "acc_when_answered": 0.9876543209876543
+   },
+   "metal": {
+    "n": 159,
+    "correct": 154,
+    "acc": 0.9685534591194969,
+    "answered": 155,
+    "coverage": 0.9748427672955975,
+    "acc_when_answered": 0.9935483870967742
+   },
+   "paper": {
+    "n": 133,
+    "correct": 114,
+    "acc": 0.8571428571428571,
+    "answered": 119,
+    "coverage": 0.8947368421052632,
+    "acc_when_answered": 0.957983193277311
+   },
+   "organic": {
+    "n": 122,
+    "correct": 120,
+    "acc": 0.9836065573770492,
+    "answered": 120,
+    "coverage": 0.9836065573770492,
+    "acc_when_answered": 1.0
+   },
+   "general": {
+    "n": 178,
+    "correct": 152,
+    "acc": 0.8539325842696629,
+    "answered": 164,
+    "coverage": 0.9213483146067416,
+    "acc_when_answered": 0.926829268292683
+   },
+   "ALL": {
+    "n": 849,
+    "correct": 780,
+    "acc": 0.9187279151943463,
+    "answered": 801,
+    "coverage": 0.9434628975265018,
+    "acc_when_answered": 0.9737827715355806
+   }
+  },
+  "share_prob_ge_075": 0.9352179034157833
+ },
+ "C_learning_curve": {
+  "5": {
+   "bin_acc": 0.7729093050647821,
+   "class5_acc": 0.6103651354534747
+  },
+  "10": {
+   "bin_acc": 0.8376914016489989,
+   "class5_acc": 0.7050647820965843
+  },
+  "20": {
+   "bin_acc": 0.8621908127208482,
+   "class5_acc": 0.7717314487632508
+  },
+  "50": {
+   "bin_acc": 0.904829210836278,
+   "class5_acc": 0.8419316843345112
+  },
+  "100": {
+   "bin_acc": 0.9229681978798586,
+   "class5_acc": 0.8758539458186101
+  },
+  "all": {
+   "bin_acc": 0.9599528857479388,
+   "class5_acc": 0.9493521790341578
+  }
+ }
+}
