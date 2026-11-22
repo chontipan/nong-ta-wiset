@@ -2149,6 +2149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const repCo2Saved = document.getElementById('repCo2Saved');
     const repTreesEq = document.getElementById('repTreesEq');
     const reportCategoryBars = document.getElementById('reportCategoryBars');
+    const reportBinDifference = document.getElementById('reportBinDifference');
     const reportKioskTableBody = document.getElementById('reportKioskTableBody');
     const reportDailyTableBody = document.getElementById('reportDailyTableBody');
 
@@ -2231,6 +2232,10 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMonthlyReport();
     }
 
+    function reportDifference(row) {
+        return row.total - row.recyclable - row.plastic_bottle - row.general - row.hazardous;
+    }
+
     function renderMonthlyReport() {
         const ym = (reportMonthPicker && reportMonthPicker.value) || currentYearMonth();
         const selectedKiosk = (reportKioskFilter && reportKioskFilter.value) || '__all__';
@@ -2286,6 +2291,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }).join('');
         }
 
+        const difference = reportDifference(sum);
+        reportBinDifference.hidden = difference === 0;
+        if (difference !== 0) {
+            const count = Math.abs(difference).toLocaleString('th-TH');
+            reportBinDifference.textContent = difference > 0
+                ? `ยอดรวมมีอีก ${count} รายการที่ไม่อยู่ใน 3 ถัง เช่น รายการธนบัตรจากระบบเดิม`
+                : `ยอดสามถังสูงกว่ายอดรวมที่บันทึกไว้ ${count} รายการ`;
+        }
+
         // Kiosk Comparison Table
         if (reportKioskTableBody) {
             const byKiosk = new Map();
@@ -2301,7 +2315,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const kList = Array.from(byKiosk.values()).sort((a, b) => b.total - a.total);
             if (kList.length === 0) {
-                reportKioskTableBody.innerHTML = `<tr class="empty-row"><td colspan="6">ยังไม่มีข้อมูลแยกตามชื่อตู้ในเดือนนี้ (ตั้งชื่อตู้ได้ผ่านลิงก์ ?kiosk=ชื่อตู้)</td></tr>`;
+                reportKioskTableBody.innerHTML = `<tr class="empty-row"><td colspan="7">ยังไม่มีข้อมูลแยกตามชื่อตู้ในเดือนนี้ (ตั้งชื่อตู้ได้ผ่านลิงก์ ?kiosk=ชื่อตู้)</td></tr>`;
             } else {
                 reportKioskTableBody.innerHTML = kList.map(k => `
                     <tr>
@@ -2310,6 +2324,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${k.recyclable + k.plastic_bottle}</td>
                         <td>${k.general}</td>
                         <td>${k.hazardous}</td>
+                        <td>${reportDifference(k)}</td>
                         <td>${k.co2.toFixed(2)}</td>
                     </tr>
                 `).join('');
@@ -2319,7 +2334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Daily Breakdown Table
         if (reportDailyTableBody) {
             if (rows.length === 0) {
-                reportDailyTableBody.innerHTML = `<tr class="empty-row"><td colspan="6">ไม่มีรายการในเดือนที่เลือก</td></tr>`;
+                reportDailyTableBody.innerHTML = `<tr class="empty-row"><td colspan="7">ไม่มีรายการในเดือนที่เลือก</td></tr>`;
             } else {
                 reportDailyTableBody.innerHTML = rows.map(r => `
                     <tr>
@@ -2328,6 +2343,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${r.recyclable + r.plastic_bottle}</td>
                         <td>${r.general}</td>
                         <td>${r.hazardous}</td>
+                        <td>${reportDifference(r)}</td>
                         <td>${r.co2.toFixed(2)}</td>
                     </tr>
                 `).join('');
@@ -2374,9 +2390,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             const ym = (reportMonthPicker && reportMonthPicker.value) || currentYearMonth();
-            const headers = ['Date,Total,Recyclable,General,Hazardous,CO2_kg'];
+            const headers = ['Date,Total,Recyclable,General,Hazardous,CO2_kg,Bin_Count_Difference'];
             const lines = lastRenderedDailyRows.map(r =>
-                [r.day, r.total, r.plastic_bottle + r.recyclable, r.general, r.hazardous, r.co2.toFixed(2)].join(',')
+                [r.day, r.total, r.plastic_bottle + r.recyclable, r.general, r.hazardous, r.co2.toFixed(2), reportDifference(r)].join(',')
             );
             const blob = new Blob(['\uFEFF' + [headers, ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
             const url = URL.createObjectURL(blob);
