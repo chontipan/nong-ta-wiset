@@ -447,25 +447,30 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-#webcam, #detectionCanvas {
+#webcam {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 
-#detectionCanvas {
-    z-index: 2;
-}
-
-/* Scan Reticle & Laser */
+/* Square crop border, sized from the displayed video by app.js. */
 .scan-overlay {
     position: absolute;
-    inset: 15px;
+    top: 50%;
+    left: 50%;
+    width: var(--scan-crop-size, 0px);
+    height: var(--scan-crop-size, 0px);
+    transform: translate(-50%, -50%);
+    visibility: hidden;
     pointer-events: none;
     z-index: 3;
+}
+
+.scan-overlay.crop-ready {
+    visibility: visible;
+    box-shadow: 0 0 0 200vmax rgba(0, 0, 0, 0.35);
 }
 
 .reticle-corner {
