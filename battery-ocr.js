@@ -37,6 +37,36 @@ window.readBatteryCode = (() => {
         return null;
     }
 
+    function candidateLines(tsv) {
+        const lines = new Map();
+        for (const row of tsv.split('\n').map(value => value.split('\t'))) {
+            if (row[0] !== '5') continue;
+            const key = row.slice(1, 5).join('/');
+            const words = lines.get(key) || [];
+            words.push(row);
+            lines.set(key, words);
+        }
+        return [...lines.values()].flatMap(words => {
+            const boxes = [];
+            for (let i = 0; i < words.length; i++) {
+                const first = words[i];
+                const text = clean(first[11]);
+                if (!/(?:^[CLS][RPF]|20[235][025]|^R20|^CR|^LR|^SR|^AG)/.test(text)) continue;
+                const candidates = [[first]];
+                if (words[i + 1] && /\d/.test(clean(words[i + 1][11]))) candidates.push([first, words[i + 1]]);
+                for (const rows of candidates) {
+                    const x = Math.min(...rows.map(row => +row[6]));
+                    const y = Math.min(...rows.map(row => +row[7]));
+                    const right = Math.max(...rows.map(row => +row[6] + +row[8]));
+                    const bottom = Math.max(...rows.map(row => +row[7] + +row[9]));
+                    if (right - x < 18 || bottom - y < 8 || right - x > 400) continue;
+                    boxes.push({ x, y, width: right - x, height: bottom - y });
+                }
+            }
+            return boxes;
+        }).slice(0,3);
+    }
+
     return async function readBatteryCode(source, signal) {
         if (active || signal.aborted) return null;
         active = true;
@@ -69,7 +99,11 @@ window.readBatteryCode = (() => {
             canvas.width = canvas.height = 512;
             const context = canvas.getContext('2d');
             const side = Math.min(source.width, source.height);
-            for (const turn of [0, 90, 180, 270]) {
+            // Try the regular orientations first, then look for slanted text.
+            const turns = [0, 90, 180, 270, 22, 68, 112, 158, 202, 248, 292, 338];
+            const line = document.createElement('canvas');
+            const recognizerOptions = { text: true, tsv: true };
+            for (const turn of turns) {
                 if (signal.aborted) return null;
                 context.resetTransform();
                 context.filter = 'none';
@@ -80,10 +114,30 @@ window.readBatteryCode = (() => {
                 context.filter = 'grayscale(1) contrast(1.2)';
                 context.drawImage(source, (source.width - side) / 2, (source.height - side) / 2,
                     side, side, -240, -240, 480, 480);
-                const result = await Promise.race([worker.recognize(canvas, {}, { text: true, tsv: true }), canceled]);
+                const result = await Promise.race([worker.recognize(canvas, {}, recognizerOptions), canceled]);
                 if (!result) return null;
                 const code = findCode(result.data.tsv);
                 if (code) return code;
+                const boxes = candidateLines(result.data.tsv);
+                if (!boxes.length) continue;
+                await Promise.race([worker.setParameters({ tessedit_pageseg_mode: tesseract.PSM.SINGLE_LINE }), canceled]);
+                for (const { x, y, width, height } of boxes) {
+                    if (signal.aborted) return null;
+                    const pad = Math.max(4, Math.round(height * .22));
+                    const scale = Math.min(3, 360 / width);
+                    line.width = Math.ceil((width + 2 * pad) * scale);
+                    line.height = Math.ceil((height + 2 * pad) * scale);
+                    const ctx = line.getContext('2d');
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, line.width, line.height);
+                    ctx.drawImage(canvas, x - pad, y - pad, width + 2 * pad, height + 2 * pad, 0, 0, line.width, line.height);
+                    const single = await Promise.race([worker.recognize(line, {}, recognizerOptions), canceled]);
+                    if (!single) return null;
+                    const recovered = findCode(single.data.tsv);
+                    if (recovered) return recovered;
+                }
+                if (signal.aborted) return null;
+                await Promise.race([worker.setParameters({ tessedit_pageseg_mode: tesseract.PSM.SPARSE_TEXT }), canceled]);
             }
             return null;
         } catch (error) {
