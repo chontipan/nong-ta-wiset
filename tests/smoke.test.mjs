@@ -108,12 +108,12 @@ test('camera scan records only the bin confirmed by the user', async () => {
     await page.locator('#scanConfirm button[value=cancel]').click();
     assert.match(await page.locator('#resultModalBackdrop').getAttribute('class'), /hidden/);
     await page.locator('#snapshotBtn').click();
-    await page.locator('#scanConfirmBin').selectOption('plastic_bottle');
+    await page.locator('#scanConfirmBin').selectOption('hazardous');
     await page.locator('#scanConfirm button[value=save]').click();
     await page.locator('#scanConfirm').waitFor({ state: 'hidden' });
     await page.waitForFunction(() => document.getElementById('scanConfirm').returnValue === 'save');
     await page.locator('#resultModalBackdrop:not(.hidden)').waitFor({ state: 'visible', timeout: 3000 });
-    assert.match(await page.locator('#modalCategoryPill').innerText(), /ถังขวดพลาสติก/);
+    assert.match(await page.locator('#modalCategoryPill').innerText(), /ขยะอันตราย/);
     assert.deepEqual(errors, []);
     await page.context().close();
 });
@@ -129,10 +129,10 @@ test('uncertain scan lets the user choose a bin without rescanning', async () =>
     const save = page.locator('#scanConfirm button[value=save]');
     await save.waitFor({ state: 'visible' });
     assert.equal(await save.isDisabled(), true);
-    await page.locator('#scanConfirmBin').selectOption('plastic_bottle');
+    await page.locator('#scanConfirmBin').selectOption('hazardous');
     await save.click();
     await page.locator('#resultModalBackdrop:not(.hidden)').waitFor({ state: 'visible' });
-    assert.match(await page.locator('#modalCategoryPill').innerText(), /ถังขวดพลาสติก/);
+    assert.match(await page.locator('#modalCategoryPill').innerText(), /ขยะอันตราย/);
     assert.deepEqual(errors, []);
     await page.context().close();
 });
@@ -178,6 +178,29 @@ test('material helper only changes predictions when glass and plastic are the un
     assert.equal(plasticThird.label, 'glass');
     assert.equal(otherPair.label, 'cardboard');
     assert.equal(lowerThreshold.label, 'glass');
+    assert.deepEqual(errors, []);
+    await page.context().close();
+});
+
+test('glass and plastic can suggest one recycling bin while hazardous stays selectable', async () => {
+    const { page, errors } = await openPage(BASE);
+    await page.waitForFunction(() => document.getElementById('aiStatusText').innerText.includes('พร้อม')
+        && document.getElementById('webcam').readyState === 4);
+    await page.evaluate(() => {
+        RecycleNet.prototype.predict = async () => ({
+            label: 'glass', score: .43, margin: .04, recyclablePairScore: .82, outsidePairScore: .1
+        });
+    });
+    await page.locator('#snapshotBtn').click();
+    const select = page.locator('#scanConfirmBin');
+    await select.waitFor({ state: 'visible' });
+    assert.deepEqual(await select.locator('option').evaluateAll(options => options.map(o => o.value)),
+        ['', 'recyclable', 'hazardous', 'general']);
+    assert.equal(await select.inputValue(), 'recyclable');
+    await page.locator('#scanConfirm button[value=save]').click();
+    await page.locator('#resultModalBackdrop:not(.hidden)').waitFor({ state: 'visible' });
+    const row = await page.evaluate(() => JSON.parse(localStorage.getItem('ecoscan_history'))[0]);
+    assert.equal(row.type, 'recyclable');
     assert.deepEqual(errors, []);
     await page.context().close();
 });

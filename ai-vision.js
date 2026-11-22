@@ -65,6 +65,9 @@ window.RecycleNet = class RecycleNet {
         const sum = scores.reduce((total, value) => total + value, 0);
         const rank = () => labels.map((_, i) => i).sort((a, b) => scores[b] - scores[a]);
         let [best, second] = rank();
+        const recyclePair = best !== 5 && second !== 5
+            ? { recyclablePairScore: (scores[best] + scores[second]) / sum, outsidePairScore: scores[5] / sum }
+            : {};
         const glass = 1;
         const plastic = 4;
         const pairIsOnTop = (best === glass && second === plastic) || (best === plastic && second === glass);
@@ -80,6 +83,6 @@ window.RecycleNet = class RecycleNet {
             scores[glass] = pairMass * (1 - plasticShare);
             [best, second] = rank();
         }
-        return { label: labels[best], score: scores[best] / sum, margin: (scores[best] - scores[second]) / sum };
+        return { label: labels[best], score: scores[best] / sum, margin: (scores[best] - scores[second]) / sum, ...recyclePair };
     }
 };
